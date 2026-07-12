@@ -1,0 +1,168 @@
+model Nest {
+    id          String   @id @default(uuid(7))
+    name        String
+    slug        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    memberCount Int @default(0)
+    threadCount Int @default(0)
+
+    members NestMember[]
+    threads Thread[]
+    bans    NestBan[]
+
+    nestSettings        NestSettings?
+    nestJoinRequests    NestJoinRequest[]
+    nestInvites         NestInvite[]
+    userNestPreferences UserNestPreference[]
+}
+
+model NestSettings {
+    nestId String @id
+
+    visibility NestVisibility @default(PUBLIC)
+    joinPolicy NestJoinPolicy @default(OPEN)
+
+    minThreadCreationRole  NestMemberRole @default(MEMBER)
+    minCommentCreationRole NestMemberRole @default(MEMBER)
+
+    minMemberViewRole NestMemberRole @default(MODERATOR)
+
+    minNestEditRole NestMemberRole @default(MODERATOR)
+
+    minThreadLockManageRole NestMemberRole @default(MODERATOR)
+    minThreadPinManageRole  NestMemberRole @default(MODERATOR)
+    minCommentPinManageRole NestMemberRole @default(MODERATOR)
+
+    minContentModerateRole NestMemberRole @default(MODERATOR)
+
+    minInviteManageRole      NestMemberRole @default(MODERATOR)
+    minMemberRemoveRole      NestMemberRole @default(MODERATOR)
+    minJoinRequestManageRole NestMemberRole @default(MODERATOR)
+    minBanManageRole         NestMemberRole @default(MODERATOR)
+
+    nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
+
+    updatedAt DateTime @updatedAt
+}
+
+enum NestVisibility {
+    PUBLIC
+    PRIVATE
+}
+
+enum NestJoinPolicy {
+    OPEN
+    BY_REQUEST
+    BY_INVITE
+}
+
+model NestMember {
+    nestId    String
+    userId    String
+    role      NestMemberRole @default(MEMBER)
+    createdAt DateTime       @default(now())
+
+    nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([nestId, userId])
+}
+
+enum NestMemberRole {
+    OWNER
+    MODERATOR
+    MEMBER
+}
+
+model NestBan {
+    id         String        @id @default(uuid(7))
+    nestId     String
+    userId     String
+    bannedById String
+    reason     String?
+    status     NestBanStatus @default(ACTIVE)
+    createdAt  DateTime      @default(now())
+
+    revokedAt   DateTime?
+    revokedById String?
+
+    nest      Nest  @relation(fields: [nestId], references: [id], onDelete: Cascade)
+    user      User  @relation("NestBannedUser", fields: [userId], references: [id], onDelete: Cascade)
+    bannedBy  User  @relation("NestIssuedBans", fields: [bannedById], references: [id], onDelete: Cascade)
+    revokedBy User? @relation("NestRevokedBans", fields: [revokedById], references: [id], onDelete: SetNull)
+
+    @@unique([nestId, userId], where: { status: "ACTIVE" })
+    @@index([nestId, status, createdAt])
+    @@index([userId, nestId])
+    @@index([bannedById])
+}
+
+enum NestBanStatus {
+    ACTIVE
+    REVOKED
+    EXPIRED
+}
+
+model NestJoinRequest {
+    id      String  @id @default(uuid(7))
+    nestId  String
+    userId  String
+    message String?
+
+    status       NestJoinRequestStatus @default(PENDING)
+    resolvedAt   DateTime?
+    resolvedById String?
+
+    createdAt DateTime @default(now())
+
+    nest       Nest  @relation(fields: [nestId], references: [id], onDelete: Cascade)
+    user       User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    resolvedBy User? @relation("NestJoinRequestsReviewer", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+    @@unique([nestId, userId], where: { status: "PENDING" })
+    @@index([nestId, userId, status])
+    @@index([nestId, status, createdAt])
+    @@index([userId, status, createdAt])
+}
+
+enum NestJoinRequestStatus {
+    CANCELED
+    PENDING
+    APPROVED
+    REJECTED
+    EXPIRED
+}
+
+model NestInvite {
+    id          String  @id @default(uuid(7))
+    nestId      String
+    userId      String
+    invitedById String
+    message     String?
+
+    status       NestInviteStatus @default(PENDING)
+    resolvedAt   DateTime?
+    resolvedById String?
+
+    createdAt DateTime @default(now())
+
+    nest       Nest  @relation(fields: [nestId], references: [id], onDelete: Cascade)
+    user       User  @relation("NestInvitedUser", fields: [userId], references: [id], onDelete: Cascade)
+    invitedBy  User  @relation("NestIssuedInvites", fields: [invitedById], references: [id], onDelete: Cascade)
+    resolvedBy User? @relation("NestResolvedInvites", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+    @@unique([nestId, userId], where: { status: "PENDING" })
+    @@index([nestId, userId, status])
+    @@index([nestId, status, createdAt])
+}
+
+enum NestInviteStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+    REVOKED
+    EXPIRED
+}

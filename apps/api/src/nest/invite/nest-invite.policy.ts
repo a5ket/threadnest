@@ -1,0 +1,134 @@
+import { Injectable } from '@nestjs/common'
+import { NestInviteStatus } from 'generated/prisma/enums'
+import { InviteNotPendingException } from './exceptions/invite-not-pending.exception'
+import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
+import { NestBanRepository } from '../ban/nest-ban.repository'
+import { NestJoinRequestRepository } from '../join-request/nest-join-request.repository'
+import { AlreadyHasPendingJoinRequestException } from '../join-request/exceptions/already-has-pending-join-request.exception'
+import { NestMemberRepository } from '../member/nest-member.repository'
+import { AlreadyMemberException } from '../member/exceptions/already-member.exception'
+import { UserIsBannedException } from '../member/exceptions/user-is-banned.exception'
+import { NestAccess } from '../nest.access'
+import { UserNestPreferenceRepository } from '../preferences/user-nest-preference.repository'
+import { NestPolicySubject } from '../types/nest.policy-subject'
+import { AlreadyInvitedException } from './exceptions/already-invited.exception'
+import { InvitesNotAllowedException } from './exceptions/invites-not-allowed.exception'
+import { NestInviteNotFoundException } from './exceptions/nest-invite-not-found.exception'
+import { NestInviteRepository } from './nest-invite.repository'
+import { NestInvitePolicySubject } from './types/nest-invite.policy-subject'
+
+@Injectable()
+export class NestInvitePolicy {
+  constructor(
+    private readonly nestAccess: NestAccess,
+    private readonly memberRepo: NestMemberRepository,
+    private readonly banRepo: NestBanRepository,
+    private readonly inviteRepo: NestInviteRepository,
+    private readonly requestRepo: NestJoinRequestRepository,
+    private readonly preferences: UserNestPreferenceRepository,
+  ) { }
+
+  async assertCanCreate(nest: NestPolicySubject, actorUserId: string, targetUserId: string) {
+    await this.assertCanManageNestInvites(nest.id, actorUserId)
+
+    const [
+      hasPendingRequest,
+      hasPendingInvite,
+      isMember,
+      hasActiveBan,
+      allowsInvites
+    ] = await Promise.all([
+      this.requestRepo.existsPending(nest.id, targetUserId),
+      this.inviteRepo.existsPending(nest.id, targetUserId),
+      this.memberRepo.exists(nest.id, targetUserId),
+      this.banRepo.existsActive(nest.id, targetUserId),
+      this.preferences.allowsInvites(targetUserId, nest.id)
+    ])
+
+    if (hasActiveBan) {
+      throw new UserIsBannedException()
+    }
+
+    if (isMember) {
+      throw new AlreadyMemberException()
+    }
+
+    if (hasPendingInvite) {
+      throw new AlreadyInvitedException()
+    }
+
+    if (hasPendingRequest) {
+      throw new AlreadyHasPendingJoinRequestException()
+    }
+
+    if (!allowsInvites) {
+      throw new InvitesNotAllowedException()
+    }
+  }
+
+  async assertCanListAsNest(nest: NestPolicySubject, actorUserId: string) {
+    await this.assertCanManageNestInvites(nest.id, actorUserId)
+  }
+
+  async assertCanGetAsNest(invite: NestInvitePolicySubject, actorUserId: string) {
+    await this.assertCanManageNestInvites(invite.nestId, actorUserId)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async assertCanGetAsUser(invite: NestInvitePolicySubject, actorUserId: string) {
+    if (invite.userId !== actorUserId) {
+      throw new NestInviteNotFoundException()
+    }
+  }
+
+
+  async assertCanAccept(invite: NestInvitePolicySubject, actorUserId: string) {
+    if (invite.userId !== actorUserId) {
+      throw new NestInviteNotFoundException()
+    }
+
+    if (invite.status !== NestInviteStatus.PENDING) {
+      throw new InviteNotPendingException()
+    }
+
+    const [isMember, hasActiveBan] = await Promise.all([
+      this.memberRepo.exists(invite.nestId, actorUserId),
+      this.banRepo.existsActive(invite.nestId, actorUserId),
+    ])
+
+    if (isMember) {
+      throw new AlreadyMemberException()
+    }
+
+    if (hasActiveBan) {
+      throw new UserIsBannedException()
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async assertCanDecline(invite: NestInvitePolicySubject, actorUserId: string) {
+    if (invite.userId !== actorUserId) {
+      throw new NestInviteNotFoundException()
+    }
+
+    if (invite.status !== NestInviteStatus.PENDING) {
+      throw new InviteNotPendingException()
+    }
+  }
+
+  async assertCanRevoke(invite: NestInvitePolicySubject, actorUserId: string) {
+    await this.assertCanManageNestInvites(invite.nestId, actorUserId)
+
+    if (invite.status !== NestInviteStatus.PENDING) {
+      throw new InviteNotPendingException()
+    }
+  }
+
+  private async assertCanManageNestInvites(nestId: string, actorUserId: string) {
+    const ctx = await this.nestAccess.getContext(nestId, actorUserId)
+
+    if (!ctx.canManageInvites) {
+      throw new InsufficientPermissionsException()
+    }
+  }
+}

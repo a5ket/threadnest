@@ -1,0 +1,78 @@
+import { Injectable } from '@nestjs/common'
+import { Comment, CommentBlockFlags, CommentNode, CommentPage } from './types/comment'
+
+@Injectable()
+export class CommentPresenter {
+  private redact(
+    deletedAt: Date | null,
+    deletedById: string | null,
+    authorId: string,
+    canModerateContent: boolean,
+  ) {
+    if (!deletedAt) {
+      return { hideContent: false, hideAuthor: false }
+    }
+
+    const deletedByAuthor = deletedById === authorId
+    if (deletedByAuthor) {
+      return { hideContent: true, hideAuthor: true }
+    }
+
+    return { hideContent: !canModerateContent, hideAuthor: !canModerateContent }
+  }
+
+  toView(comment: Comment, blockFlags: CommentBlockFlags = { viewerBlockedAuthor: false, authorBlockedViewer: false }, canModerateContent = false) {
+    const { hideContent, hideAuthor } = this.redact(comment.deletedAt, comment.deletedById, comment.authorId, canModerateContent)
+
+    return {
+      id: comment.id,
+      threadId: comment.threadId,
+      author: hideAuthor ? null : comment.author,
+      parentId: comment.parentId,
+      content: hideContent ? null : comment.content,
+      replyCount: comment.replyCount,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      editedAt: comment.editedAt,
+      deletedAt: comment.deletedAt,
+      deletedById: comment.deletedById,
+      viewerBlockedAuthor: blockFlags.viewerBlockedAuthor,
+      authorBlockedViewer: blockFlags.authorBlockedViewer,
+    }
+  }
+
+  toNodeView(node: CommentNode, canModerateContent = false) {
+    const { hideContent, hideAuthor } = this.redact(node.deletedAt, node.deletedById, node.authorId, canModerateContent)
+
+    return {
+      id: node.id,
+      threadId: node.threadId,
+      author: hideAuthor ? null : {
+        id: node.authorId,
+        profile: {
+          username: node.authorUsername,
+          displayName: node.authorDisplayName,
+          avatarUrl: node.authorAvatarUrl,
+        },
+      },
+      parentId: node.parentId,
+      content: hideContent ? null : node.content,
+      replyCount: node.replyCount,
+      createdAt: node.createdAt,
+      updatedAt: node.updatedAt,
+      editedAt: node.editedAt,
+      deletedAt: node.deletedAt,
+      deletedById: node.deletedById,
+      depth: node.depth,
+      viewerBlockedAuthor: node.viewerBlockedAuthor,
+      authorBlockedViewer: node.authorBlockedViewer,
+    }
+  }
+
+  toTreePage(page: CommentPage, canModerateContent = false) {
+    return {
+      data: page.data.map((node) => this.toNodeView(node, canModerateContent)),
+      meta: page.meta,
+    }
+  }
+}

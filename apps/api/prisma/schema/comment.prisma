@@ -1,0 +1,28 @@
+model Comment {
+    id          String    @id @default(uuid(7))
+    threadId    String
+    authorId    String
+    parentId    String?
+    content     String
+    depth       Int       @default(0)
+    replyCount  Int       @default(0)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    editedAt    DateTime?
+    deletedAt   DateTime?
+    deletedById String?
+
+    parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+    replies Comment[] @relation("CommentReplies")
+
+    thread    Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+    author    User   @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+    deletedBy User?  @relation("CommentDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+    @@index([threadId, parentId, createdAt, id])
+    @@index([threadId, parentId, updatedAt, id])
+    @@index([parentId, createdAt, id])
+    @@index([parentId, updatedAt, id])
+    @@index([authorId, createdAt, id])
+    @@index([deletedById])
+}

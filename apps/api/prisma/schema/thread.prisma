@@ -1,0 +1,31 @@
+model Thread {
+    id        String    @id @default(uuid(7))
+    nestId    String
+    authorId  String
+    title     String
+    slug      String
+    content   String?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    editedAt  DateTime?
+
+    lockedAt DateTime?
+    pinnedAt DateTime?
+
+    deletedAt   DateTime?
+    deletedById String?
+
+    commentCount  Int       @default(0)
+    lastCommentAt DateTime?
+
+    nest      Nest      @relation(fields: [nestId], references: [id], onDelete: Cascade)
+    author    User      @relation(fields: [authorId], references: [id])
+    comments  Comment[]
+    deletedBy User?     @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+    @@unique([nestId, slug])
+    @@index([nestId, createdAt])
+    @@index([nestId, pinnedAt])
+    @@index([nestId, lastCommentAt])
+    @@index([authorId, createdAt])
+}

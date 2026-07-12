@@ -1,0 +1,73 @@
+model User {
+    id              String    @id @default(uuid(7))
+    email           String    @unique
+    emailVerifiedAt DateTime?
+    passwordHash    String?
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+
+    authAccounts   AuthAccount[]
+    refreshTokens  RefreshToken[]
+    confirmations  ConfirmationToken[]
+    nestMembership NestMember[]
+
+    threads Thread[]
+    profile UserProfile?
+
+    comments        Comment[] @relation("CommentAuthor")
+    deletedComments Comment[] @relation("CommentDeletedBy")
+    deletedThreads  Thread[]  @relation("ThreadDeletedBy")
+
+    blocks    UserBlock[] @relation("UserBlocks")
+    blockedBy UserBlock[] @relation("UserBlockedBy")
+
+    nestBansReceived NestBan[] @relation("NestBannedUser")
+    nestBansIssued   NestBan[] @relation("NestIssuedBans")
+    nestBansRevoked  NestBan[] @relation("NestRevokedBans")
+
+    nestJoinRequests         NestJoinRequest[]
+    reviewedNestJoinRequests NestJoinRequest[] @relation("NestJoinRequestsReviewer")
+
+    nestInvitesReceived NestInvite[]         @relation("NestInvitedUser")
+    nestInvitesIssued   NestInvite[]         @relation("NestIssuedInvites")
+    nestInvitesResolved NestInvite[]         @relation("NestResolvedInvites")
+    userNestPreferences UserNestPreference[]
+}
+
+model UserProfile {
+    userId      String   @id
+    username    String   @unique
+    displayName String?
+    bio         String?
+    avatarUrl   String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserBlock {
+    blockerId String
+    blockedId String
+    createdAt DateTime @default(now())
+
+    blocker User @relation("UserBlocks", fields: [blockerId], references: [id])
+    blocked User @relation("UserBlockedBy", fields: [blockedId], references: [id])
+
+    @@id([blockerId, blockedId])
+    @@index([blockedId, blockerId])
+}
+
+model UserNestPreference {
+    userId       String
+    nestId       String
+    allowInvites Boolean @default(true)
+    muted        Boolean @default(false)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
+
+    @@id([userId, nestId])
+    @@index([userId])
+    @@index([nestId])
+}
