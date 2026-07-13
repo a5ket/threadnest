@@ -13,7 +13,6 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "jsx": "react-jsx",
     "skipLibCheck": true,
@@ -22,11 +21,21 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "types": [
+      "jest",
+      "node"
+    ],
+    "paths": {
+      "*": [
+        "./*"
+      ]
+    }
   },
   "include": [
-    "prisma.config.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "generated/**/*.ts"
+    "./prisma.config.ts",
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
+    "./generated/**/*.ts",
+    "./test/**/*.ts"
   ]
 }

@@ -32,4 +32,10 @@ export default tseslint.config(
       quotes: ['error', 'single', { avoidEscape: true }]
     },
   },
+  {
+    files: ['**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'off'
+    }
+  }
 )
