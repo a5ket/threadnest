@@ -1,4 +1,5 @@
 import { getQueueToken } from '@nestjs/bullmq'
+import { Injectable } from '@nestjs/common'
 import { DiscoveryService, ModuleRef } from '@nestjs/core'
 import { Queue } from 'bullmq'
 import { BaseJob } from './base.job'
@@ -8,6 +9,7 @@ import { QueueDefinition } from './types/queue-definition'
 import { EnqueueOptions } from './types/enqueue-options'
 import { UnregisteredJobException } from './exceptions/unregistered-job.exception'
 
+@Injectable()
 export class QueueBullmqService extends QueueService {
   private queues = new Map<string, Queue>
 

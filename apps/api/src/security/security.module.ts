@@ -7,6 +7,6 @@ import { VerifiedGuard } from './guards/verified.guard'
 @Module({
   imports: [JwtModule],
   providers: [AuthGuard, OptionalAuthGuard, VerifiedGuard],
-  exports: [AuthGuard, OptionalAuthGuard, VerifiedGuard]
+  exports: [AuthGuard, OptionalAuthGuard, VerifiedGuard, JwtModule]
 })
 export class SecurityModule { }

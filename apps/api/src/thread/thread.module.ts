@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { EventModule } from 'src/event/event.module'
 import { NestModule } from 'src/nest/nest.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
+import { SecurityModule } from 'src/security/security.module'
 import { NestThreadController } from './nest-thread.controller'
 import { ThreadAccess } from './thread.access'
 import { ThreadPolicy } from './thread.policy'
@@ -13,7 +14,8 @@ import { ThreadService } from './thread.service'
   imports: [
     PrismaModule,
     NestModule,
-    EventModule
+    EventModule,
+    SecurityModule
   ],
   providers: [
     ThreadRepository,

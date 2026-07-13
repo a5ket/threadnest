@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { BlockModule } from 'src/block/block.module'
 import { EventModule } from 'src/event/event.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
+import { SecurityModule } from 'src/security/security.module'
 import { ThreadModule } from 'src/thread/thread.module'
 import { CommentController } from './comment.controller'
 import { CommentPolicy } from './comment.policy'
@@ -11,7 +12,7 @@ import { CommentService } from './comment.service'
 import { ThreadCommentController } from './thread-comment.controller'
 
 @Module({
-  imports: [PrismaModule, EventModule, ThreadModule, BlockModule],
+  imports: [PrismaModule, EventModule, SecurityModule, ThreadModule, BlockModule],
   controllers: [CommentController, ThreadCommentController],
   providers: [CommentRepository, CommentService, CommentPolicy, CommentPresenter]
 })

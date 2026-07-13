@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { EventModule } from 'src/event/event.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
+import { SecurityModule } from 'src/security/security.module'
 import { UserModule } from 'src/user/user.module'
 import { NestBanController } from './ban/nest-ban.controller'
 import { NestBanPresenter } from './ban/nest-ban.presenter'
@@ -28,6 +29,7 @@ import { NestPresenter } from './nest.presenter'
 import { NestRepository } from './nest.repository'
 import { NestService } from './nest.service'
 import { NestSettingsController } from './settings/nest-settings.controller'
+import { NestSettingsPolicy } from './settings/nest-settings.policy'
 import { NestSettingsRepository } from './settings/nest-settings.repository'
 import { NestSettingsService } from './settings/nest-settings.service'
 import { UserNestPreferencePolicy } from './preferences/user-nest-preference.policy'
@@ -38,6 +40,7 @@ import { UserNestPreferenceService } from './preferences/user-nest-preference.se
   imports: [
     PrismaModule,
     EventModule,
+    SecurityModule,
     UserModule
   ],
   controllers: [
@@ -67,6 +70,7 @@ import { UserNestPreferenceService } from './preferences/user-nest-preference.se
     NestBanPolicy,
     NestInvitePolicy,
     NestJoinRequestPolicy,
+    NestSettingsPolicy,
     UserNestPreferencePolicy,
     NestInvitePresenter,
     NestJoinRequestPresenter,

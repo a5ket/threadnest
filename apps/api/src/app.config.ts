@@ -12,42 +12,45 @@ export type AppConfig =
   EmailConfig &
   {
     port: number
+    databaseUrl: string
   }
 
-const auth: AuthConfig = {
-  jwtAccessSecret: process.env.JWT_ACCESS_SECRET!,
-  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET!,
-  jwtAccessExpiresIn: '15m',
-  jwtRefreshExpiresIn: '30d',
-  refreshTokenLifetimeDays: 30
-}
+export default (): AppConfig => {
+  const auth: AuthConfig = {
+    jwtAccessSecret: process.env.JWT_ACCESS_SECRET!,
+    jwtAccessExpiresIn: '15m',
+    jwtRefreshExpiresIn: '30d',
+    refreshTokenLifetimeDays: 30
+  }
 
-const security: SecurityConfig = {
-  jwtAccessSecret: process.env.JWT_ACCESS_SECRET!
-}
+  const security: SecurityConfig = {
+    jwtAccessSecret: process.env.JWT_ACCESS_SECRET!
+  }
 
-const queue: QueueConfig = {
-  redisHost: process.env.REDIS_HOST!,
-  redisPort: parseInt(process.env.REDIS_PORT!)
-}
+  const queue: QueueConfig = {
+    redisHost: process.env.REDIS_HOST!,
+    redisPort: parseInt(process.env.REDIS_PORT!)
+  }
 
-const url: UrlConfig = {
-  webAppUrl: process.env.WEB_APP_URL!
-}
+  const url: UrlConfig = {
+    webAppUrl: process.env.WEB_APP_URL!
+  }
 
-const email: EmailConfig = {
-  smtpHost: process.env.SMTP_HOST!,
-  smtpPort: parseInt(process.env.SMTP_PORT!),
-  smtpUser: process.env.SMTP_USER!,
-  smtpPass: process.env.SMTP_PASS!,
-  emailFrom: process.env.EMAIL_FROM!
-}
+  const email: EmailConfig = {
+    smtpHost: process.env.SMTP_HOST!,
+    smtpPort: parseInt(process.env.SMTP_PORT!),
+    smtpUser: process.env.SMTP_USER!,
+    smtpPass: process.env.SMTP_PASS!,
+    emailFrom: process.env.EMAIL_FROM!
+  }
 
-export default (): AppConfig => ({
-  port: parseInt(process.env.PORT!),
-  ...auth,
-  ...security,
-  ...queue,
-  ...url,
-  ...email
-})
+  return {
+    port: parseInt(process.env.PORT!),
+    databaseUrl: process.env.DATABASE_URL!,
+    ...auth,
+    ...security,
+    ...queue,
+    ...url,
+    ...email
+  }
+}

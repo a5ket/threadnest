@@ -16,12 +16,13 @@ import { EmailModule } from './email/email.module'
 
 @Module({
   imports: [
-    AuthModule,
-    PrismaModule,
     ConfigModule.forRoot({
+      isGlobal: true,
       load: [configuration]
     }),
+    PrismaModule,
     SecurityModule,
+    AuthModule,
     UserModule,
     NestModule,
     MeModule,

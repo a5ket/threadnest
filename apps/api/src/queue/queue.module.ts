@@ -33,12 +33,16 @@ const registeredQueues = new Set<string>()
     DiscoveryModule,
     BullModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService<QueueConfig>) => ({
-        connection: {
-          host: config.getOrThrow('redisHost', { infer: true }),
-          port: config.getOrThrow('redisPort', { infer: true })
+      useFactory: (config: ConfigService<QueueConfig>) => {
+        console.log('DEBUG queue factory config.get(port) =', (config as any).get('port'))
+        console.log('DEBUG queue factory config.get(redisHost) =', config.get('redisHost'))
+        return {
+          connection: {
+            host: config.getOrThrow('redisHost', { infer: true }),
+            port: config.getOrThrow('redisPort', { infer: true })
+          }
         }
-      })
+      }
     })
   ],
   providers: [
@@ -48,7 +52,7 @@ const registeredQueues = new Set<string>()
     },
     QueueDispatcher
   ],
-  exports: [QueueService]
+  exports: [QueueService, QueueDispatcher]
 })
 export class QueueModule {
   static forFeature(name: string): DynamicModule {
@@ -59,14 +63,13 @@ export class QueueModule {
 
     return {
       module: QueueFeatureModule,
-      imports: [BullModule.registerQueue({ name })],
+      imports: [QueueModule, BullModule.registerQueue({ name })],
       providers: [
         { provide: queueDefinitionToken(name), useValue: { name } },
         createQueueProcessor(name)
       ],
-      exports: [BullModule, queueDefinitionToken(name)],
+      exports: [QueueModule, BullModule, queueDefinitionToken(name)],
       global: true,
-
     }
   }
 }
