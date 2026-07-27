@@ -5,7 +5,9 @@
       "decorators": true
     },
     "transform": {
-      "decoratorVersion": "2022-03"
-    }
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    },
+    "keepClassNames": true
   }
 }
