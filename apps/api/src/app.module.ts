@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config'
 import configuration from './app.config'
 import { AuthModule } from './auth/auth.module'
 import { BlockModule } from './block/block.module'
+import { CacheModule } from './cache/cache.module'
 import { CommentModule } from './comment/comment.module'
 import { EventModule } from './event/event.module'
 import { MeModule } from './me/me.module'
@@ -20,6 +21,7 @@ import { EmailModule } from './email/email.module'
       isGlobal: true,
       load: [configuration]
     }),
+    CacheModule,
     PrismaModule,
     SecurityModule,
     AuthModule,

@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
+import { ACCESS_TOKEN_COOKIE } from 'src/common/constants/auth-cookie.constants'
 import { AccessTokenPayload } from 'src/common/types/access.token.payload'
 import { AuthenticatedRequest } from 'src/common/types/authenticated.request'
 import { SecurityConfig } from '../security.config'
@@ -14,7 +15,7 @@ export class OptionalAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
-    const token = this.extractBearerToken(request)
+    const token = this.extractAccessToken(request)
 
     if (!token) {
       return true
@@ -38,13 +39,27 @@ export class OptionalAuthGuard implements CanActivate {
     return true
   }
 
-  private extractBearerToken(request: AuthenticatedRequest) {
+  private extractAccessToken(request: AuthenticatedRequest) {
     const header = request.headers.authorization
 
-    if (!header?.startsWith('Bearer ')) {
+    if (header?.startsWith('Bearer ')) {
+      return header.slice('Bearer '.length)
+    }
+
+    const value = request.headers.cookie
+      ?.split(';')
+      .map((cookie) => cookie.trim())
+      .find((cookie) => cookie.startsWith(`${ACCESS_TOKEN_COOKIE}=`))
+      ?.slice(ACCESS_TOKEN_COOKIE.length + 1)
+
+    if (!value) {
       return null
     }
 
-    return header.slice('Bearer '.length)
+    try {
+      return decodeURIComponent(value)
+    } catch {
+      return null
+    }
   }
 }

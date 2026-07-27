@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import * as argon2 from 'argon2'
 import { createHash, randomBytes, randomUUID } from 'crypto'
+import { CacheService } from 'src/cache/cache.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EventBus } from 'src/event/event-bus'
 import { UserService } from 'src/user/user.service'
@@ -34,6 +35,15 @@ import { RefreshTokenRepository } from './refresh-token.repository'
 import { ConfirmationTokenStatus, ConfirmationTokenType } from 'generated/prisma/enums'
 import { ConfirmationTokenRepository } from './confirmation-token.repository'
 
+type RefreshResult = {
+  accessToken: string
+  refreshToken: string
+}
+
+const REFRESH_RESULT_TTL_MS = 15_000
+const REFRESH_RESULT_WAIT_MS = 2_000
+const REFRESH_RESULT_POLL_INTERVAL_MS = 50
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -43,6 +53,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService<AuthConfig>,
+    private readonly cache: CacheService,
     private readonly eventBus: EventBus,
     private readonly emailService: EmailService
   ) { }
@@ -120,6 +131,12 @@ export class AuthService {
 
   async refresh(rawRefreshToken: string) {
     const tokenHash = this.hashToken(rawRefreshToken)
+    const cached = await this.getCachedRefreshResult(tokenHash)
+
+    if (cached) {
+      return cached
+    }
+
     const currentSession = await this.refreshTokenRepo.findByHash(tokenHash)
 
     if (!currentSession) {
@@ -127,6 +144,13 @@ export class AuthService {
     }
 
     if (currentSession.revokedAt) {
+      const withinGracePeriod = Date.now() - currentSession.revokedAt.getTime() <= REFRESH_RESULT_TTL_MS
+      const result = withinGracePeriod ? await this.waitForRefreshResult(tokenHash) : null
+
+      if (result) {
+        return result
+      }
+
       throw new InvalidRefreshTokenException()
     }
 
@@ -143,19 +167,29 @@ export class AuthService {
       this.addDays(this.config.getOrThrow('refreshTokenLifetimeDays'))
     )
 
+    if (!newSession) {
+      const result = await this.waitForRefreshResult(tokenHash)
+
+      if (result) {
+        return result
+      }
+
+      throw new InvalidRefreshTokenException()
+    }
+
     const accessToken = await this.createAccessToken(
       currentSession.user.id,
       currentSession.user.email,
       newSession.id,
       currentSession.user.emailVerifiedAt !== null
     )
+    const result = { accessToken, refreshToken: newRefreshToken }
+
+    await this.cache.set(this.refreshResultKey(tokenHash), result, REFRESH_RESULT_TTL_MS)
 
     void this.eventBus.publish(new SessionRefreshedEvent({ userId: currentSession.user.id, sessionId: newSession.id }))
 
-    return {
-      accessToken,
-      refreshToken: newRefreshToken
-    }
+    return result
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
@@ -297,6 +331,30 @@ export class AuthService {
 
   private generateToken() {
     return randomBytes(32).toString('base64url')
+  }
+
+  private getCachedRefreshResult(tokenHash: string) {
+    return this.cache.get<RefreshResult>(this.refreshResultKey(tokenHash))
+  }
+
+  private async waitForRefreshResult(tokenHash: string) {
+    const deadline = Date.now() + REFRESH_RESULT_WAIT_MS
+
+    while (Date.now() < deadline) {
+      const result = await this.getCachedRefreshResult(tokenHash)
+
+      if (result) {
+        return result
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, REFRESH_RESULT_POLL_INTERVAL_MS))
+    }
+
+    return null
+  }
+
+  private refreshResultKey(tokenHash: string) {
+    return `auth:refresh:result:${tokenHash}`
   }
 
   private hashToken(hashToken: string) {

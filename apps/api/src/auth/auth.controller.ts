@@ -1,9 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common'
+import type { Request, Response } from 'express'
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
 import type { AuthUser } from 'src/common/types/auth.user'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 import { AuthGuard } from 'src/security/guards/auth.guard'
+import { AuthCookieService } from './auth-cookie.service'
 import { AuthService } from './auth.service'
+import { InvalidRefreshTokenException } from './exceptions/invalid-refresh-token.exception'
 import { LoginDto } from './dto/auth.login.dto'
 import { RefreshDto } from './dto/auth.refresh.dto'
 import { RegisterDto } from './dto/auth.register.dto'
@@ -15,36 +18,58 @@ import { ConfirmPasswordResetDto } from './dto/auth.confirm-password-reset.dto'
 @UseInterceptors(ResponseInterceptor)
 export class AuthController {
   constructor(
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly authCookieService: AuthCookieService
   ) { }
 
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto)
+  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) response: Response) {
+    const result = await this.authService.register(dto)
+    this.authCookieService.setTokens(response, result.accessToken, result.refreshToken)
+
+    return result
   }
 
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto)
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response) {
+    const result = await this.authService.login(dto)
+    this.authCookieService.setTokens(response, result.accessToken, result.refreshToken)
+
+    return result
   }
 
   @Post('refresh')
-  refresh(@Body() dto: RefreshDto) {
-    return this.authService.refresh(dto.refreshToken)
+  async refresh(
+    @Body() dto: RefreshDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    const refreshToken = dto.refreshToken ?? this.authCookieService.getRefreshToken(request)
+
+    if (!refreshToken) {
+      throw new InvalidRefreshTokenException()
+    }
+
+    const result = await this.authService.refresh(refreshToken)
+    this.authCookieService.setTokens(response, result.accessToken, result.refreshToken)
+
+    return result
   }
 
   @Post('logout')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@CurrentUser() user: AuthUser) {
+  async logout(@CurrentUser() user: AuthUser, @Res({ passthrough: true }) response: Response) {
     await this.authService.logoutCurrentSession(user.id, user.sid)
+    this.authCookieService.clearTokens(response)
   }
 
   @Post('logout-all')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logoutAll(@CurrentUser() user: AuthUser) {
+  async logoutAll(@CurrentUser() user: AuthUser, @Res({ passthrough: true }) response: Response) {
     await this.authService.logoutAllSessions(user.id)
+    this.authCookieService.clearTokens(response)
   }
 
   @Post('email-verification/request')

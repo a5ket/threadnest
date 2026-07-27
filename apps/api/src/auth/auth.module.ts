@@ -6,6 +6,7 @@ import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
 import { UserModule } from 'src/user/user.module'
 import { AuthController } from './auth.controller'
+import { AuthCookieService } from './auth-cookie.service'
 import { AuthService } from './auth.service'
 import { RefreshTokenRepository } from './refresh-token.repository'
 import { ConfirmationTokenRepository } from './confirmation-token.repository'
@@ -13,7 +14,7 @@ import { ConfirmationTokenRepository } from './confirmation-token.repository'
 @Module({
   imports: [PrismaModule, JwtModule, SecurityModule, EventModule, UserModule, EmailModule],
   controllers: [AuthController],
-  providers: [AuthService, RefreshTokenRepository, ConfirmationTokenRepository],
+  providers: [AuthService, AuthCookieService, RefreshTokenRepository, ConfirmationTokenRepository],
   exports: [AuthService]
 })
 export class AuthModule { }

@@ -39,6 +39,15 @@ export class RefreshTokenRepository {
 
   async rotate(currentId: string, userId: string, newTokenHash: string, familyId: string, expiresAt: Date) {
     return this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.refreshToken.updateMany({
+        where: { id: currentId, userId, revokedAt: null },
+        data: { revokedAt: new Date() }
+      })
+
+      if (claimed.count !== 1) {
+        return null
+      }
+
       const newSession = await tx.refreshToken.create({
         data: { userId, tokenHash: newTokenHash, familyId, expiresAt },
         select: { id: true }
@@ -46,7 +55,7 @@ export class RefreshTokenRepository {
 
       await tx.refreshToken.update({
         where: { id: currentId },
-        data: { revokedAt: new Date(), replacedByTokenId: newSession.id }
+        data: { replacedByTokenId: newSession.id }
       })
 
       return newSession

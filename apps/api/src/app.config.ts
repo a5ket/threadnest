@@ -1,4 +1,5 @@
 import { AuthConfig } from './auth/auth.config'
+import { CacheConfig } from './cache/cache.config'
 import { EmailConfig } from './email/email.config'
 import { QueueConfig } from './queue/queue.config'
 import { SecurityConfig } from './security/security.config'
@@ -6,6 +7,7 @@ import { UrlConfig } from './url/url.config'
 
 export type AppConfig =
   AuthConfig &
+  CacheConfig &
   SecurityConfig &
   QueueConfig &
   UrlConfig &
@@ -25,6 +27,12 @@ export default (): AppConfig => {
 
   const security: SecurityConfig = {
     jwtAccessSecret: process.env.JWT_ACCESS_SECRET!
+  }
+
+  const cache: CacheConfig = {
+    redisHost: process.env.REDIS_HOST!,
+    redisPort: parseInt(process.env.REDIS_PORT!),
+    cacheKeyPrefix: 'threadnest:'
   }
 
   const queue: QueueConfig = {
@@ -49,6 +57,7 @@ export default (): AppConfig => {
     databaseUrl: process.env.DATABASE_URL!,
     ...auth,
     ...security,
+    ...cache,
     ...queue,
     ...url,
     ...email
