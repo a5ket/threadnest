@@ -21,11 +21,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ? (body as Record<string, unknown>).message
           : undefined
 
+      const fields = typeof body === 'object' && body !== null && 'fields' in body
+        ? (body as Record<string, unknown>).fields
+        : undefined
+
       return response.status(status).json({
         error: {
           status,
           code,
           message,
+          ...(fields !== undefined ? { fields } : {}),
         }
       })
     }
