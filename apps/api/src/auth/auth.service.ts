@@ -72,16 +72,7 @@ export class AuthService {
     void this.eventBus.publish(new UserRegisteredEvent({ userId: user.id, email: user.email }))
     void this.requestEmailVerification(user.id)
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.profile?.username ?? '',
-        avatarUrl: user.profile?.avatarUrl ?? null,
-        createdAt: user.createdAt
-      },
-      ...tokens
-    }
+    return tokens
   }
 
   async login(dto: LoginDto) {
@@ -101,16 +92,7 @@ export class AuthService {
 
     void this.eventBus.publish(new UserLoggedInEvent({ userId: user.id, email: user.email }))
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.profile?.username ?? '',
-        avatarUrl: user.profile?.avatarUrl ?? null,
-        createdAt: user.createdAt
-      },
-      ...tokens
-    }
+    return tokens
   }
 
   async logoutCurrentSession(userId: string, sessionId: string) {

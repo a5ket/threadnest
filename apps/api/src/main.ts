@@ -19,6 +19,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('ThreadNest API')
+    .addBearerAuth()
     .build()
   const documentFactory = () => SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('docs', app, documentFactory)

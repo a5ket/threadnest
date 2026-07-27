@@ -8,7 +8,7 @@ type FieldError = {
 }
 
 export class ValidationException extends BadRequestException {
-  constructor(validationErrors: ValidationError[]) {
+  constructor(validationErrors: ValidationError[] = []) {
     super({
       code: CommonErrorCodes.VALIDATION_FAILED,
       message: 'Validation failed',
