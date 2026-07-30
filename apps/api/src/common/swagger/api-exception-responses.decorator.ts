@@ -1,6 +1,6 @@
 import { applyDecorators, HttpException, Type } from '@nestjs/common'
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger'
-import { ErrorResponse } from './error-response.schema'
+import { FieldError } from './error-response.schema'
 
 type ExceptionConstructor = Type<HttpException> & { new(): HttpException }
 
@@ -27,13 +27,28 @@ export function ApiExceptionResponses(...exceptionTypes: ExceptionConstructor[])
   }
 
   return applyDecorators(
-    ApiExtraModels(ErrorResponse),
+    ApiExtraModels(FieldError),
     ...Array.from(responses, ([status, examples]) => ApiResponse({
       status,
       description: examples.map((example) => String(example.response.message)).join(' | '),
       content: {
         'application/json': {
-          schema: { $ref: getSchemaPath(ErrorResponse) },
+          schema: {
+            type: 'object',
+            properties: {
+              error: {
+                type: 'object',
+                properties: {
+                  status: { type: 'number', example: status },
+                  code: { type: 'string', enum: examples.map((example) => example.code) },
+                  message: { type: 'string' },
+                  fields: { type: 'array', items: { $ref: getSchemaPath(FieldError) } }
+                },
+                required: ['status', 'code', 'message']
+              }
+            },
+            required: ['error']
+          },
           examples: Object.fromEntries(examples.map((example) => [
             example.code,
             {

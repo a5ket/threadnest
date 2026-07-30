@@ -20,7 +20,7 @@ import { TokenAlreadyRedeemedException } from './exceptions/token-already-redeem
 import { TokenExpiredException } from './exceptions/token-expired.exception'
 import { TokenNotFoundException } from './exceptions/token-not-found.exception'
 import { TokenSupersededException } from './exceptions/token-superseded.exception'
-import { AuthTokensDto } from './dto/auth.tokens.dto'
+import { AuthTokensResponseDto } from './dto/auth.tokens-response.dto'
 import { LoginDto } from './dto/auth.login.dto'
 import { RefreshDto } from './dto/auth.refresh.dto'
 import { RegisterDto } from './dto/auth.register.dto'
@@ -38,8 +38,8 @@ export class AuthController {
   ) { }
 
   @Post('register')
-  @ApiOperation({ summary: 'Register a new account', description: 'Creates a user and starts a session. Tokens are also set as httpOnly cookies.' })
-  @ApiResponse({ status: 201, description: 'Account created', type: AuthTokensDto })
+  @ApiOperation({ operationId: 'authRegister', summary: 'Register a new account', description: 'Creates a user and starts a session. Tokens are also set as httpOnly cookies.' })
+  @ApiResponse({ status: 201, description: 'Account created', type: AuthTokensResponseDto })
   @ApiExceptionResponses(ValidationException)
   @ApiExceptionResponses(EmailTakenException)
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) response: Response) {
@@ -50,8 +50,8 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Log in with email and password', description: 'Starts a session. Tokens are also set as httpOnly cookies.' })
-  @ApiResponse({ status: 201, description: 'Authenticated', type: AuthTokensDto })
+  @ApiOperation({ operationId: 'authLogin', summary: 'Log in with email and password', description: 'Starts a session. Tokens are also set as httpOnly cookies.' })
+  @ApiResponse({ status: 201, description: 'Authenticated', type: AuthTokensResponseDto })
   @ApiExceptionResponses(ValidationException)
   @ApiExceptionResponses(InvalidCredentialsException)
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response) {
@@ -63,10 +63,11 @@ export class AuthController {
 
   @Post('refresh')
   @ApiOperation({
+    operationId: 'authRefresh',
     summary: 'Rotate the refresh token and issue a new access token',
     description: 'Accepts the refresh token from the request body or the `refresh_token` cookie. Rotated tokens are also set as httpOnly cookies.'
   })
-  @ApiResponse({ status: 201, description: 'New token pair issued', type: AuthTokensDto })
+  @ApiResponse({ status: 201, description: 'New token pair issued', type: AuthTokensResponseDto })
   @ApiExceptionResponses(InvalidRefreshTokenException, RefreshTokenExpiredException)
   async refresh(
     @Body() dto: RefreshDto,
@@ -89,7 +90,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Log out the current session' })
+  @ApiOperation({ operationId: 'authLogout', summary: 'Log out the current session' })
   @ApiResponse({ status: 204, description: 'Session revoked, cookies cleared' })
   @ApiExceptionResponses(MissingAccessTokenException, InvalidAccessTokenException)
   async logout(@CurrentUser() user: AuthUser, @Res({ passthrough: true }) response: Response) {
@@ -101,7 +102,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Log out all sessions for the current user' })
+  @ApiOperation({ operationId: 'authLogoutAll', summary: 'Log out all sessions for the current user' })
   @ApiResponse({ status: 204, description: 'All sessions revoked, cookies cleared' })
   @ApiExceptionResponses(MissingAccessTokenException, InvalidAccessTokenException)
   async logoutAll(@CurrentUser() user: AuthUser, @Res({ passthrough: true }) response: Response) {
@@ -113,7 +114,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Request an email verification link for the current user' })
+  @ApiOperation({ operationId: 'authRequestEmailVerification', summary: 'Request an email verification link for the current user' })
   @ApiResponse({ status: 204, description: 'Verification email sent' })
   @ApiExceptionResponses(MissingAccessTokenException, InvalidAccessTokenException)
   async requestEmailVerification(@CurrentUser() user: AuthUser) {
@@ -122,7 +123,7 @@ export class AuthController {
 
   @Post('email-verification/confirm')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Confirm an email verification token' })
+  @ApiOperation({ operationId: 'authConfirmEmailVerification', summary: 'Confirm an email verification token' })
   @ApiResponse({ status: 204, description: 'Email verified' })
   @ApiExceptionResponses(ValidationException)
   @ApiExceptionResponses(TokenNotFoundException, TokenSupersededException, TokenAlreadyRedeemedException, TokenExpiredException)
@@ -132,7 +133,7 @@ export class AuthController {
 
   @Post('password-reset/request')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Request a password reset email', description: 'Always returns 204, whether or not the email is registered.' })
+  @ApiOperation({ operationId: 'authRequestPasswordReset', summary: 'Request a password reset email', description: 'Always returns 204, whether or not the email is registered.' })
   @ApiResponse({ status: 204, description: 'Password reset email sent, if the account exists' })
   @ApiExceptionResponses(ValidationException)
   async requestPasswordReset(@Body() dto: RequestPasswordResetDto) {
@@ -141,7 +142,7 @@ export class AuthController {
 
   @Post('password-reset/confirm')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Confirm a password reset token and set a new password' })
+  @ApiOperation({ operationId: 'authConfirmPasswordReset', summary: 'Confirm a password reset token and set a new password' })
   @ApiResponse({ status: 204, description: 'Password updated' })
   @ApiExceptionResponses(ValidationException)
   @ApiExceptionResponses(SamePasswordException, TokenNotFoundException, TokenSupersededException, TokenAlreadyRedeemedException, TokenExpiredException)
@@ -151,7 +152,7 @@ export class AuthController {
 
   @Post('email-change/confirm')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Confirm a pending email change token' })
+  @ApiOperation({ operationId: 'authConfirmEmailChange', summary: 'Confirm a pending email change token' })
   @ApiResponse({ status: 204, description: 'Email updated' })
   @ApiExceptionResponses(ValidationException)
   @ApiExceptionResponses(TokenNotFoundException, TokenSupersededException, TokenAlreadyRedeemedException, TokenExpiredException)

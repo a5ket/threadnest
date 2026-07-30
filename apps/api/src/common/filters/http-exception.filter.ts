@@ -1,6 +1,8 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common'
 import { Request, Response } from 'express'
 
+const INTERNAL_SERVER_ERROR_CODE = 'INTERNAL_SERVER_ERROR'
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -36,7 +38,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     const status = 500
-    const code = 'INTERNAL_SERVER_ERROR'
+    const code = INTERNAL_SERVER_ERROR_CODE
     const message = exception instanceof Error ? exception.message : 'Internal server error'
 
     return response.status(status).json({
