@@ -3,13 +3,13 @@ import { EventBus } from 'src/event/event-bus'
 import { TransactionManager } from 'src/prisma/transaction-manager'
 import { NestPresenter } from '../nest.presenter'
 import { NestRepository } from '../nest.repository'
+import { NestMemberQueryDto } from './dto/nest-member.query.dto'
+import { NestMemberUpdateRoleDto } from './dto/nest-member.update-role.dto'
 import { MemberLeftEvent } from './events/member-left.event'
 import { MemberRemovedEvent } from './events/member-removed.event'
 import { MemberRoleChangedEvent } from './events/member-role-changed.event'
 import { NestMemberPolicy } from './nest-member.policy'
 import { NestMemberRepository } from './nest-member.repository'
-import { NestMemberQueryDto } from './dto/nest-member.query.dto'
-import { NestMemberUpdateRoleDto } from './dto/nest-member.update-role.dto'
 
 @Injectable()
 export class NestMemberService {
@@ -74,9 +74,15 @@ export class NestMemberService {
     return updated
   }
 
-  async listAsUser(userId: string) {
-    const memberships = await this.membersRepo.listNestsByMember(userId)
+  async listNestsByUser(userId: string) {
+    const memberships = await this.membersRepo.listMembershipsByUser(userId)
 
     return memberships.map(({ nest }) => this.presenter.toSummaryView(nest))
+  }
+
+  async listMembershipReferencesByUser(userId: string) {
+    const memberships = await this.membersRepo.listMembershipReferencesByUser(userId)
+
+    return memberships.map(({ nest }) => nest)
   }
 }

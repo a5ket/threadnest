@@ -17,7 +17,7 @@ export class MeNestController {
   async listUserNests(
     @CurrentUser() user: AuthUser
   ) {
-    return this.nestMembers.listAsUser(user.id)
+    return this.nestMembers.listNestsByUser(user.id)
   }
 
   @Delete(':nestSlug')

@@ -1,12 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
-import { UserRepository } from './user.repository'
-import { UserProfileRepository } from './user-profile.repository'
+import { randomBytes } from 'crypto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { randomBytes } from 'crypto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
-import { ProfileNotFoundException } from './exceptions/profile-not-found.exception'
 import { UsernameTakenException } from './exceptions/username-taken.exception'
+import { UserProfileRepository } from './user-profile.repository'
+import { UserRepository } from './user.repository'
 
 @Injectable()
 export class UserService {
@@ -16,11 +15,11 @@ export class UserService {
     private readonly prisma: PrismaService
   ) { }
   async assertUserExists(userId: string) {
-    await this.getUserById(userId)
+    await this.existsById(userId)
   }
 
-  async getUserById(userId: string) {
-    return this.repo.getById(userId)
+  async existsById(userId: string) {
+    return this.repo.exists(userId)
   }
 
   async findByIdWithEmail(userId: string) {
@@ -52,23 +51,15 @@ export class UserService {
   }
 
   async getProfile(userId: string) {
-    const profile = await this.profileRepo.getByUserId(userId)
-
-    if (!profile) {
-      throw new ProfileNotFoundException()
-    }
-
-    return profile
+    return this.profileRepo.getByUserId(userId)
   }
 
   async getProfileByUsername(username: string) {
-    const profile = await this.profileRepo.getByUsername(username)
+    return this.profileRepo.getByUsername(username)
+  }
 
-    if (!profile) {
-      throw new ProfileNotFoundException()
-    }
-
-    return profile
+  async getProfileWithUser(userId: string) {
+    return this.profileRepo.getWithUser(userId)
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {

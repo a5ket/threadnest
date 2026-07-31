@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
 import { USER_PROFILE_SELECT } from './constants/user-profile.select'
 import { UpdateProfileDto } from './dto/update-profile.dto'
+import { UserNotFoundException } from './exceptions/user-not-found.exception'
 
 @Injectable()
 export class UserProfileRepository {
@@ -28,17 +29,29 @@ export class UserProfileRepository {
   }
 
   async getByUserId(userId: string) {
-    return this.prisma.userProfile.findUnique({
+    const profile = await this.prisma.userProfile.findUnique({
       where: { userId },
       select: USER_PROFILE_SELECT
     })
+
+    if (!profile) {
+      throw new UserNotFoundException()
+    }
+
+    return profile
   }
 
   async getByUsername(username: string) {
-    return this.prisma.userProfile.findUnique({
+    const profile = await this.prisma.userProfile.findUnique({
       where: { username },
       select: { userId: true, ...USER_PROFILE_SELECT }
     })
+
+    if (!profile) {
+      throw new UserNotFoundException()
+    }
+
+    return profile
   }
 
   async update(userId: string, dto: UpdateProfileDto) {
@@ -47,5 +60,28 @@ export class UserProfileRepository {
       data: dto,
       select: USER_PROFILE_SELECT
     })
+  }
+
+  async getWithUser(userId: string) {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+      select: {
+        username: true,
+        avatarUrl: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            emailVerifiedAt: true
+          }
+        }
+      }
+    })
+
+    if (!profile) {
+      throw new UserNotFoundException()
+    }
+
+    return profile
   }
 }

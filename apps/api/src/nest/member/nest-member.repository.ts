@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common'
-import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
+import { Prisma } from 'generated/prisma/client'
 import { NestMemberRole } from 'generated/prisma/enums'
+import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
+import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
-import { NEST_SUMMARY_SELECT } from '../constants/nest.summary.select'
 import { USER_REFERENCE_SELECT } from 'src/user/constants/user.reference.select'
+import { NEST_REFERENCE_SELECT } from '../constants/nest-reference.select'
+import { NEST_SUMMARY_SELECT } from '../constants/nest.summary.select'
 import { NEST_MEMBER_SELECT } from './constants/nest-member.select'
+import { NestMemberQueryDto } from './dto/nest-member.query.dto'
 import { AlreadyMemberException } from './exceptions/already-member.exception'
 import { MemberNotFoundException } from './exceptions/member-not-found.exception'
-import { NestMemberQueryDto } from './dto/nest-member.query.dto'
 
 @Injectable()
 export class NestMemberRepository {
@@ -100,7 +102,7 @@ export class NestMemberRepository {
     })
   }
 
-  updateRole(nestId: string, userId: string, role: NestMemberRole, db: Database = this.prisma) {
+  async updateRole(nestId: string, userId: string, role: NestMemberRole, db: Database = this.prisma) {
     return db.nestMember.update({
       where: { nestId_userId: { nestId, userId } },
       data: { role },
@@ -108,23 +110,18 @@ export class NestMemberRepository {
     })
   }
 
-  countByRole(userId: string, role: NestMemberRole) {
+  async countByRole(userId: string, role: NestMemberRole) {
     return this.prisma.nestMember.count({
       where: { userId, role }
     })
   }
 
-  listNestsByMember(userId: string) {
-    return this.prisma.nestMember.findMany({
-      where: { userId },
-      select: {
-        role: true,
-        createdAt: true,
-        nest: {
-          select: NEST_SUMMARY_SELECT
-        }
-      }
-    })
+  async listMembershipsByUser(userId: string) {
+    return this.listMemberhipsWithNest(userId, NEST_SUMMARY_SELECT)
+  }
+
+  async listMembershipReferencesByUser(userId: string) {
+    return this.listMemberhipsWithNest(userId, NEST_REFERENCE_SELECT)
   }
 
   async createMember(
@@ -141,6 +138,17 @@ export class NestMemberRepository {
     db: Database = this.prisma,
   ) {
     return this.createWithRole(nestId, userId, NestMemberRole.OWNER, db)
+  }
+
+  private async listMemberhipsWithNest<TSelect extends Prisma.NestSelect>(userId: string, nestSelect: TSelect) {
+    return this.prisma.nestMember.findMany({
+      where: { userId },
+      select: {
+        role: true,
+        createdAt: true,
+        nest: { select: nestSelect }
+      }
+    })
   }
 
   private async createWithRole(

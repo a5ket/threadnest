@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { UserNotFoundException } from './exceptions/user-not-found.exception'
 import { USER_AUTH_SELECT } from './constants/user.auth.select'
+import { UserNotFoundException } from './exceptions/user-not-found.exception'
 
 @Injectable()
 export class UserRepository {
@@ -10,17 +10,13 @@ export class UserRepository {
     private readonly prisma: PrismaService
   ) { }
 
-  async getById(userId: string) {
+  async exists(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true }
     })
 
-    if (!user) {
-      throw new UserNotFoundException()
-    }
-
-    return user
+    return Boolean(user)
   }
 
   async findByIdWithEmail(userId: string) {
@@ -47,10 +43,16 @@ export class UserRepository {
   }
 
   async getByIdWithCredentials(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, passwordHash: true }
     })
+
+    if (!user) {
+      throw new UserNotFoundException()
+    }
+
+    return user
   }
 
   async updatePassword(userId: string, passwordHash: string, db: Database = this.prisma) {
