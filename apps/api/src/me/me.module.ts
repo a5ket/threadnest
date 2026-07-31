@@ -5,15 +5,35 @@ import { NestModule } from 'src/nest/nest.module'
 import { SecurityModule } from 'src/security/security.module'
 import { UserModule } from 'src/user/user.module'
 import { MeAuthController } from './me-auth.controller'
+import { MeBlockController } from './me-block.controller'
 import { MeNestInviteController } from './me-nest-invite.controller'
 import { MeNestJoinRequestController } from './me-nest-join-request.controller'
-import { MeNestController } from './me-nest.controller'
 import { MeNestPreferenceController } from './me-nest-preference.controller'
+import { MeNestController } from './me-nest.controller'
+import { MeController } from './me.controller'
 import { MeProfileController } from './me-profile.controller'
-import { MeBlockController } from './me-block.controller'
+import { MeService } from './me.service'
 
 @Module({
-  imports: [NestModule, AuthModule, SecurityModule, UserModule, BlockModule],
-  controllers: [MeAuthController, MeNestController, MeNestPreferenceController, MeNestInviteController, MeNestJoinRequestController, MeProfileController, MeBlockController]
+  imports: [
+    NestModule,
+    AuthModule,
+    SecurityModule,
+    UserModule,
+    BlockModule
+  ],
+  providers: [
+    MeService
+  ],
+  controllers: [
+    MeController,
+    MeAuthController,
+    MeNestController,
+    MeNestPreferenceController,
+    MeNestInviteController,
+    MeNestJoinRequestController,
+    MeProfileController,
+    MeBlockController
+  ]
 })
 export class MeModule { }
