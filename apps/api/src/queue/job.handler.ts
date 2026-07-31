@@ -1,10 +1,10 @@
 import { BaseJob } from './base.job'
 
 export abstract class JobHandler<T extends BaseJob = BaseJob> {
-  abstract readonly jobClass: new (...args: any[]) => T
+  abstract readonly jobClasses: ReadonlyArray<new (...args: any[]) => T>
 
-  get jobType() {
-    return BaseJob.typeOf(this.jobClass)
+  get jobTypes() {
+    return this.jobClasses.map((jobClass) => BaseJob.typeOf(jobClass))
   }
 
   abstract handle(job: T): Promise<void>

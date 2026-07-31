@@ -14,7 +14,7 @@ import { VerifyEmailTemplate } from '../templates/verify-email.template'
 
 @Injectable()
 export class SendAuthEmailHandler extends JobHandler<AuthEmailJob> {
-  readonly jobClass = AuthEmailJob as unknown as new (...args: any[]) => AuthEmailJob
+  readonly jobClasses = [SendVerificationEmailJob, SendPasswordResetEmailJob, SendEmailChangeEmailJob]
 
   constructor(
     private readonly mailer: MailerService,

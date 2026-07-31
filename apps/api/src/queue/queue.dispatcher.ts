@@ -15,11 +15,13 @@ export class QueueDispatcher implements OnModuleInit {
             const instance: unknown = wrapper.instance
 
             if (instance instanceof JobHandler) {
-                if (this.handlers.has(instance.jobType)) {
-                    throw new Error(`Duplicate handler registered for job type: ${instance.jobType}`)
-                }
+                for (const jobType of instance.jobTypes) {
+                    if (this.handlers.has(jobType)) {
+                        throw new Error(`Duplicate handler registered for job type: ${jobType}`)
+                    }
 
-                this.handlers.set(instance.jobType, instance as JobHandler<BaseJob>)
+                    this.handlers.set(jobType, instance as JobHandler<BaseJob>)
+                }
             }
         }
     }
