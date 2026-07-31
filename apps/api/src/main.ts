@@ -10,6 +10,13 @@ import { AppConfig } from './app.config'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
+  const configService = app.get(ConfigService<AppConfig>)
+
+  app.enableCors({
+    origin: configService.getOrThrow('webAppUrl', { infer: true }),
+    credentials: true
+  })
+
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,
@@ -24,7 +31,6 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('docs', app, documentFactory)
 
-  const configService = app.get(ConfigService<AppConfig>)
   const port = configService.getOrThrow('port', { infer: true })
 
   await app.listen(port)
