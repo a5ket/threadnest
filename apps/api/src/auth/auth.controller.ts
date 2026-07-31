@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import type { Request, Response } from 'express'
 import { ValidationException } from 'src/common/exceptions/validation.exception'
 import { ApiExceptionResponses } from 'src/common/swagger/api-exception-responses.decorator'
+import { ApiDataResponse } from 'src/common/swagger/api-data-response.decorator'
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
 import type { AuthUser } from 'src/common/types/auth.user'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
@@ -20,7 +21,7 @@ import { TokenAlreadyRedeemedException } from './exceptions/token-already-redeem
 import { TokenExpiredException } from './exceptions/token-expired.exception'
 import { TokenNotFoundException } from './exceptions/token-not-found.exception'
 import { TokenSupersededException } from './exceptions/token-superseded.exception'
-import { AuthTokensResponseDto } from './dto/auth.tokens-response.dto'
+import { AuthTokensDto } from './dto/auth.tokens.dto'
 import { LoginDto } from './dto/auth.login.dto'
 import { RefreshDto } from './dto/auth.refresh.dto'
 import { RegisterDto } from './dto/auth.register.dto'
@@ -39,7 +40,7 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ operationId: 'authRegister', summary: 'Register a new account', description: 'Creates a user and starts a session. Tokens are also set as httpOnly cookies.' })
-  @ApiResponse({ status: 201, description: 'Account created', type: AuthTokensResponseDto })
+  @ApiDataResponse({ status: 201, description: 'Account created', type: AuthTokensDto })
   @ApiExceptionResponses(ValidationException)
   @ApiExceptionResponses(EmailTakenException)
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) response: Response) {
@@ -51,7 +52,7 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ operationId: 'authLogin', summary: 'Log in with email and password', description: 'Starts a session. Tokens are also set as httpOnly cookies.' })
-  @ApiResponse({ status: 201, description: 'Authenticated', type: AuthTokensResponseDto })
+  @ApiDataResponse({ status: 201, description: 'Authenticated', type: AuthTokensDto })
   @ApiExceptionResponses(ValidationException)
   @ApiExceptionResponses(InvalidCredentialsException)
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response) {
@@ -67,7 +68,7 @@ export class AuthController {
     summary: 'Rotate the refresh token and issue a new access token',
     description: 'Accepts the refresh token from the request body or the `refresh_token` cookie. Rotated tokens are also set as httpOnly cookies.'
   })
-  @ApiResponse({ status: 201, description: 'New token pair issued', type: AuthTokensResponseDto })
+  @ApiDataResponse({ status: 201, description: 'New token pair issued', type: AuthTokensDto })
   @ApiExceptionResponses(InvalidRefreshTokenException, RefreshTokenExpiredException)
   async refresh(
     @Body() dto: RefreshDto,
