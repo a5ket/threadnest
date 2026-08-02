@@ -1,6 +1,6 @@
 import { env } from '@/config/env'
-import { cookies } from 'next/headers'
-import { ApiError, ApiNetworkError, ApiParseError } from './api-error'
+import { cookies, headers } from 'next/headers'
+import { ApiError, ApiErrorResponse, ApiNetworkError, ApiParseError } from './api-error'
 
 const API_URL = env.apiUrl
 
@@ -44,11 +44,13 @@ async function requestServer<T extends { status: number, data: unknown, headers:
   return { status: response.status, data, headers: response.headers } as T
 }
 
+// Server twin of apiFetch — same non-throwing, per-status contract, plus cookie forwarding.
 export function apiFetchServer<T extends { status: number, data: unknown, headers: Headers }>(url: string, options: RequestInit) {
   const sourceUrl = new URL(url, API_URL)
   return requestServer<T>(`${API_URL}${sourceUrl.pathname}${sourceUrl.search}`, options)
 }
 
+// Server twin of apiClient — same unwrap-and-throw contract, plus cookie forwarding.
 export async function apiClientServer<T = unknown>(path: string, options: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE', body?: unknown } = {}) {
   const { method = 'GET', body } = options
 
@@ -59,8 +61,12 @@ export async function apiClientServer<T = unknown>(path: string, options: { meth
   })
 
   if (result.status >= 400) {
-    throw ApiError.fromComposite(result)
+    throw ApiError.fromComposite<ApiErrorResponse>(result as { status: number, data: ApiErrorResponse })
   }
 
   return (result.data as { data: T }).data
+}
+
+export async function checkHasSession() {
+  return (await headers()).get('x-has-session') === 'true'
 }

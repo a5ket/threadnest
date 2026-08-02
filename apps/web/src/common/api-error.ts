@@ -1,4 +1,4 @@
-type ApiErrorResponse = {
+export type ApiErrorResponse = {
   error?: {
     status?: number
     code?: string
@@ -97,3 +97,11 @@ export class ApiParseError extends Error {
  * client-side failure modes that can happen before/without a usable backend response.
  */
 export type ApiClientError<TResponse> = ApiError<TResponse> | ApiNetworkError | ApiParseError
+
+// INTERNAL_SERVER_ERROR is HttpExceptionFilter's app-wide fallback, not per-endpoint.
+export type GenericApiErrorCode
+  = | 'INTERNAL_SERVER_ERROR'
+    | 'UNKNOWN_ERROR'
+    | ApiNetworkError['errorCode']
+    | ApiParseError['errorCode']
+    | (string & {})

@@ -6,8 +6,7 @@
  */
 import type {
   MeBootstrap200,
-  MeBootstrap401,
-  MeBootstrap404
+  MeBootstrap401
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
@@ -22,15 +21,10 @@ export type meBootstrapResponse401 = {
   status: 401
 }
 
-export type meBootstrapResponse404 = {
-  data: MeBootstrap404
-  status: 404
-}
-
 export type meBootstrapResponseSuccess = (meBootstrapResponse200) & {
   headers: Headers
 }
-export type meBootstrapResponseError = (meBootstrapResponse401 | meBootstrapResponse404) & {
+export type meBootstrapResponseError = (meBootstrapResponse401) & {
   headers: Headers
 }
 

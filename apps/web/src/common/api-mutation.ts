@@ -21,10 +21,6 @@ function unwrap<TResult extends Composite, TSuccessStatus extends number>(result
   return (result.data as { data: unknown } | undefined)?.data as Unwrapped<SuccessOf<TResult, TSuccessStatus>['data']>
 }
 
-/**
- * Builds a `useMutation` hook from a generated fetch function that resolves the given `successStatus`
- * on success and throws a typed `ApiError` otherwise. `TInput`/`TResult` are inferred from `fn`.
- */
 export function createMutationHook<TInput, TResult extends Composite, TSuccessStatus extends number>(
   fn: (input: TInput) => Promise<TResult>,
   successStatus: TSuccessStatus

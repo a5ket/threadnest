@@ -1,5 +1,5 @@
 import { env } from '@/config/env'
-import { ApiError, ApiNetworkError, ApiParseError } from './api-error'
+import { ApiError, ApiErrorResponse, ApiNetworkError, ApiParseError } from './api-error'
 
 export type ErrorType<T> = ApiError<T>
 
@@ -95,11 +95,13 @@ async function request<T extends { status: number, data: unknown, headers: Heade
   return { status: response.status, data, headers: response.headers } as T
 }
 
+// Orval's mutator. Never throws on HTTP errors — caller parses `data` (see generated per-status types).
 export function apiFetch<T extends { status: number, data: unknown, headers: Headers }>(url: string, options: RequestInit) {
   const sourceUrl = new URL(url, API_URL)
   return request<T>(`${API_URL}${sourceUrl.pathname}${sourceUrl.search}`, options)
 }
 
+// For hand-written calls without generated types. Unwraps the payload, throws ApiError on 4xx/5xx.
 export async function apiClient<T = unknown>(path: string, options: ApiClientOptions = {}) {
   const { method = 'GET', body, signal } = options
 
@@ -111,7 +113,7 @@ export async function apiClient<T = unknown>(path: string, options: ApiClientOpt
   })
 
   if (result.status >= 400) {
-    throw ApiError.fromComposite(result)
+    throw ApiError.fromComposite<ApiErrorResponse>(result as { status: number, data: ApiErrorResponse })
   }
 
   return (result.data as { data: T }).data

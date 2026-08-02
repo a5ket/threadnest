@@ -1,6 +1,6 @@
 'use client'
 
-import { BootstrapData } from '@/features/me/me.types'
+import { MeBootstrapResult } from '@/features/me/me.types'
 import { createContext, PropsWithChildren, useContext, useState } from 'react'
 import { useStore } from 'zustand'
 import { createMeStore, MeState, MeStoreApi } from '../me.store'
@@ -8,11 +8,11 @@ import { createMeStore, MeState, MeStoreApi } from '../me.store'
 const MeStoreContext = createContext<MeStoreApi | null>(null)
 
 export type MeStoreProviderProps = PropsWithChildren & {
-  initialData: BootstrapData | null
+  initialMe: MeBootstrapResult
 }
 
-export function MeStoreProvider({ initialData, children }: MeStoreProviderProps) {
-  const [store] = useState(() => createMeStore(initialData))
+export function MeStoreProvider({ initialMe, children }: MeStoreProviderProps) {
+  const [store] = useState(() => createMeStore(initialMe))
 
   return <MeStoreContext.Provider value={store}>{children}</MeStoreContext.Provider>
 }

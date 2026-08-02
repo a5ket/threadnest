@@ -28,13 +28,7 @@ export const useRequestPasswordReset = createMutationHook(authRequestPasswordRes
 export const useConfirmPasswordReset = createMutationHook(authConfirmPasswordReset, 204)
 export const useConfirmEmailChange = createMutationHook(authConfirmEmailChange, 204)
 
-/**
- * After a successful login/register, tokens are set as cookies but the client-side
- * `me` store is still unhydrated (it's only ever seeded by the server layout on a
- * full page load). Fetches bootstrap data and hydrates the store, then runs
- * `onAuthenticated`. Runs it even if the bootstrap fetch fails — auth already
- * succeeded, and the store will resync on the next server-rendered navigation.
- */
+// Soft navigation won't re-run the server layout's fetch, so hydrate the store by hand.
 export function useAuthSuccessHandler(onAuthenticated: () => void) {
   const setMe = useMeStore((state) => state.setMe)
 
@@ -44,18 +38,14 @@ export function useAuthSuccessHandler(onAuthenticated: () => void) {
       setMe(me)
     }
     catch {
-      // Cookies are already set; the store will resync via getMeServer() on next navigation.
+      // Auth already succeeded; store resyncs on the next server-rendered nav.
     }
 
     onAuthenticated()
   }, [setMe, onAuthenticated])
 }
 
-/**
- * After a successful logout/logout-all, clears the client-side `me` store so the UI
- * reflects the signed-out state immediately, then runs `onSignedOut`. Shared between
- * `useLogout` and `useLogoutAll` since both need the same client-side cleanup.
- */
+// Shared by useLogout/useLogoutAll — same client-side cleanup either way.
 export function useAuthSignOutHandler(onSignedOut: () => void) {
   const clearMe = useMeStore((state) => state.clear)
 

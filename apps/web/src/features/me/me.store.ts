@@ -1,23 +1,26 @@
-import type { BootstrapData } from '@/features/me/me.types'
+import type { BootstrapData, MeBootstrapError, MeBootstrapResult } from '@/features/me/me.types'
 import { createStore } from 'zustand'
 
 export interface MeState {
   user: BootstrapData['user'] | null
   nests: BootstrapData['nests']
+  error: MeBootstrapError | null
   setMe: (data: BootstrapData | null) => void
   clear: () => void
 }
 
-export function createMeStore(initialData: BootstrapData | null) {
+export function createMeStore(initial: MeBootstrapResult) {
   return createStore<MeState>((set) => ({
-    user: initialData?.user ?? null,
-    nests: initialData?.nests ?? [],
+    user: initial.status === 'signed-in' ? initial.data.user : null,
+    nests: initial.status === 'signed-in' ? initial.data.nests : [],
+    error: initial.status === 'error' ? initial.error : null,
     setMe: (data) =>
       set({
         user: data?.user ?? null,
-        nests: data?.nests ?? []
+        nests: data?.nests ?? [],
+        error: null
       }),
-    clear: () => set({ user: null, nests: [] })
+    clear: () => set({ user: null, nests: [], error: null })
   }))
 }
 
