@@ -8,10 +8,7 @@ interface ApiDataResponseOptions {
   isArray?: boolean
 }
 
-/**
- * Documents a response wrapped by the global ResponseInterceptor (`{ data: T }`),
- * without requiring a hand-written `{data: T}` wrapper DTO per endpoint.
- */
+// Documents ResponseInterceptor's `{ data: T }` wrap without a per-endpoint wrapper DTO.
 export function ApiDataResponse({ status, description, type, isArray = false }: ApiDataResponseOptions) {
   const dataSchema = isArray
     ? { type: 'array' as const, items: { $ref: getSchemaPath(type) } }

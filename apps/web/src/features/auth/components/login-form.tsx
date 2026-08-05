@@ -3,16 +3,14 @@
 import { useAuthSuccessHandler, useLogin } from '@/features/auth/auth.hooks'
 import { loginSchema, type LoginFormValues } from '@/features/auth/auth.schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 
 interface LoginFormProps {
-  onAuthenticated?: () => void
+  onAuthenticated: () => void
 }
 
-export function LoginForm({ onAuthenticated }: LoginFormProps = {}) {
-  const router = useRouter()
-  const handleAuthenticated = useAuthSuccessHandler(onAuthenticated ?? (() => router.push('/')))
+export function LoginForm({ onAuthenticated }: LoginFormProps) {
+  const handleAuthenticated = useAuthSuccessHandler(onAuthenticated)
 
   const {
     register,

@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { PropsWithChildren, useState } from 'react'
 import { AppRightrail } from '../../common/components/app-rightrail'
 import { AppShell } from '../../common/components/app-shell'
@@ -8,7 +9,14 @@ import { MainHeader } from './main-header'
 import { MainSidebar } from './main-sidebar'
 
 export function MainAppShell({ children }: PropsWithChildren) {
+  const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [prevPathname, setPrevPathname] = useState(pathname)
+
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
+    setSidebarOpen(false)
+  }
 
   const sidebar = <MainSidebar />
 
@@ -34,7 +42,7 @@ export function MainAppShell({ children }: PropsWithChildren) {
           {children}
         </AppShell>
 
-        <SidebarDrawer open={sidebarOpen}>
+        <SidebarDrawer open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
           {sidebar}
         </SidebarDrawer>
       </div>

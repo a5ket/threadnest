@@ -1,6 +1,6 @@
 import { useAuthOverlayStore } from '@/features/auth/auth-overlay.store'
 import { useAuthSignOutHandler, useLogout } from '@/features/auth/auth.hooks'
-import { useIsSignedIn } from '@/features/me/me.hooks'
+import { useIsSignedIn, useUser } from '@/features/me/me.hooks'
 import { useRouter } from 'next/navigation'
 
 export type AppHeaderProps = {
@@ -10,9 +10,11 @@ export type AppHeaderProps = {
 export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
   const router = useRouter()
   const isSignedIn = useIsSignedIn()
+  const user = useUser()
   const openAuthOverlay = useAuthOverlayStore((state) => state.open)
   const handleSignedOut = useAuthSignOutHandler(() => router.push('/'))
   const logout = useLogout({ onSuccess: handleSignedOut })
+  console.log(user)
 
   return (
     <header className='bg-red-500 min-h-15'>
@@ -20,7 +22,16 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
       header
       {
         isSignedIn
-          ? <button onClick={() => logout.mutate()} disabled={logout.isPending}>Sign Out</button>
+          ? (
+              <>
+                <br />
+                <button onClick={() => logout.mutate()} disabled={logout.isPending}>Sign Out</button>
+                <div>
+                  Veirifed:
+                  {user?.emailVerified ? 'true' : 'false'}
+                </div>
+              </>
+            )
           : (
               <>
                 <button onClick={() => openAuthOverlay('login')}>Sign In</button>

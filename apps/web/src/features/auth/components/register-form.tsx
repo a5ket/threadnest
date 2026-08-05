@@ -3,16 +3,14 @@
 import { useAuthSuccessHandler, useRegister } from '@/features/auth/auth.hooks'
 import { registerSchema, type RegisterFormValues } from '@/features/auth/auth.schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 
 interface RegisterFormProps {
-  onAuthenticated?: () => void
+  onAuthenticated: () => void
 }
 
-export function RegisterForm({ onAuthenticated }: RegisterFormProps = {}) {
-  const router = useRouter()
-  const handleAuthenticated = useAuthSuccessHandler(onAuthenticated ?? (() => router.push('/')))
+export function RegisterForm({ onAuthenticated }: RegisterFormProps) {
+  const handleAuthenticated = useAuthSuccessHandler(onAuthenticated)
 
   const {
     register,

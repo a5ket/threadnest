@@ -4,10 +4,12 @@ import { PropsWithChildren } from 'react'
 
 export type SidebarDrawerProps = PropsWithChildren<{
   open: boolean
+  onClose: () => void
 }>
 
 export function SidebarDrawer({
   open,
+  onClose,
   children
 }: SidebarDrawerProps) {
   if (!open) {
@@ -16,6 +18,8 @@ export function SidebarDrawer({
 
   return (
     <div className='absolute inset-0 z-50 xl:hidden'>
+      <div className='absolute inset-0 bg-black/50' onClick={onClose} />
+
       <aside className='relative h-full w-64 border-r bg-background shadow-xl'>
         {children}
       </aside>
