@@ -43,9 +43,9 @@ export class NestController {
   ) { }
 
   @Post()
-  @AuthenticatedAndVerified()
   @ApiOperation({ operationId: 'nestCreate', summary: 'Create a nest' })
   @ApiDataResponse({ status: 201, description: 'Nest created', type: NestDetailResponseDto })
+  @AuthenticatedAndVerified()
   @ApiExceptionResponses(ValidationException, NestSlugReservedException, NestSlugTakenException, NestLimitReachedException)
   createNest(
     @Body() dto: NestCreateDto,
@@ -71,9 +71,9 @@ export class NestController {
   }
 
   @Patch(':nestSlug')
-  @AuthenticatedAndVerified()
   @ApiOperation({ operationId: 'nestUpdate', summary: 'Update a nest\'s name and/or description' })
   @ApiDataResponse({ status: 200, description: 'Nest updated', type: NestDetailResponseDto })
+  @AuthenticatedAndVerified()
   @ApiExceptionResponses(ValidationException, NestNotFoundException, InsufficientPermissionsException)
   update(
     @Param('nestSlug') nestSlug: string,
@@ -84,10 +84,10 @@ export class NestController {
   }
 
   @Patch(':nestSlug/owner')
-  @AuthenticatedAndVerified()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ operationId: 'nestTransferOwnership', summary: 'Transfer nest ownership to another member' })
   @ApiResponse({ status: 204, description: 'Ownership transferred' })
+  @AuthenticatedAndVerified()
   @ApiExceptionResponses(ValidationException, CannotTransferOwnershipToSelfException, NestNotFoundException, InsufficientPermissionsException, TargetUserNotMemberException)
   async transferOwnership(
     @Param('nestSlug') nestSlug: string,
@@ -98,10 +98,10 @@ export class NestController {
   }
 
   @Delete(':nestSlug')
-  @AuthenticatedAndVerified()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ operationId: 'nestDelete', summary: 'Delete a nest' })
   @ApiResponse({ status: 204, description: 'Nest deleted' })
+  @AuthenticatedAndVerified()
   @ApiExceptionResponses(NestNotFoundException, InsufficientPermissionsException)
   async deleteNest(
     @Param('nestSlug') nestSlug: string,

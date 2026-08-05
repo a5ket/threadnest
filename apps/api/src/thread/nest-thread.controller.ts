@@ -56,9 +56,9 @@ export class NestThreadController {
   }
 
   @Post()
-  @AuthenticatedAndVerified()
   @ApiOperation({ operationId: 'nestThreadCreate', summary: 'Create a thread in a nest' })
   @ApiDataResponse({ status: 201, description: 'Thread created', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
   @ApiExceptionResponses(ValidationException, NestNotFoundException, InsufficientPermissionsException)
   create(
     @Param('nestSlug') nestSlug: string,
@@ -82,9 +82,9 @@ export class NestThreadController {
   }
 
   @Patch(':threadSlug')
-  @AuthenticatedAndVerified()
   @ApiOperation({ operationId: 'nestThreadUpdate', summary: 'Update a thread\'s title and/or content' })
   @ApiDataResponse({ status: 200, description: 'Thread updated', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
   @ApiExceptionResponses(ValidationException, NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
   update(
     @Param('nestSlug') nestSlug: string,
@@ -96,10 +96,10 @@ export class NestThreadController {
   }
 
   @Delete(':threadSlug')
-  @AuthenticatedAndVerified()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ operationId: 'nestThreadDelete', summary: 'Delete a thread' })
   @ApiResponse({ status: 204, description: 'Thread deleted' })
+  @AuthenticatedAndVerified()
   @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
   async remove(
     @Param('nestSlug') nestSlug: string,
