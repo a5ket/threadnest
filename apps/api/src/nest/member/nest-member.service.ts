@@ -83,6 +83,6 @@ export class NestMemberService {
   async listMembershipReferencesByUser(userId: string) {
     const memberships = await this.membersRepo.listMembershipReferencesByUser(userId)
 
-    return memberships.map(({ nest }) => nest)
+    return memberships.map(({ nest }) => this.presenter.toReferenceView(nest))
   }
 }

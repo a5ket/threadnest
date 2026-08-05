@@ -3,7 +3,6 @@ import { USER_REFERENCE_SELECT } from 'src/user/constants/user.reference.select'
 
 export const THREAD_SUMMARY_SELECT = {
   id: true,
-  nestId: true,
 
   title: true,
   slug: true,

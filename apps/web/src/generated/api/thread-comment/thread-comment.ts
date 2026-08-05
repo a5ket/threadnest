@@ -6,6 +6,8 @@
  */
 import type {
   CommentCreateDto,
+  ThreadCommentControllerCreateThreadComment401,
+  ThreadCommentControllerCreateThreadComment403,
   ThreadCommentControllerListByThreadParams
 } from '../models'
 
@@ -55,11 +57,24 @@ export type threadCommentControllerCreateThreadCommentResponse201 = {
   status: 201
 }
 
+export type threadCommentControllerCreateThreadCommentResponse401 = {
+  data: ThreadCommentControllerCreateThreadComment401
+  status: 401
+}
+
+export type threadCommentControllerCreateThreadCommentResponse403 = {
+  data: ThreadCommentControllerCreateThreadComment403
+  status: 403
+}
+
 export type threadCommentControllerCreateThreadCommentResponseSuccess = (threadCommentControllerCreateThreadCommentResponse201) & {
   headers: Headers
 }
+export type threadCommentControllerCreateThreadCommentResponseError = (threadCommentControllerCreateThreadCommentResponse401 | threadCommentControllerCreateThreadCommentResponse403) & {
+  headers: Headers
+}
 
-export type threadCommentControllerCreateThreadCommentResponse = (threadCommentControllerCreateThreadCommentResponseSuccess)
+export type threadCommentControllerCreateThreadCommentResponse = (threadCommentControllerCreateThreadCommentResponseSuccess | threadCommentControllerCreateThreadCommentResponseError)
 
 export const getThreadCommentControllerCreateThreadCommentUrl = (nestSlug: string,
   threadSlug: string) => {

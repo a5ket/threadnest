@@ -5,7 +5,13 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  NestThreadControllerCreate401,
+  NestThreadControllerCreate403,
   NestThreadControllerListByNestParams,
+  NestThreadControllerRemove401,
+  NestThreadControllerRemove403,
+  NestThreadControllerUpdate401,
+  NestThreadControllerUpdate403,
   ThreadCreateDto,
   ThreadUpdateDto
 } from '../models'
@@ -54,11 +60,24 @@ export type nestThreadControllerCreateResponse201 = {
   status: 201
 }
 
+export type nestThreadControllerCreateResponse401 = {
+  data: NestThreadControllerCreate401
+  status: 401
+}
+
+export type nestThreadControllerCreateResponse403 = {
+  data: NestThreadControllerCreate403
+  status: 403
+}
+
 export type nestThreadControllerCreateResponseSuccess = (nestThreadControllerCreateResponse201) & {
   headers: Headers
 }
+export type nestThreadControllerCreateResponseError = (nestThreadControllerCreateResponse401 | nestThreadControllerCreateResponse403) & {
+  headers: Headers
+}
 
-export type nestThreadControllerCreateResponse = (nestThreadControllerCreateResponseSuccess)
+export type nestThreadControllerCreateResponse = (nestThreadControllerCreateResponseSuccess | nestThreadControllerCreateResponseError)
 
 export const getNestThreadControllerCreateUrl = (nestSlug: string) => {
   return `/nests/${nestSlug}/threads`
@@ -108,11 +127,24 @@ export type nestThreadControllerUpdateResponse200 = {
   status: 200
 }
 
+export type nestThreadControllerUpdateResponse401 = {
+  data: NestThreadControllerUpdate401
+  status: 401
+}
+
+export type nestThreadControllerUpdateResponse403 = {
+  data: NestThreadControllerUpdate403
+  status: 403
+}
+
 export type nestThreadControllerUpdateResponseSuccess = (nestThreadControllerUpdateResponse200) & {
   headers: Headers
 }
+export type nestThreadControllerUpdateResponseError = (nestThreadControllerUpdateResponse401 | nestThreadControllerUpdateResponse403) & {
+  headers: Headers
+}
 
-export type nestThreadControllerUpdateResponse = (nestThreadControllerUpdateResponseSuccess)
+export type nestThreadControllerUpdateResponse = (nestThreadControllerUpdateResponseSuccess | nestThreadControllerUpdateResponseError)
 
 export const getNestThreadControllerUpdateUrl = (nestSlug: string,
   threadSlug: string) => {
@@ -137,11 +169,24 @@ export type nestThreadControllerRemoveResponse200 = {
   status: 200
 }
 
+export type nestThreadControllerRemoveResponse401 = {
+  data: NestThreadControllerRemove401
+  status: 401
+}
+
+export type nestThreadControllerRemoveResponse403 = {
+  data: NestThreadControllerRemove403
+  status: 403
+}
+
 export type nestThreadControllerRemoveResponseSuccess = (nestThreadControllerRemoveResponse200) & {
   headers: Headers
 }
+export type nestThreadControllerRemoveResponseError = (nestThreadControllerRemoveResponse401 | nestThreadControllerRemoveResponse403) & {
+  headers: Headers
+}
 
-export type nestThreadControllerRemoveResponse = (nestThreadControllerRemoveResponseSuccess)
+export type nestThreadControllerRemoveResponse = (nestThreadControllerRemoveResponseSuccess | nestThreadControllerRemoveResponseError)
 
 export const getNestThreadControllerRemoveUrl = (nestSlug: string,
   threadSlug: string) => {

@@ -6,7 +6,6 @@ import { NestSummary } from './types/nest.summary'
 export class NestPresenter {
   toSummaryView(nest: NestSummary) {
     return {
-      id: nest.id,
       name: nest.name,
       slug: nest.slug,
       description: nest.description,
@@ -19,7 +18,6 @@ export class NestPresenter {
 
   toDetailView(nest: NestSummary, access: NestAccessContext) {
     return {
-      id: nest.id,
       name: nest.name,
       slug: nest.slug,
       access,
@@ -30,6 +28,13 @@ export class NestPresenter {
         createdAt: nest.createdAt,
         updatedAt: nest.updatedAt,
       }),
+    }
+  }
+
+  toReferenceView(nest: { name: string; slug: string }) {
+    return {
+      name: nest.name,
+      slug: nest.slug,
     }
   }
 }

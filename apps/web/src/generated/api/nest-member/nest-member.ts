@@ -5,7 +5,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  NestMemberControllerChangeMemberRole401,
+  NestMemberControllerChangeMemberRole403,
+  NestMemberControllerList401,
   NestMemberControllerListParams,
+  NestMemberControllerRemove401,
+  NestMemberControllerRemove403,
   NestMemberUpdateRoleDto
 } from '../models'
 
@@ -16,11 +21,19 @@ export type nestMemberControllerListResponse200 = {
   status: 200
 }
 
+export type nestMemberControllerListResponse401 = {
+  data: NestMemberControllerList401
+  status: 401
+}
+
 export type nestMemberControllerListResponseSuccess = (nestMemberControllerListResponse200) & {
   headers: Headers
 }
+export type nestMemberControllerListResponseError = (nestMemberControllerListResponse401) & {
+  headers: Headers
+}
 
-export type nestMemberControllerListResponse = (nestMemberControllerListResponseSuccess)
+export type nestMemberControllerListResponse = (nestMemberControllerListResponseSuccess | nestMemberControllerListResponseError)
 
 export const getNestMemberControllerListUrl = (nestSlug: string,
   params: NestMemberControllerListParams) => {
@@ -53,11 +66,24 @@ export type nestMemberControllerRemoveResponse204 = {
   status: 204
 }
 
+export type nestMemberControllerRemoveResponse401 = {
+  data: NestMemberControllerRemove401
+  status: 401
+}
+
+export type nestMemberControllerRemoveResponse403 = {
+  data: NestMemberControllerRemove403
+  status: 403
+}
+
 export type nestMemberControllerRemoveResponseSuccess = (nestMemberControllerRemoveResponse204) & {
   headers: Headers
 }
+export type nestMemberControllerRemoveResponseError = (nestMemberControllerRemoveResponse401 | nestMemberControllerRemoveResponse403) & {
+  headers: Headers
+}
 
-export type nestMemberControllerRemoveResponse = (nestMemberControllerRemoveResponseSuccess)
+export type nestMemberControllerRemoveResponse = (nestMemberControllerRemoveResponseSuccess | nestMemberControllerRemoveResponseError)
 
 export const getNestMemberControllerRemoveUrl = (nestSlug: string,
   userId: string) => {
@@ -80,11 +106,24 @@ export type nestMemberControllerChangeMemberRoleResponse200 = {
   status: 200
 }
 
+export type nestMemberControllerChangeMemberRoleResponse401 = {
+  data: NestMemberControllerChangeMemberRole401
+  status: 401
+}
+
+export type nestMemberControllerChangeMemberRoleResponse403 = {
+  data: NestMemberControllerChangeMemberRole403
+  status: 403
+}
+
 export type nestMemberControllerChangeMemberRoleResponseSuccess = (nestMemberControllerChangeMemberRoleResponse200) & {
   headers: Headers
 }
+export type nestMemberControllerChangeMemberRoleResponseError = (nestMemberControllerChangeMemberRoleResponse401 | nestMemberControllerChangeMemberRoleResponse403) & {
+  headers: Headers
+}
 
-export type nestMemberControllerChangeMemberRoleResponse = (nestMemberControllerChangeMemberRoleResponseSuccess)
+export type nestMemberControllerChangeMemberRoleResponse = (nestMemberControllerChangeMemberRoleResponseSuccess | nestMemberControllerChangeMemberRoleResponseError)
 
 export const getNestMemberControllerChangeMemberRoleUrl = (nestSlug: string,
   userId: string) => {

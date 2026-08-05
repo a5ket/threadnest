@@ -20,7 +20,6 @@ export const MeBootstrapResponse = zod.object({
       emailVerified: zod.boolean().describe('Whether the email has been verified')
     }).describe('Authenticated user profile'),
     nests: zod.array(zod.object({
-      id: zod.string().describe('Nest ID'),
       name: zod.string().describe('Nest display name'),
       slug: zod.string().describe('Unique nest slug')
     })).describe('Nests the user is a member of')

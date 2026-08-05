@@ -4,6 +4,14 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type {
+  NestInviteCollectionControllerCreate401,
+  NestInviteCollectionControllerCreate403,
+  NestInviteCollectionControllerGet401,
+  NestInviteCollectionControllerList401,
+  NestInviteCollectionControllerRevoke401
+} from '../models'
+
 import { apiFetch } from '../../../common/api-client'
 
 export type nestInviteCollectionControllerListResponse200 = {
@@ -11,11 +19,19 @@ export type nestInviteCollectionControllerListResponse200 = {
   status: 200
 }
 
+export type nestInviteCollectionControllerListResponse401 = {
+  data: NestInviteCollectionControllerList401
+  status: 401
+}
+
 export type nestInviteCollectionControllerListResponseSuccess = (nestInviteCollectionControllerListResponse200) & {
   headers: Headers
 }
+export type nestInviteCollectionControllerListResponseError = (nestInviteCollectionControllerListResponse401) & {
+  headers: Headers
+}
 
-export type nestInviteCollectionControllerListResponse = (nestInviteCollectionControllerListResponseSuccess)
+export type nestInviteCollectionControllerListResponse = (nestInviteCollectionControllerListResponseSuccess | nestInviteCollectionControllerListResponseError)
 
 export const getNestInviteCollectionControllerListUrl = (nestSlug: string) => {
   return `/nests/${nestSlug}/invites`
@@ -36,11 +52,24 @@ export type nestInviteCollectionControllerCreateResponse201 = {
   status: 201
 }
 
+export type nestInviteCollectionControllerCreateResponse401 = {
+  data: NestInviteCollectionControllerCreate401
+  status: 401
+}
+
+export type nestInviteCollectionControllerCreateResponse403 = {
+  data: NestInviteCollectionControllerCreate403
+  status: 403
+}
+
 export type nestInviteCollectionControllerCreateResponseSuccess = (nestInviteCollectionControllerCreateResponse201) & {
   headers: Headers
 }
+export type nestInviteCollectionControllerCreateResponseError = (nestInviteCollectionControllerCreateResponse401 | nestInviteCollectionControllerCreateResponse403) & {
+  headers: Headers
+}
 
-export type nestInviteCollectionControllerCreateResponse = (nestInviteCollectionControllerCreateResponseSuccess)
+export type nestInviteCollectionControllerCreateResponse = (nestInviteCollectionControllerCreateResponseSuccess | nestInviteCollectionControllerCreateResponseError)
 
 export const getNestInviteCollectionControllerCreateUrl = (nestSlug: string) => {
   return `/nests/${nestSlug}/invites`
@@ -61,11 +90,19 @@ export type nestInviteCollectionControllerGetResponse200 = {
   status: 200
 }
 
+export type nestInviteCollectionControllerGetResponse401 = {
+  data: NestInviteCollectionControllerGet401
+  status: 401
+}
+
 export type nestInviteCollectionControllerGetResponseSuccess = (nestInviteCollectionControllerGetResponse200) & {
   headers: Headers
 }
+export type nestInviteCollectionControllerGetResponseError = (nestInviteCollectionControllerGetResponse401) & {
+  headers: Headers
+}
 
-export type nestInviteCollectionControllerGetResponse = (nestInviteCollectionControllerGetResponseSuccess)
+export type nestInviteCollectionControllerGetResponse = (nestInviteCollectionControllerGetResponseSuccess | nestInviteCollectionControllerGetResponseError)
 
 export const getNestInviteCollectionControllerGetUrl = (nestSlug: string,
   inviteId: string) => {
@@ -88,11 +125,19 @@ export type nestInviteCollectionControllerRevokeResponse201 = {
   status: 201
 }
 
+export type nestInviteCollectionControllerRevokeResponse401 = {
+  data: NestInviteCollectionControllerRevoke401
+  status: 401
+}
+
 export type nestInviteCollectionControllerRevokeResponseSuccess = (nestInviteCollectionControllerRevokeResponse201) & {
   headers: Headers
 }
+export type nestInviteCollectionControllerRevokeResponseError = (nestInviteCollectionControllerRevokeResponse401) & {
+  headers: Headers
+}
 
-export type nestInviteCollectionControllerRevokeResponse = (nestInviteCollectionControllerRevokeResponseSuccess)
+export type nestInviteCollectionControllerRevokeResponse = (nestInviteCollectionControllerRevokeResponseSuccess | nestInviteCollectionControllerRevokeResponseError)
 
 export const getNestInviteCollectionControllerRevokeUrl = (nestSlug: string,
   inviteId: string) => {

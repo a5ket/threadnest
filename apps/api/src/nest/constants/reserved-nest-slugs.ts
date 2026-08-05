@@ -6,6 +6,7 @@ export const RESERVED_NEST_SLUGS = new Set([
   'www',
   'root',
   'system',
+  'new',
 
   // auth routes
   'auth',

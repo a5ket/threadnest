@@ -5,7 +5,13 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  CommentControllerCreateCommentReply401,
+  CommentControllerCreateCommentReply403,
   CommentControllerListCommentRepliesParams,
+  CommentControllerRemoveComment401,
+  CommentControllerRemoveComment403,
+  CommentControllerUpdateComment401,
+  CommentControllerUpdateComment403,
   CommentCreateDto,
   CommentUpdateDto
 } from '../models'
@@ -42,11 +48,24 @@ export type commentControllerUpdateCommentResponse200 = {
   status: 200
 }
 
+export type commentControllerUpdateCommentResponse401 = {
+  data: CommentControllerUpdateComment401
+  status: 401
+}
+
+export type commentControllerUpdateCommentResponse403 = {
+  data: CommentControllerUpdateComment403
+  status: 403
+}
+
 export type commentControllerUpdateCommentResponseSuccess = (commentControllerUpdateCommentResponse200) & {
   headers: Headers
 }
+export type commentControllerUpdateCommentResponseError = (commentControllerUpdateCommentResponse401 | commentControllerUpdateCommentResponse403) & {
+  headers: Headers
+}
 
-export type commentControllerUpdateCommentResponse = (commentControllerUpdateCommentResponseSuccess)
+export type commentControllerUpdateCommentResponse = (commentControllerUpdateCommentResponseSuccess | commentControllerUpdateCommentResponseError)
 
 export const getCommentControllerUpdateCommentUrl = (commentId: string) => {
   return `/comments/${commentId}`
@@ -69,11 +88,24 @@ export type commentControllerRemoveCommentResponse204 = {
   status: 204
 }
 
+export type commentControllerRemoveCommentResponse401 = {
+  data: CommentControllerRemoveComment401
+  status: 401
+}
+
+export type commentControllerRemoveCommentResponse403 = {
+  data: CommentControllerRemoveComment403
+  status: 403
+}
+
 export type commentControllerRemoveCommentResponseSuccess = (commentControllerRemoveCommentResponse204) & {
   headers: Headers
 }
+export type commentControllerRemoveCommentResponseError = (commentControllerRemoveCommentResponse401 | commentControllerRemoveCommentResponse403) & {
+  headers: Headers
+}
 
-export type commentControllerRemoveCommentResponse = (commentControllerRemoveCommentResponseSuccess)
+export type commentControllerRemoveCommentResponse = (commentControllerRemoveCommentResponseSuccess | commentControllerRemoveCommentResponseError)
 
 export const getCommentControllerRemoveCommentUrl = (commentId: string) => {
   return `/comments/${commentId}`
@@ -131,11 +163,24 @@ export type commentControllerCreateCommentReplyResponse201 = {
   status: 201
 }
 
+export type commentControllerCreateCommentReplyResponse401 = {
+  data: CommentControllerCreateCommentReply401
+  status: 401
+}
+
+export type commentControllerCreateCommentReplyResponse403 = {
+  data: CommentControllerCreateCommentReply403
+  status: 403
+}
+
 export type commentControllerCreateCommentReplyResponseSuccess = (commentControllerCreateCommentReplyResponse201) & {
   headers: Headers
 }
+export type commentControllerCreateCommentReplyResponseError = (commentControllerCreateCommentReplyResponse401 | commentControllerCreateCommentReplyResponse403) & {
+  headers: Headers
+}
 
-export type commentControllerCreateCommentReplyResponse = (commentControllerCreateCommentReplyResponseSuccess)
+export type commentControllerCreateCommentReplyResponse = (commentControllerCreateCommentReplyResponseSuccess | commentControllerCreateCommentReplyResponseError)
 
 export const getCommentControllerCreateCommentReplyUrl = (commentId: string) => {
   return `/comments/${commentId}/replies`

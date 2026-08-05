@@ -4,12 +4,12 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
-import type { MeBootstrapNestDto } from './meBootstrapNestDto'
 import type { MeBootstrapUserDto } from './meBootstrapUserDto'
+import type { NestReferencetDto } from './nestReferencetDto'
 
 export interface MeBootstrapDataDto {
   /** Authenticated user profile */
   user: MeBootstrapUserDto
   /** Nests the user is a member of */
-  nests: MeBootstrapNestDto[]
+  nests: NestReferencetDto[]
 }

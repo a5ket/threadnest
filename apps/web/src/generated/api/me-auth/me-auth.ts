@@ -6,7 +6,11 @@
  */
 import type {
   ChangeEmailDto,
-  ChangePasswordDto
+  ChangePasswordDto,
+  MeAuthControllerChangeEmail401,
+  MeAuthControllerChangeEmail403,
+  MeAuthControllerChangePassword401,
+  MeAuthControllerChangePassword403
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
@@ -16,11 +20,24 @@ export type meAuthControllerChangePasswordResponse204 = {
   status: 204
 }
 
+export type meAuthControllerChangePasswordResponse401 = {
+  data: MeAuthControllerChangePassword401
+  status: 401
+}
+
+export type meAuthControllerChangePasswordResponse403 = {
+  data: MeAuthControllerChangePassword403
+  status: 403
+}
+
 export type meAuthControllerChangePasswordResponseSuccess = (meAuthControllerChangePasswordResponse204) & {
   headers: Headers
 }
+export type meAuthControllerChangePasswordResponseError = (meAuthControllerChangePasswordResponse401 | meAuthControllerChangePasswordResponse403) & {
+  headers: Headers
+}
 
-export type meAuthControllerChangePasswordResponse = (meAuthControllerChangePasswordResponseSuccess)
+export type meAuthControllerChangePasswordResponse = (meAuthControllerChangePasswordResponseSuccess | meAuthControllerChangePasswordResponseError)
 
 export const getMeAuthControllerChangePasswordUrl = () => {
   return `/me/auth/password`
@@ -42,11 +59,24 @@ export type meAuthControllerChangeEmailResponse204 = {
   status: 204
 }
 
+export type meAuthControllerChangeEmailResponse401 = {
+  data: MeAuthControllerChangeEmail401
+  status: 401
+}
+
+export type meAuthControllerChangeEmailResponse403 = {
+  data: MeAuthControllerChangeEmail403
+  status: 403
+}
+
 export type meAuthControllerChangeEmailResponseSuccess = (meAuthControllerChangeEmailResponse204) & {
   headers: Headers
 }
+export type meAuthControllerChangeEmailResponseError = (meAuthControllerChangeEmailResponse401 | meAuthControllerChangeEmailResponse403) & {
+  headers: Headers
+}
 
-export type meAuthControllerChangeEmailResponse = (meAuthControllerChangeEmailResponseSuccess)
+export type meAuthControllerChangeEmailResponse = (meAuthControllerChangeEmailResponseSuccess | meAuthControllerChangeEmailResponseError)
 
 export const getMeAuthControllerChangeEmailUrl = () => {
   return `/me/auth/email`

@@ -33,7 +33,6 @@ export class ThreadPresenter {
       deletedAt: ctx.canDeleteThread ? thread.deletedAt : undefined,
       deletedById: ctx.canDeleteThread ? thread.deletedById : undefined,
       author: thread.author,
-      nestId: thread.nestId,
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,
       access: ctx,
