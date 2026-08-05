@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -10,17 +12,29 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
+import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
+import { ValidationException } from 'src/common/exceptions/validation.exception'
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
+import { ApiDataResponse } from 'src/common/swagger/api-data-response.decorator'
+import { ApiExceptionResponses } from 'src/common/swagger/api-exception-responses.decorator'
+import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response.decorator'
 import type { AuthUser } from 'src/common/types/auth.user'
-import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
-import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { NestNotFoundException } from 'src/nest/exceptions/nest-not-found.exception'
 import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
+import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
 import { ThreadCreateDto } from './dto/thread.create.dto'
+import { ThreadDetailResponseDto } from './dto/thread.detail-response.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
+import { ThreadSummaryResponseDto } from './dto/thread.summary-response.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
+import { ThreadNotFoundException } from './exceptions/thread-not-found.exception'
 import { ThreadService } from './thread.service'
 
+@ApiTags('Threads')
 @Controller('nests/:nestSlug/threads')
 @UseInterceptors(ResponseInterceptor)
 export class NestThreadController {
@@ -30,6 +44,9 @@ export class NestThreadController {
 
   @Get()
   @UseGuards(OptionalAuthGuard)
+  @ApiOperation({ operationId: 'nestThreadList', summary: 'List threads in a nest' })
+  @ApiPaginatedResponse({ status: 200, description: 'Threads', type: ThreadSummaryResponseDto })
+  @ApiExceptionResponses(ValidationException, InvalidCursorException, NestNotFoundException, InsufficientPermissionsException)
   listByNest(
     @Param('nestSlug') nestSlug: string,
     @Query() query: ThreadQueryDto,
@@ -40,6 +57,9 @@ export class NestThreadController {
 
   @Post()
   @AuthenticatedAndVerified()
+  @ApiOperation({ operationId: 'nestThreadCreate', summary: 'Create a thread in a nest' })
+  @ApiDataResponse({ status: 201, description: 'Thread created', type: ThreadDetailResponseDto })
+  @ApiExceptionResponses(ValidationException, NestNotFoundException, InsufficientPermissionsException)
   create(
     @Param('nestSlug') nestSlug: string,
     @CurrentUser() user: AuthUser,
@@ -50,6 +70,9 @@ export class NestThreadController {
 
   @Get(':threadSlug')
   @UseGuards(OptionalAuthGuard)
+  @ApiOperation({ operationId: 'nestThreadGetBySlug', summary: 'Get a thread by slug' })
+  @ApiDataResponse({ status: 200, description: 'Thread', type: ThreadDetailResponseDto })
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException)
   getBySlug(
     @Param('nestSlug') nestSlug: string,
     @Param('threadSlug') threadSlug: string,
@@ -60,6 +83,9 @@ export class NestThreadController {
 
   @Patch(':threadSlug')
   @AuthenticatedAndVerified()
+  @ApiOperation({ operationId: 'nestThreadUpdate', summary: 'Update a thread\'s title and/or content' })
+  @ApiDataResponse({ status: 200, description: 'Thread updated', type: ThreadDetailResponseDto })
+  @ApiExceptionResponses(ValidationException, NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
   update(
     @Param('nestSlug') nestSlug: string,
     @Param('threadSlug') threadSlug: string,
@@ -71,11 +97,15 @@ export class NestThreadController {
 
   @Delete(':threadSlug')
   @AuthenticatedAndVerified()
-  remove(
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ operationId: 'nestThreadDelete', summary: 'Delete a thread' })
+  @ApiResponse({ status: 204, description: 'Thread deleted' })
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  async remove(
     @Param('nestSlug') nestSlug: string,
     @Param('threadSlug') threadSlug: string,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.threads.deleteThread(nestSlug, threadSlug, user.id)
+    await this.threads.deleteThread(nestSlug, threadSlug, user.id)
   }
 }
