@@ -14,9 +14,8 @@ import { ResponseInterceptor } from 'src/common/interceptors/response.intercepto
 import type { AuthUser } from 'src/common/types/auth.user'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
-import { AuthGuard } from 'src/security/guards/auth.guard'
+import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
-import { VerifiedGuard } from 'src/security/guards/verified.guard'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
@@ -40,7 +39,7 @@ export class NestThreadController {
   }
 
   @Post()
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @AuthenticatedAndVerified()
   create(
     @Param('nestSlug') nestSlug: string,
     @CurrentUser() user: AuthUser,
@@ -60,7 +59,7 @@ export class NestThreadController {
   }
 
   @Patch(':threadSlug')
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @AuthenticatedAndVerified()
   update(
     @Param('nestSlug') nestSlug: string,
     @Param('threadSlug') threadSlug: string,
@@ -71,7 +70,7 @@ export class NestThreadController {
   }
 
   @Delete(':threadSlug')
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @AuthenticatedAndVerified()
   remove(
     @Param('nestSlug') nestSlug: string,
     @Param('threadSlug') threadSlug: string,

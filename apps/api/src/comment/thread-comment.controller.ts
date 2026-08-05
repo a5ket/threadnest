@@ -3,9 +3,8 @@ import { ResponseInterceptor } from 'src/common/interceptors/response.intercepto
 import type { AuthUser } from 'src/common/types/auth.user'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
-import { AuthGuard } from 'src/security/guards/auth.guard'
+import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
-import { VerifiedGuard } from 'src/security/guards/verified.guard'
 import { CommentService } from './comment.service'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentQueryDto } from './dto/comment.query.dto'
@@ -28,7 +27,7 @@ export class ThreadCommentController {
     return this.comments.listCommentsByThreadSlug(nestSlug, threadSlug, user?.id ?? null, query)
   }
 
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @AuthenticatedAndVerified()
   @Post()
   createThreadComment(
     @Param('nestSlug') nestSlug: string,

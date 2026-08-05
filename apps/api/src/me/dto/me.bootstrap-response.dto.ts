@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { NestReferencetDto } from 'src/nest/dto/nest-reference.dto'
 
 export class MeBootstrapUserDto {
   @ApiProperty({ description: 'User ID' })
@@ -17,21 +18,10 @@ export class MeBootstrapUserDto {
   emailVerified!: boolean
 }
 
-export class MeBootstrapNestDto {
-  @ApiProperty({ description: 'Nest ID' })
-  id!: string
-
-  @ApiProperty({ description: 'Nest display name' })
-  name!: string
-
-  @ApiProperty({ description: 'Unique nest slug' })
-  slug!: string
-}
-
 export class MeBootstrapDataDto {
   @ApiProperty({ type: MeBootstrapUserDto, description: 'Authenticated user profile' })
   user!: MeBootstrapUserDto
 
-  @ApiProperty({ type: [MeBootstrapNestDto], description: 'Nests the user is a member of' })
-  nests!: MeBootstrapNestDto[]
+  @ApiProperty({ type: [NestReferencetDto], description: 'Nests the user is a member of' })
+  nests!: NestReferencetDto[]
 }

@@ -3,9 +3,8 @@ import { ResponseInterceptor } from 'src/common/interceptors/response.intercepto
 import type { AuthUser } from 'src/common/types/auth.user'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
-import { AuthGuard } from 'src/security/guards/auth.guard'
+import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
-import { VerifiedGuard } from 'src/security/guards/verified.guard'
 import { CommentService } from './comment.service'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
@@ -37,7 +36,7 @@ export class CommentController {
     return this.comments.listCommentReplies(commentId, user?.id ?? null, query)
   }
 
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @AuthenticatedAndVerified()
   @Post(':commentId/replies')
   async createCommentReply(
     @Param('commentId') commentId: string,
@@ -47,7 +46,7 @@ export class CommentController {
     return this.comments.createCommentReply(commentId, user.id, dto)
   }
 
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @AuthenticatedAndVerified()
   @Patch(':commentId')
   async updateComment(
     @Param('commentId') commentId: string,
@@ -57,7 +56,7 @@ export class CommentController {
     return this.comments.updateComment(commentId, user.id, dto)
   }
 
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @AuthenticatedAndVerified()
   @Delete(':commentId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeComment(

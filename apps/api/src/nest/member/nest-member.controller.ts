@@ -8,20 +8,19 @@ import {
   Param,
   Patch,
   Query,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
 import type { AuthUser } from 'src/common/types/auth.user'
+import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
-import { AuthGuard } from 'src/security/guards/auth.guard'
-import { VerifiedGuard } from 'src/security/guards/verified.guard'
+import { Verified } from 'src/security/decorators/verified.decorator'
 import { NestMemberQueryDto } from './dto/nest-member.query.dto'
 import { NestMemberUpdateRoleDto } from './dto/nest-member.update-role.dto'
 import { NestMemberService } from './nest-member.service'
 
 @Controller('nests/:nestSlug/members')
-@UseGuards(AuthGuard)
+@Authenticated()
 @UseInterceptors(ResponseInterceptor)
 export class NestMemberController {
   constructor(
@@ -38,7 +37,7 @@ export class NestMemberController {
   }
 
   @Delete(':userId')
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @Verified()
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('nestSlug') nestSlug: string,
@@ -49,7 +48,7 @@ export class NestMemberController {
   }
 
   @Patch(':userId/role')
-  @UseGuards(AuthGuard, VerifiedGuard)
+  @Verified()
   async changeMemberRole(
     @Param('nestSlug') nestSlug: string,
     @Param('userId') targetUserId: string,
