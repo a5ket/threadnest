@@ -8,9 +8,12 @@ export class CommentPresenter {
     deletedById: string | null,
     authorId: string,
     canModerateContent: boolean,
+    authorBlockedViewer: boolean,
   ) {
     if (!deletedAt) {
-      return { hideContent: false, hideAuthor: false }
+      // authorBlockedViewer hides content the viewer genuinely can't see; 
+      // viewerBlockedAuthor is informational only — the blocker can still see it
+      return { hideContent: authorBlockedViewer, hideAuthor: false }
     }
 
     const deletedByAuthor = deletedById === authorId
@@ -22,7 +25,7 @@ export class CommentPresenter {
   }
 
   toView(comment: Comment, blockFlags: CommentBlockFlags = { viewerBlockedAuthor: false, authorBlockedViewer: false }, canModerateContent = false) {
-    const { hideContent, hideAuthor } = this.redact(comment.deletedAt, comment.deletedById, comment.authorId, canModerateContent)
+    const { hideContent, hideAuthor } = this.redact(comment.deletedAt, comment.deletedById, comment.authorId, canModerateContent, blockFlags.authorBlockedViewer)
 
     return {
       id: comment.id,
@@ -42,7 +45,7 @@ export class CommentPresenter {
   }
 
   toNodeView(node: CommentNode, canModerateContent = false) {
-    const { hideContent, hideAuthor } = this.redact(node.deletedAt, node.deletedById, node.authorId, canModerateContent)
+    const { hideContent, hideAuthor } = this.redact(node.deletedAt, node.deletedById, node.authorId, canModerateContent, node.authorBlockedViewer)
 
     return {
       id: node.id,
