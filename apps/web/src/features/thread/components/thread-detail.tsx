@@ -4,6 +4,7 @@ import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
 import { formatDateTime } from '@/common/format-date'
 import { getUserDisplayName } from '@/common/user-display-name'
+import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
 import { useDeleteThread } from '@/features/thread/thread.hooks'
 import Link from 'next/link'
@@ -74,6 +75,7 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
             {' · '}
             {formatDateTime(thread.createdAt)}
           </span>
+          <BlockButton userId={thread.author.id} />
         </p>
       </div>
 

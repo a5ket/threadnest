@@ -1,12 +1,20 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
+import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseInterceptors } from '@nestjs/common'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { BlockService } from 'src/block/block.service'
+import { AlreadyBlockedException } from 'src/block/exceptions/already-blocked.exception'
+import { CannotBlockYourselfException } from 'src/block/exceptions/cannot-block-yourself.exception'
+import { NotBlockedException } from 'src/block/exceptions/not-blocked.exception'
+import { BlockedUserResponseDto } from 'src/block/dto/blocked-user-response.dto'
+import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
+import { ApiDataResponse } from 'src/common/swagger/api-data-response.decorator'
+import { ApiExceptionResponses } from 'src/common/swagger/api-exception-responses.decorator'
 import type { AuthUser } from 'src/common/types/auth.user'
+import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
-import { AuthGuard } from 'src/security/guards/auth.guard'
+import { UserNotFoundException } from 'src/user/exceptions/user-not-found.exception'
 
+@ApiTags('Blocks')
 @Controller('me/blocks')
-@UseGuards(AuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class MeBlockController {
   constructor(
@@ -14,6 +22,9 @@ export class MeBlockController {
   ) { }
 
   @Get()
+  @ApiOperation({ operationId: 'meBlockList', summary: 'List blocked users' })
+  @ApiDataResponse({ status: 200, description: 'Blocked users', type: BlockedUserResponseDto, isArray: true })
+  @Authenticated()
   async listBlocks(
     @CurrentUser() user: AuthUser
   ) {
@@ -21,6 +32,10 @@ export class MeBlockController {
   }
 
   @Post(':blockedId')
+  @ApiOperation({ operationId: 'meBlockCreate', summary: 'Block a user' })
+  @ApiDataResponse({ status: 201, description: 'User blocked', type: BlockedUserResponseDto })
+  @Authenticated()
+  @ApiExceptionResponses(CannotBlockYourselfException, UserNotFoundException, AlreadyBlockedException)
   async blockUser(
     @Param('blockedId') blockedId: string,
     @CurrentUser() user: AuthUser
@@ -30,6 +45,9 @@ export class MeBlockController {
 
   @Delete(':blockedId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ operationId: 'meBlockDelete', summary: 'Unblock a user' })
+  @Authenticated()
+  @ApiExceptionResponses(NotBlockedException)
   async unblockUser(
     @Param('blockedId') blockedId: string,
     @CurrentUser() user: AuthUser,
@@ -38,6 +56,10 @@ export class MeBlockController {
   }
 
   @Get(':blockedId')
+  @ApiOperation({ operationId: 'meBlockGet', summary: 'Check whether a user is blocked' })
+  @ApiDataResponse({ status: 200, description: 'Block', type: BlockedUserResponseDto })
+  @Authenticated()
+  @ApiExceptionResponses(NotBlockedException)
   async getBlockedUser(
     @Param('blockedId') blockedId: string,
     @CurrentUser() user: AuthUser

@@ -4,6 +4,7 @@ import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
 import { formatDateTime } from '@/common/format-date'
 import { getUserDisplayName } from '@/common/user-display-name'
+import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore } from '@/features/thread/components/thread-store-provider'
 import { useDeleteComment } from '@/features/comment/comment.hooks'
 import type { CommentNode } from '@/features/comment/comment.types'
@@ -86,6 +87,8 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
         {canDelete && (
           <DeleteConfirmButton isPending={deleteComment.isPending} onConfirm={() => deleteComment.mutate({ commentId: comment.id })} />
         )}
+
+        {comment.author && <BlockButton userId={comment.author.id} />}
 
         {hiddenReplyCount > 0 && (
           <Link href={`/n/${nestSlug}/t/${threadSlug}/c/${comment.id}`} className='text-primary hover:underline'>
