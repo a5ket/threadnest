@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { NestJoinRequestSummary } from './types/nest-join-request.summary'
 
+type NestJoinRequestUserView = Pick<NestJoinRequestSummary, 'id' | 'nest' | 'resolvedBy' | 'message' | 'status' | 'createdAt' | 'resolvedAt'>
+
 @Injectable()
 export class NestJoinRequestPresenter {
-  toUserView(request: NestJoinRequestSummary) {
+  toUserView(request: NestJoinRequestUserView) {
     return {
       id: request.id,
       nest: request.nest,

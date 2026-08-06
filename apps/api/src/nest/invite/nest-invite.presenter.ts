@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { NestInviteSummary } from './types/nest-invite.summary'
 
+type NestInviteUserView = Pick<NestInviteSummary, 'id' | 'nest' | 'invitedBy' | 'resolvedBy' | 'message' | 'status' | 'createdAt' | 'resolvedAt'>
+
 @Injectable()
 export class NestInvitePresenter {
-  toUserView(invite: NestInviteSummary) {
+  toUserView(invite: NestInviteUserView) {
     return {
       id: invite.id,
       nest: invite.nest,
@@ -29,4 +31,3 @@ export class NestInvitePresenter {
     }
   }
 }
-

@@ -66,11 +66,15 @@ export class NestJoinRequestService {
 
     await this.policy.assertCanListAsNest(nest, actorUserId)
 
-    return this.requestRepo.listAsNest(nest.id)
+    const requests = await this.requestRepo.listAsNest(nest.id)
+
+    return requests.map((request) => this.presenter.toNestView(request))
   }
 
   async listAsUser(actorUserId: string) {
-    return this.requestRepo.listAsUser(actorUserId)
+    const requests = await this.requestRepo.listAsUser(actorUserId)
+
+    return requests.map((request) => this.presenter.toUserView(request))
   }
 
   async getAsNest(

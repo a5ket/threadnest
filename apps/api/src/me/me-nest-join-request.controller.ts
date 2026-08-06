@@ -1,12 +1,19 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
-import type { AuthUser } from 'src/common/types/auth.user'
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseInterceptors } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { JoinRequestNotPendingException } from 'src/nest/join-request/exceptions/join-request-not-pending.exception'
+import { NestJoinRequestNotFoundException } from 'src/nest/join-request/exceptions/nest-join-request-not-found.exception'
+import { NestJoinRequestPersonalResponseDto } from 'src/nest/join-request/dto/nest-join-request-personal-response.dto'
 import { NestJoinRequestService } from 'src/nest/join-request/nest-join-request.service'
+import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
+import { ApiDataResponse } from 'src/common/swagger/api-data-response.decorator'
+import { ApiExceptionResponses } from 'src/common/swagger/api-exception-responses.decorator'
+import type { AuthUser } from 'src/common/types/auth.user'
+import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
-import { AuthGuard } from 'src/security/guards/auth.guard'
 
+@ApiTags('Nest Join Requests')
 @Controller('/me/nest-join-requests')
-@UseGuards(AuthGuard)
+@Authenticated()
 @UseInterceptors(ResponseInterceptor)
 export class MeNestJoinRequestController {
   constructor(
@@ -14,6 +21,8 @@ export class MeNestJoinRequestController {
   ) { }
 
   @Get()
+  @ApiOperation({ operationId: 'meNestJoinRequestList', summary: 'List the current user\'s join requests' })
+  @ApiDataResponse({ status: 200, description: 'Join requests', type: NestJoinRequestPersonalResponseDto, isArray: true })
   list(
     @CurrentUser() user: AuthUser
   ) {
@@ -21,6 +30,9 @@ export class MeNestJoinRequestController {
   }
 
   @Get(':requestId')
+  @ApiOperation({ operationId: 'meNestJoinRequestGet', summary: 'Get one of the current user\'s join requests' })
+  @ApiDataResponse({ status: 200, description: 'Join request', type: NestJoinRequestPersonalResponseDto })
+  @ApiExceptionResponses(NestJoinRequestNotFoundException)
   get(
     @Param('requestId') requestId: string,
     @CurrentUser() user: AuthUser
@@ -30,6 +42,9 @@ export class MeNestJoinRequestController {
 
   @Post(':requestId/cancel')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ operationId: 'meNestJoinRequestCancel', summary: 'Cancel a pending join request' })
+  @ApiResponse({ status: 204, description: 'Join request cancelled' })
+  @ApiExceptionResponses(NestJoinRequestNotFoundException, JoinRequestNotPendingException)
   cancel(
     @Param('requestId') requestId: string,
     @CurrentUser() user: AuthUser

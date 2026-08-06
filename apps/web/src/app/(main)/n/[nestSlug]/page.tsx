@@ -38,6 +38,18 @@ export default async function NestPage({
         </div>
 
         <div className='flex items-center gap-4'>
+          {nest.access.canManageInvites && (
+            <Link href={`/n/${nestSlug}/invites`} className='text-sm text-muted-foreground hover:underline'>
+              Invites
+            </Link>
+          )}
+
+          {nest.access.canManageJoinRequests && (
+            <Link href={`/n/${nestSlug}/join-requests`} className='text-sm text-muted-foreground hover:underline'>
+              Join requests
+            </Link>
+          )}
+
           {nest.access.canModerateContent && (
             <Link href={`/n/${nestSlug}/settings`} className='text-sm text-muted-foreground hover:underline'>
               Settings

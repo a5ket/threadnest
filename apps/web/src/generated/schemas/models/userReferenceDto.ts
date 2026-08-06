@@ -16,8 +16,8 @@ export interface UserReferenceDto {
      */
   profile: UserReferenceProfileDto | null
   /**
-     * The user's role in the nest this reference was resolved for, or null if they are not a member
+     * The user's role in the nest this reference was resolved for. Omitted where role isn't resolved for this reference
      * @nullable
      */
-  role: UserReferenceDtoRole
+  role?: UserReferenceDtoRole
 }

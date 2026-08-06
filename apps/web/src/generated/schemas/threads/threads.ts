@@ -41,7 +41,7 @@ export const NestThreadListResponse = zod.object({
           displayName: zod.string().nullable().describe('Display name'),
           avatarUrl: zod.string().nullable().describe('Avatar URL')
         }).nullable().describe('Null if the user has no profile'),
-        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
       }).describe('Thread author')
     })),
     meta: zod.object({
@@ -87,7 +87,7 @@ export const NestThreadCreateResponse = zod.object({
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
       }).nullable().describe('Null if the user has no profile'),
-      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
     }).describe('Thread author'),
     lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
     pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
@@ -135,7 +135,7 @@ export const NestThreadGetBySlugResponse = zod.object({
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
       }).nullable().describe('Null if the user has no profile'),
-      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
     }).describe('Thread author'),
     lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
     pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
@@ -193,7 +193,7 @@ export const NestThreadUpdateResponse = zod.object({
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
       }).nullable().describe('Null if the user has no profile'),
-      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
     }).describe('Thread author'),
     lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
     pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),

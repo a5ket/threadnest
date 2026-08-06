@@ -5,7 +5,7 @@ const ROLE_LABELS: Partial<Record<NonNullable<UserReferenceDtoRole>, string>> = 
   MODERATOR: 'Moderator'
 }
 
-export function RoleBadge({ role }: { role: UserReferenceDtoRole }) {
+export function RoleBadge({ role }: { role: UserReferenceDtoRole | undefined }) {
   if (!role) return null
 
   const label = ROLE_LABELS[role]

@@ -46,11 +46,15 @@ export class NestInviteService {
 
     await this.policy.assertCanListAsNest(nest, actorUserId)
 
-    return this.inviteRepo.listAsNest(nest.id)
+    const invites = await this.inviteRepo.listAsNest(nest.id)
+
+    return invites.map((invite) => this.presenter.toNestView(invite))
   }
 
   async listAsUser(actorUserId: string) {
-    return this.inviteRepo.listAsUser(actorUserId)
+    const invites = await this.inviteRepo.listAsUser(actorUserId)
+
+    return invites.map((invite) => this.presenter.toUserView(invite))
   }
 
   async getAsNest(nestSlug: string, inviteId: string, actorUserId: string) {

@@ -24,7 +24,7 @@ export const CommentGetResponse = zod.object({
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
       }).nullable().describe('Null if the user has no profile'),
-      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
@@ -63,7 +63,7 @@ export const CommentUpdateResponse = zod.object({
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
       }).nullable().describe('Null if the user has no profile'),
-      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
@@ -121,7 +121,7 @@ export const CommentListRepliesResponse = zod.object({
           displayName: zod.string().nullable().describe('Display name'),
           avatarUrl: zod.string().nullable().describe('Avatar URL')
         }).nullable().describe('Null if the user has no profile'),
-        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
       }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
       parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
       content: zod.string().nullable().describe('Comment content. Null if hidden'),
@@ -168,7 +168,7 @@ export const CommentCreateReplyResponse = zod.object({
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
       }).nullable().describe('Null if the user has no profile'),
-      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
@@ -218,7 +218,7 @@ export const NestThreadCommentListResponse = zod.object({
           displayName: zod.string().nullable().describe('Display name'),
           avatarUrl: zod.string().nullable().describe('Avatar URL')
         }).nullable().describe('Null if the user has no profile'),
-        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
       }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
       parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
       content: zod.string().nullable().describe('Comment content. Null if hidden'),
@@ -266,7 +266,7 @@ export const NestThreadCommentCreateResponse = zod.object({
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
       }).nullable().describe('Null if the user has no profile'),
-      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),

@@ -6,7 +6,7 @@
  */
 
 /**
- * The user's role in the nest this reference was resolved for, or null if they are not a member
+ * The user's role in the nest this reference was resolved for. Omitted where role isn't resolved for this reference
  * @nullable
  */
 export type UserReferenceDtoRole = typeof UserReferenceDtoRole[keyof typeof UserReferenceDtoRole] | null
