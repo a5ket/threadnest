@@ -1,4 +1,5 @@
 import { NestStoreProvider } from '@/features/nest/components/nest-store-provider'
+import { PrivateNestScreen } from '@/features/nest/components/private-nest-screen'
 import { getNestServer } from '@/features/nest/nest.server'
 import { notFound } from 'next/navigation'
 
@@ -14,6 +15,10 @@ export default async function NestLayout({
 
   if (!nest) {
     notFound()
+  }
+
+  if (!nest.access.canViewNest) {
+    return <PrivateNestScreen nestSlug={nestSlug} name={nest.name} joinPolicy={nest.access.joinPolicy} />
   }
 
   return (

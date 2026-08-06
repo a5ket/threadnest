@@ -1,7 +1,12 @@
 'use client'
 
 import { createMutationHook } from '@/common/api-mutation'
-import { nestJoinRequestApprove, nestJoinRequestReject } from './join-request.api'
+import { nestJoinRequestApprove, nestJoinRequestCreate, nestJoinRequestReject } from './join-request.api'
+
+export const useCreateJoinRequest = createMutationHook(
+  (nestSlug: string) => nestJoinRequestCreate(nestSlug),
+  201
+)
 
 export const useApproveJoinRequest = createMutationHook(
   ({ nestSlug, requestId }: { nestSlug: string, requestId: string }) => nestJoinRequestApprove(nestSlug, requestId),
