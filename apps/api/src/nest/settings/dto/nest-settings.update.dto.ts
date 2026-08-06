@@ -1,8 +1,6 @@
 import { NestJoinPolicy, NestMemberRole, NestVisibility } from 'generated/prisma/enums'
 import { IsEnum, IsOptional } from 'class-validator'
-import { Exclude } from 'class-transformer'
 
-@Exclude()
 export class NestSettingsUpdateDto {
   @IsEnum(NestVisibility)
   @IsOptional()

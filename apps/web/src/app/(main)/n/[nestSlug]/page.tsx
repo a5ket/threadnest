@@ -37,12 +37,20 @@ export default async function NestPage({
           </p>
         </div>
 
-        <Link
-          href={`/n/${nestSlug}/t/new`}
-          className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover'
-        >
-          New thread
-        </Link>
+        <div className='flex items-center gap-4'>
+          {nest.access.canModerateContent && (
+            <Link href={`/n/${nestSlug}/settings`} className='text-sm text-muted-foreground hover:underline'>
+              Settings
+            </Link>
+          )}
+
+          <Link
+            href={`/n/${nestSlug}/t/new`}
+            className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover'
+          >
+            New thread
+          </Link>
+        </div>
       </div>
 
       <ul className='flex flex-col gap-3'>

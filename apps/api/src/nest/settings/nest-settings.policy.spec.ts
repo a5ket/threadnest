@@ -15,16 +15,16 @@ describe('NestSettingsPolicy', () => {
   })
 
   describe('assertCanViewSettings', () => {
-    it('allows when canManageSettings is true', async () => {
-      givenContext({ canManageSettings: true })
+    it('allows when canModerateContent is true', async () => {
+      givenContext({ canModerateContent: true })
 
       await expect(
         policy.assertCanViewSettings('nest-1', 'user-1'),
       ).resolves.toBeUndefined()
     })
 
-    it('throws InsufficientPermissionsException when canManageSettings is false', async () => {
-      givenContext({ canManageSettings: false })
+    it('throws InsufficientPermissionsException when canModerateContent is false', async () => {
+      givenContext({ canModerateContent: false })
 
       await expect(
         policy.assertCanViewSettings('nest-1', 'user-1'),

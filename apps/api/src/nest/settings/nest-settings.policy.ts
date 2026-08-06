@@ -9,14 +9,14 @@ export class NestSettingsPolicy {
   ) { }
 
   async assertCanViewSettings(nestId: string, actorUserId: string) {
-    await this.assertCanManageSettings(nestId, actorUserId)
+    const access = await this.nestAccess.getContext(nestId, actorUserId)
+
+    if (!access.canModerateContent) {
+      throw new InsufficientPermissionsException()
+    }
   }
 
   async assertCanUpdateSettings(nestId: string, actorUserId: string) {
-    await this.assertCanManageSettings(nestId, actorUserId)
-  }
-
-  private async assertCanManageSettings(nestId: string, actorUserId: string) {
     const access = await this.nestAccess.getContext(nestId, actorUserId)
 
     if (!access.canManageSettings) {

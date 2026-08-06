@@ -6,17 +6,40 @@
  */
 import * as zod from 'zod'
 
-export const NestSettingsControllerGetNestSettingsParams = zod.object({
+/**
+ * @summary Get a nest's settings
+ */
+export const NestSettingsGetParams = zod.object({
   nestSlug: zod.string()
 })
 
-export const NestSettingsControllerGetNestSettingsResponse = zod.unknown()
+export const NestSettingsGetResponse = zod.object({
+  data: zod.object({
+    visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Who can view the nest'),
+    joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('How users can join the nest'),
+    minThreadCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to create a thread'),
+    minCommentCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to comment'),
+    minNestEditRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to edit the nest'),
+    minThreadLockManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to lock\/unlock threads'),
+    minThreadPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin threads'),
+    minCommentPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin comments'),
+    minContentModerateRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to moderate content'),
+    minMemberViewRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to view the member list'),
+    minInviteManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage invites'),
+    minMemberRemoveRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to remove members'),
+    minJoinRequestManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage join requests'),
+    minBanManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage bans')
+  })
+})
 
-export const NestSettingsControllerUpdateNestSettingsParams = zod.object({
+/**
+ * @summary Update a nest's settings
+ */
+export const NestSettingsUpdateParams = zod.object({
   nestSlug: zod.string()
 })
 
-export const NestSettingsControllerUpdateNestSettingsBody = zod.object({
+export const NestSettingsUpdateBody = zod.object({
   visibility: zod.enum(['PUBLIC', 'PRIVATE']).optional(),
   joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).optional(),
   minThreadCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
@@ -33,4 +56,21 @@ export const NestSettingsControllerUpdateNestSettingsBody = zod.object({
   minBanManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional()
 })
 
-export const NestSettingsControllerUpdateNestSettingsResponse = zod.unknown()
+export const NestSettingsUpdateResponse = zod.object({
+  data: zod.object({
+    visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Who can view the nest'),
+    joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('How users can join the nest'),
+    minThreadCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to create a thread'),
+    minCommentCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to comment'),
+    minNestEditRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to edit the nest'),
+    minThreadLockManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to lock\/unlock threads'),
+    minThreadPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin threads'),
+    minCommentPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin comments'),
+    minContentModerateRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to moderate content'),
+    minMemberViewRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to view the member list'),
+    minInviteManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage invites'),
+    minMemberRemoveRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to remove members'),
+    minJoinRequestManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage join requests'),
+    minBanManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage bans')
+  })
+})

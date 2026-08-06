@@ -5,28 +5,58 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  NestSettingsGet200,
+  NestSettingsGet401,
+  NestSettingsGet403,
+  NestSettingsGet404,
+  NestSettingsUpdate200,
+  NestSettingsUpdate400,
+  NestSettingsUpdate401,
+  NestSettingsUpdate403,
+  NestSettingsUpdate404,
   NestSettingsUpdateDto
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
 
-export type nestSettingsControllerGetNestSettingsResponse200 = {
-  data: void
+export type nestSettingsGetResponse200 = {
+  data: NestSettingsGet200
   status: 200
 }
 
-export type nestSettingsControllerGetNestSettingsResponseSuccess = (nestSettingsControllerGetNestSettingsResponse200) & {
+export type nestSettingsGetResponse401 = {
+  data: NestSettingsGet401
+  status: 401
+}
+
+export type nestSettingsGetResponse403 = {
+  data: NestSettingsGet403
+  status: 403
+}
+
+export type nestSettingsGetResponse404 = {
+  data: NestSettingsGet404
+  status: 404
+}
+
+export type nestSettingsGetResponseSuccess = (nestSettingsGetResponse200) & {
+  headers: Headers
+}
+export type nestSettingsGetResponseError = (nestSettingsGetResponse401 | nestSettingsGetResponse403 | nestSettingsGetResponse404) & {
   headers: Headers
 }
 
-export type nestSettingsControllerGetNestSettingsResponse = (nestSettingsControllerGetNestSettingsResponseSuccess)
+export type nestSettingsGetResponse = (nestSettingsGetResponseSuccess | nestSettingsGetResponseError)
 
-export const getNestSettingsControllerGetNestSettingsUrl = (nestSlug: string) => {
+export const getNestSettingsGetUrl = (nestSlug: string) => {
   return `/nests/${nestSlug}/settings`
 }
 
-export const nestSettingsControllerGetNestSettings = async (nestSlug: string, options?: RequestInit): Promise<nestSettingsControllerGetNestSettingsResponse> => {
-  return apiFetch<nestSettingsControllerGetNestSettingsResponse>(getNestSettingsControllerGetNestSettingsUrl(nestSlug),
+/**
+ * @summary Get a nest's settings
+ */
+export const nestSettingsGet = async (nestSlug: string, options?: RequestInit): Promise<nestSettingsGetResponse> => {
+  return apiFetch<nestSettingsGetResponse>(getNestSettingsGetUrl(nestSlug),
     {
       ...options,
       method: 'GET'
@@ -35,24 +65,50 @@ export const nestSettingsControllerGetNestSettings = async (nestSlug: string, op
   )
 }
 
-export type nestSettingsControllerUpdateNestSettingsResponse200 = {
-  data: void
+export type nestSettingsUpdateResponse200 = {
+  data: NestSettingsUpdate200
   status: 200
 }
 
-export type nestSettingsControllerUpdateNestSettingsResponseSuccess = (nestSettingsControllerUpdateNestSettingsResponse200) & {
+export type nestSettingsUpdateResponse400 = {
+  data: NestSettingsUpdate400
+  status: 400
+}
+
+export type nestSettingsUpdateResponse401 = {
+  data: NestSettingsUpdate401
+  status: 401
+}
+
+export type nestSettingsUpdateResponse403 = {
+  data: NestSettingsUpdate403
+  status: 403
+}
+
+export type nestSettingsUpdateResponse404 = {
+  data: NestSettingsUpdate404
+  status: 404
+}
+
+export type nestSettingsUpdateResponseSuccess = (nestSettingsUpdateResponse200) & {
+  headers: Headers
+}
+export type nestSettingsUpdateResponseError = (nestSettingsUpdateResponse400 | nestSettingsUpdateResponse401 | nestSettingsUpdateResponse403 | nestSettingsUpdateResponse404) & {
   headers: Headers
 }
 
-export type nestSettingsControllerUpdateNestSettingsResponse = (nestSettingsControllerUpdateNestSettingsResponseSuccess)
+export type nestSettingsUpdateResponse = (nestSettingsUpdateResponseSuccess | nestSettingsUpdateResponseError)
 
-export const getNestSettingsControllerUpdateNestSettingsUrl = (nestSlug: string) => {
+export const getNestSettingsUpdateUrl = (nestSlug: string) => {
   return `/nests/${nestSlug}/settings`
 }
 
-export const nestSettingsControllerUpdateNestSettings = async (nestSlug: string,
-  nestSettingsUpdateDto: NestSettingsUpdateDto, options?: RequestInit): Promise<nestSettingsControllerUpdateNestSettingsResponse> => {
-  return apiFetch<nestSettingsControllerUpdateNestSettingsResponse>(getNestSettingsControllerUpdateNestSettingsUrl(nestSlug),
+/**
+ * @summary Update a nest's settings
+ */
+export const nestSettingsUpdate = async (nestSlug: string,
+  nestSettingsUpdateDto: NestSettingsUpdateDto, options?: RequestInit): Promise<nestSettingsUpdateResponse> => {
+  return apiFetch<nestSettingsUpdateResponse>(getNestSettingsUpdateUrl(nestSlug),
     {
       ...options,
       method: 'PATCH',
