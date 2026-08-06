@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { MODERATION_GRACE_PERIOD_MS } from 'src/common/constants/moderation.constants'
 import { NestAccess } from 'src/nest/nest.access'
 import { ThreadAccessContext } from './types/thread.access-context'
 import { ThreadPolicySubject } from './types/thread.policy-subject'
@@ -21,7 +22,8 @@ export class ThreadAccess {
     const isPinned = thread.pinnedAt !== null
 
     const isDeletedByAuthor = isDeleted && thread.deletedById === thread.authorId
-    const canReadDeletedContent = isDeleted && !isDeletedByAuthor && nestAccess.canModerateContent
+    const withinGracePeriod = isDeleted && thread.deletedAt !== null && Date.now() - thread.deletedAt.getTime() < MODERATION_GRACE_PERIOD_MS
+    const canReadDeletedContent = isDeleted && !isDeletedByAuthor && nestAccess.canModerateContent && withinGracePeriod
 
     const canReadContent = !isDeleted || canReadDeletedContent
     const canViewThread = nestAccess.canViewNest && canReadContent

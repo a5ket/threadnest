@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { MODERATION_GRACE_PERIOD_MS } from 'src/common/constants/moderation.constants'
 import { CommentBlockFlags, CommentNode, CommentPage, CommentWithRole } from './types/comment'
 
 @Injectable()
@@ -21,7 +22,10 @@ export class CommentPresenter {
       return { hideContent: true, hideAuthor: true }
     }
 
-    return { hideContent: !canModerateContent, hideAuthor: !canModerateContent }
+    const withinGracePeriod = Date.now() - deletedAt.getTime() < MODERATION_GRACE_PERIOD_MS
+    const visibleToModerator = canModerateContent && withinGracePeriod
+
+    return { hideContent: !visibleToModerator, hideAuthor: !visibleToModerator }
   }
 
   toView(comment: CommentWithRole, blockFlags: CommentBlockFlags = { viewerBlockedAuthor: false, authorBlockedViewer: false }, canModerateContent = false) {

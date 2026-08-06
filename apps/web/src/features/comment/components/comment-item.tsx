@@ -1,12 +1,17 @@
 'use client'
 
+import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
 import { formatDateTime } from '@/common/format-date'
 import { getUserDisplayName } from '@/common/user-display-name'
+import { useThreadStore } from '@/features/thread/components/thread-store-provider'
+import { useDeleteComment } from '@/features/comment/comment.hooks'
 import type { CommentNode } from '@/features/comment/comment.types'
+import { useUser } from '@/features/me/me.hooks'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { EditCommentForm } from './edit-comment-form'
 import { ReplyForm } from './reply-form'
 
 interface CommentItemProps {
@@ -18,11 +23,36 @@ interface CommentItemProps {
 
 export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: CommentItemProps) {
   const [replying, setReplying] = useState(false)
+  const [editing, setEditing] = useState(false)
   const router = useRouter()
+  const user = useUser()
+  const canModerateContent = useThreadStore((state) => state.thread.access.canModerateContent)
+
+  const deleteComment = useDeleteComment({
+    onSuccess: () => router.refresh()
+  })
 
   const authorName = comment.author ? getUserDisplayName(comment.author) : '[deleted]'
   const hiddenReplyCount = comment.replyCount - childrenCount
-  const canReply = comment.deletedAt === null
+  const isDeleted = comment.deletedAt !== null
+  const isAuthor = user !== null && comment.author?.id === user.id
+  const canReply = !isDeleted
+  const canEdit = !isDeleted && isAuthor
+  const canDelete = !isDeleted && (isAuthor || canModerateContent)
+
+  if (editing) {
+    return (
+      <EditCommentForm
+        commentId={comment.id}
+        content={comment.content ?? ''}
+        onCancel={() => setEditing(false)}
+        onSaved={() => {
+          setEditing(false)
+          router.refresh()
+        }}
+      />
+    )
+  }
 
   return (
     <div className='flex flex-col gap-1'>
@@ -45,6 +75,16 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
           <button type='button' onClick={() => setReplying(true)} className='text-muted-foreground hover:underline'>
             Reply
           </button>
+        )}
+
+        {canEdit && (
+          <button type='button' onClick={() => setEditing(true)} className='text-muted-foreground hover:underline'>
+            Edit
+          </button>
+        )}
+
+        {canDelete && (
+          <DeleteConfirmButton isPending={deleteComment.isPending} onConfirm={() => deleteComment.mutate({ commentId: comment.id })} />
         )}
 
         {hiddenReplyCount > 0 && (
