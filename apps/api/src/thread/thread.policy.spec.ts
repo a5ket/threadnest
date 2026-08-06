@@ -24,9 +24,6 @@ describe('ThreadPolicy', () => {
   const givenThreadContext = (overrides: Parameters<typeof createThreadAccessContext>[0]) =>
     threadAccess.getContext.mockResolvedValue(createThreadAccessContext(overrides))
 
-  const givenActorRole = (role: NestMemberRole) =>
-    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ role }))
-
   const givenAuthorMembership = (role: NestMemberRole | null) =>
     memberRepo.findByUser.mockResolvedValue(role ? createNestMember({ role }) : null)
 
@@ -126,8 +123,7 @@ describe('ThreadPolicy', () => {
     })
 
     it('allows a higher-ranked moderator to delete another member\'s thread', async () => {
-      givenThreadContext({ canViewThread: true, canDeleteThread: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canDeleteThread: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.MEMBER)
 
       await expect(
@@ -136,8 +132,7 @@ describe('ThreadPolicy', () => {
     })
 
     it('allows deletion when the author is no longer a member of the nest', async () => {
-      givenThreadContext({ canViewThread: true, canDeleteThread: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canDeleteThread: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(null)
 
       await expect(
@@ -162,8 +157,7 @@ describe('ThreadPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
-      givenThreadContext({ canViewThread: true, canDeleteThread: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canDeleteThread: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.OWNER)
 
       await expect(
@@ -174,8 +168,7 @@ describe('ThreadPolicy', () => {
 
   describe('assertCanManageThreadLock', () => {
     it('allows a higher-ranked moderator to lock another member\'s thread', async () => {
-      givenThreadContext({ canViewThread: true, canManageThreadLock: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canManageThreadLock: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.MEMBER)
 
       await expect(
@@ -200,8 +193,7 @@ describe('ThreadPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
-      givenThreadContext({ canViewThread: true, canManageThreadLock: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canManageThreadLock: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.OWNER)
 
       await expect(
@@ -212,8 +204,7 @@ describe('ThreadPolicy', () => {
 
   describe('assertCanManageThreadPin', () => {
     it('allows a higher-ranked moderator to pin another member\'s thread', async () => {
-      givenThreadContext({ canViewThread: true, canManageThreadPin: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canManageThreadPin: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.MEMBER)
 
       await expect(
@@ -238,8 +229,7 @@ describe('ThreadPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
-      givenThreadContext({ canViewThread: true, canManageThreadPin: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canManageThreadPin: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.OWNER)
 
       await expect(

@@ -51,10 +51,9 @@ export class CommentPolicy {
       throw new InsufficientPermissionsException()
     }
 
-    const actorCtx = await this.nestAccess.getContext(thread.nestId, userId)
     const authorMembership = await this.memberRepo.findByUser(thread.nestId, comment.authorId)
 
-    if (authorMembership && actorCtx.role && !this.nestAccess.isHigherRole(actorCtx.role, authorMembership.role)) {
+    if (authorMembership && threadCtx.role && !this.nestAccess.isHigherRole(threadCtx.role, authorMembership.role)) {
       throw new InsufficientPermissionsException()
     }
   }

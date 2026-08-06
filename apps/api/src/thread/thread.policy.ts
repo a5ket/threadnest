@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { NestMemberRole } from 'generated/prisma/enums'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { NestMemberRepository } from 'src/nest/member/nest-member.repository'
 import { NestAccess } from 'src/nest/nest.access'
@@ -18,15 +19,14 @@ export class ThreadPolicy {
 
   // Moderation actions (delete/lock/pin) against another member's thread must not let a lower-ranked
   // moderator act against a higher-ranked one. No-op when the actor is acting on their own thread.
-  private async assertOutranksAuthor(thread: ThreadPolicySubject, actorUserId: string) {
+  private async assertOutranksAuthor(thread: ThreadPolicySubject, actorUserId: string, actorRole: NestMemberRole | null) {
     if (thread.authorId === actorUserId) {
       return
     }
 
-    const actorCtx = await this.nestAccess.getContext(thread.nestId, actorUserId)
     const authorMembership = await this.memberRepo.findByUser(thread.nestId, thread.authorId)
 
-    if (authorMembership && actorCtx.role && !this.nestAccess.isHigherRole(actorCtx.role, authorMembership.role)) {
+    if (authorMembership && actorRole && !this.nestAccess.isHigherRole(actorRole, authorMembership.role)) {
       throw new InsufficientPermissionsException()
     }
   }
@@ -77,7 +77,7 @@ export class ThreadPolicy {
       throw new InsufficientPermissionsException()
     }
 
-    await this.assertOutranksAuthor(thread, actorUserId)
+    await this.assertOutranksAuthor(thread, actorUserId, ctx.role)
   }
 
   async assertCanManageThreadLock(thread: ThreadPolicySubject, actorUserId: string) {
@@ -91,7 +91,7 @@ export class ThreadPolicy {
       throw new InsufficientPermissionsException()
     }
 
-    await this.assertOutranksAuthor(thread, actorUserId)
+    await this.assertOutranksAuthor(thread, actorUserId, ctx.role)
   }
 
   async assertCanManageThreadPin(thread: ThreadPolicySubject, actorUserId: string) {
@@ -105,6 +105,6 @@ export class ThreadPolicy {
       throw new InsufficientPermissionsException()
     }
 
-    await this.assertOutranksAuthor(thread, actorUserId)
+    await this.assertOutranksAuthor(thread, actorUserId, ctx.role)
   }
 }

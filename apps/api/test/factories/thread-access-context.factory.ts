@@ -3,6 +3,7 @@ import { ThreadAccessContext } from 'src/thread/types/thread.access-context'
 export const createThreadAccessContext = (
   overrides: Partial<ThreadAccessContext> = {},
 ): ThreadAccessContext => ({
+  role: null,
   isAuthor: false,
   isDeleted: false,
   isLocked: false,

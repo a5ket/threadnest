@@ -3,7 +3,6 @@ import { InsufficientPermissionsException } from 'src/common/exceptions/insuffic
 import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.exception'
 import { createCommentPolicySubject } from 'test/factories/comment-policy-subject.factory'
 import { createMockNestAccess } from 'test/factories/nest-access.mock-factory'
-import { createNestAccessContext } from 'test/factories/nest-access-context.factory'
 import { createNestMember } from 'test/factories/nest-member.factory'
 import { createMockNestMemberRepository } from 'test/factories/nest-member-repository.mock-factory'
 import { createMockThreadAccess } from 'test/factories/thread-access.mock-factory'
@@ -24,9 +23,6 @@ describe('CommentPolicy', () => {
 
   const givenThreadContext = (overrides: Parameters<typeof createThreadAccessContext>[0]) =>
     threadAccess.getContext.mockResolvedValue(createThreadAccessContext(overrides))
-
-  const givenActorRole = (role: NestMemberRole) =>
-    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ role }))
 
   const givenAuthorMembership = (role: NestMemberRole | null) =>
     memberRepo.findByUser.mockResolvedValue(role ? createNestMember({ role }) : null)
@@ -128,8 +124,7 @@ describe('CommentPolicy', () => {
 
     it('allows when user is not the author but can moderate content', async () => {
       givenThread({})
-      givenThreadContext({ canViewThread: true, canModerateContent: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canModerateContent: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.MEMBER)
 
       await expect(
@@ -142,8 +137,7 @@ describe('CommentPolicy', () => {
 
     it('allows when the author is no longer a member of the nest', async () => {
       givenThread({})
-      givenThreadContext({ canViewThread: true, canModerateContent: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canModerateContent: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(null)
 
       await expect(
@@ -156,8 +150,7 @@ describe('CommentPolicy', () => {
 
     it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
       givenThread({})
-      givenThreadContext({ canViewThread: true, canModerateContent: true })
-      givenActorRole(NestMemberRole.MODERATOR)
+      givenThreadContext({ canViewThread: true, canModerateContent: true, role: NestMemberRole.MODERATOR })
       givenAuthorMembership(NestMemberRole.OWNER)
 
       await expect(

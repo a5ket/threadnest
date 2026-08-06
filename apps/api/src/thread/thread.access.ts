@@ -30,6 +30,7 @@ export class ThreadAccess {
 
 
     return {
+      role: nestAccess.role,
       isAuthor,
       isDeleted,
       isLocked,
