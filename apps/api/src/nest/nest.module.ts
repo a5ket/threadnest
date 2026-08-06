@@ -83,6 +83,7 @@ import { NestSettingsService } from './settings/nest-settings.service'
   ],
   exports: [
     NestRepository,
+    NestMemberRepository,
     NestService,
     NestMemberService,
     NestInviteService,

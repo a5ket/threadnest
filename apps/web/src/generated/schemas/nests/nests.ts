@@ -58,7 +58,11 @@ export const NestCreateResponse = zod.object({
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
     createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
-    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest')
+    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest'),
+    roles: zod.array(zod.object({
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Role identifier'),
+      level: zod.number().describe('Relative permission level — higher means more privileged')
+    })).optional().describe('This nest\'s role hierarchy, ordered from highest to lowest privilege. Only present for moderators and above')
   })
 })
 
@@ -104,7 +108,11 @@ export const NestGetBySlugResponse = zod.object({
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
     createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
-    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest')
+    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest'),
+    roles: zod.array(zod.object({
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Role identifier'),
+      level: zod.number().describe('Relative permission level — higher means more privileged')
+    })).optional().describe('This nest\'s role hierarchy, ordered from highest to lowest privilege. Only present for moderators and above')
   })
 })
 
@@ -160,7 +168,11 @@ export const NestUpdateResponse = zod.object({
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
     createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
-    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest')
+    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest'),
+    roles: zod.array(zod.object({
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Role identifier'),
+      level: zod.number().describe('Relative permission level — higher means more privileged')
+    })).optional().describe('This nest\'s role hierarchy, ordered from highest to lowest privilege. Only present for moderators and above')
   })
 })
 

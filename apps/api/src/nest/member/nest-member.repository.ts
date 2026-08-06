@@ -34,6 +34,19 @@ export class NestMemberRepository {
     return membership
   }
 
+  async findRolesByUserIds(nestId: string, userIds: string[]): Promise<Map<string, NestMemberRole>> {
+    if (userIds.length === 0) {
+      return new Map()
+    }
+
+    const members = await this.prisma.nestMember.findMany({
+      where: { nestId, userId: { in: [...new Set(userIds)] } },
+      select: { userId: true, role: true }
+    })
+
+    return new Map(members.map((m) => [m.userId, m.role]))
+  }
+
   async exists(nestId: string, userId: string) {
     const membership = await this.prisma.nestMember.findUnique({
       where: {

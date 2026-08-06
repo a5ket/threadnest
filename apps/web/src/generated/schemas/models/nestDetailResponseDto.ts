@@ -5,6 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { NestAccessContextDto } from './nestAccessContextDto'
+import type { RoleInfoDto } from './roleInfoDto'
 
 export interface NestDetailResponseDto {
   /** Nest display name */
@@ -23,4 +24,6 @@ export interface NestDetailResponseDto {
   createdAt?: string
   /** Last update timestamp. Only present when the current user can view the nest */
   updatedAt?: string
+  /** This nest's role hierarchy, ordered from highest to lowest privilege. Only present for moderators and above */
+  roles?: RoleInfoDto[]
 }

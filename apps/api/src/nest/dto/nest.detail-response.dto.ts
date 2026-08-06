@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { NestAccessContextDto } from './nest.access-context.dto'
+import { RoleInfoDto } from './role-info.dto'
 
 export class NestDetailResponseDto {
   @ApiProperty({ description: 'Nest display name' })
@@ -25,4 +26,7 @@ export class NestDetailResponseDto {
 
   @ApiProperty({ description: 'Last update timestamp. Only present when the current user can view the nest', required: false })
   updatedAt?: Date
+
+  @ApiProperty({ type: [RoleInfoDto], required: false, description: 'This nest\'s role hierarchy, ordered from highest to lowest privilege. Only present for moderators and above' })
+  roles?: RoleInfoDto[]
 }

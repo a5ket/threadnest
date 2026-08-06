@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ROLE_HIERARCHY } from './constants/nest-access-level'
 import { NestAccessContext } from './types/nest.access-context'
 import { NestSummary } from './types/nest.summary'
 
@@ -27,6 +28,9 @@ export class NestPresenter {
         threadCount: nest.threadCount,
         createdAt: nest.createdAt,
         updatedAt: nest.updatedAt,
+      }),
+      ...(access.canModerateContent && {
+        roles: ROLE_HIERARCHY,
       }),
     }
   }
