@@ -4,7 +4,7 @@ import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exc
 import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { COMMENT_SELECT } from './constants/comment.select'
+import { COMMENT_SELECT, commentSelect } from './constants/comment.select'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
 import { CommentNotFoundException } from './exceptions/comment-not-found.exception'
@@ -28,6 +28,7 @@ export class CommentRepository {
     replyLimit: number,
     orderBy: Prisma.Sql,
     viewerId: string | null,
+    nestId: string,
   ) {
     return Prisma.sql`
       WITH RECURSIVE comment_tree AS (
@@ -53,11 +54,13 @@ export class CommentRepository {
         (abv."blockerId" IS NOT NULL) AS "authorBlockedViewer",
         up.username AS "authorUsername",
         up."displayName" AS "authorDisplayName",
-        up."avatarUrl" AS "authorAvatarUrl"
+        up."avatarUrl" AS "authorAvatarUrl",
+        nm.role AS "authorRole"
       FROM comment_tree t
       LEFT JOIN "UserProfile" up ON up."userId" = t."authorId"
       LEFT JOIN "UserBlock" vba ON vba."blockerId" = ${viewerId} AND vba."blockedId" = t."authorId"
       LEFT JOIN "UserBlock" abv ON abv."blockerId" = t."authorId" AND abv."blockedId" = ${viewerId}
+      LEFT JOIN "NestMember" nm ON nm."userId" = t."authorId" AND nm."nestId" = ${nestId}
       ORDER BY ${orderBy}
     `
   }
@@ -107,7 +110,7 @@ export class CommentRepository {
     return { items, total, hasNextPage, nextCursor }
   }
 
-  getTree(commentId: string, viewerId: string | null, options: Omit<CommentTreeOptions, 'limit' | 'cursor'>) {
+  getTree(commentId: string, nestId: string, viewerId: string | null, options: Omit<CommentTreeOptions, 'limit' | 'cursor'>) {
     const { maxDepth, replyLimit, sortBy, sortAscending } = options
     const column = SORTABLE_COLUMNS[sortBy]
     const order = sortAscending ? Prisma.sql`ASC` : Prisma.sql`DESC`
@@ -116,12 +119,13 @@ export class CommentRepository {
       column, order, maxDepth, replyLimit,
       Prisma.sql`t.depth ASC, t.${column} ${order}, t.id ${order}`,
       viewerId,
+      nestId,
     )
 
     return this.prisma.$queryRaw<CommentNode[]>(sql)
   }
 
-  async getByThread(threadId: string, viewerId: string | null, options: CommentTreeOptions): Promise<CommentPage> {
+  async getByThread(threadId: string, nestId: string, viewerId: string | null, options: CommentTreeOptions): Promise<CommentPage> {
     const { maxDepth, replyLimit, sortBy, sortAscending, limit, cursor } = options
     const column = SORTABLE_COLUMNS[sortBy]
     const order = sortAscending ? Prisma.sql`ASC` : Prisma.sql`DESC`
@@ -144,22 +148,23 @@ export class CommentRepository {
     )
 
     if (roots.length === 0) {
-      return { data: [], meta: { total, limit, hasNextPage: false, nextCursor: null } }
+      return { items: [], meta: { total, limit, hasMore: false, nextCursor: null } }
     }
 
     const rootIds = roots.map(r => r.id)
     const sql = this.buildTreeSql(
-      Prisma.sql`id = ANY(${rootIds}::uuid[])`,
+      Prisma.sql`id = ANY(${rootIds}::text[])`,
       column, order, maxDepth, replyLimit,
-      Prisma.sql`array_position(${rootIds}::uuid[], t.root_id), t.depth ASC, t.${column} ${order}, t.id ${order}`,
+      Prisma.sql`array_position(${rootIds}::text[], t.root_id), t.depth ASC, t.${column} ${order}, t.id ${order}`,
       viewerId,
+      nestId,
     )
-    const data = await this.prisma.$queryRaw<CommentNode[]>(sql)
+    const items = await this.prisma.$queryRaw<CommentNode[]>(sql)
 
-    return { data, meta: { total, limit, hasNextPage, nextCursor } }
+    return { items, meta: { total, limit, hasMore: hasNextPage, nextCursor } }
   }
 
-  async getReplies(parentId: string, viewerId: string | null, options: CommentTreeOptions): Promise<CommentPage> {
+  async getReplies(parentId: string, nestId: string, viewerId: string | null, options: CommentTreeOptions): Promise<CommentPage> {
     const { maxDepth, replyLimit, sortBy, sortAscending, limit, cursor } = options
     const column = SORTABLE_COLUMNS[sortBy]
     const order = sortAscending ? Prisma.sql`ASC` : Prisma.sql`DESC`
@@ -182,21 +187,23 @@ export class CommentRepository {
     )
 
     if (replies.length === 0) {
-      return { data: [], meta: { total, limit, hasNextPage: false, nextCursor: null } }
+      return { items: [], meta: { total, limit, hasMore: false, nextCursor: null } }
     }
 
     const replyIds = replies.map(r => r.id)
     const sql = this.buildTreeSql(
-      Prisma.sql`id = ANY(${replyIds}::uuid[])`,
+      Prisma.sql`id = ANY(${replyIds}::text[])`,
       column, order, maxDepth, replyLimit,
-      Prisma.sql`array_position(${replyIds}::uuid[], t.root_id), t.depth ASC, t.${column} ${order}, t.id ${order}`,
+      Prisma.sql`array_position(${replyIds}::text[], t.root_id), t.depth ASC, t.${column} ${order}, t.id ${order}`,
       viewerId,
+      nestId,
     )
-    const data = await this.prisma.$queryRaw<CommentNode[]>(sql)
+    const items = await this.prisma.$queryRaw<CommentNode[]>(sql)
 
-    return { data, meta: { total, limit, hasNextPage, nextCursor } }
+    return { items, meta: { total, limit, hasMore: hasNextPage, nextCursor } }
   }
 
+  // Internal-shape lookup (no author role) — nestId isn't known ahead of this call.
   async getById(commentId: string) {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId },
@@ -210,18 +217,18 @@ export class CommentRepository {
     return comment
   }
 
-  create(threadId: string, authorId: string, dto: CommentCreateDto, db: Database = this.prisma) {
+  create(threadId: string, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
     return db.comment.create({
       data: {
         threadId,
         authorId,
         content: dto.content
       },
-      select: COMMENT_SELECT
+      select: commentSelect(nestId)
     })
   }
 
-  createReply(parentComment: Comment, authorId: string, dto: CommentCreateDto, db: Database = this.prisma) {
+  createReply(parentComment: Comment, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
     return db.comment.create({
       data: {
         threadId: parentComment.threadId,
@@ -230,7 +237,7 @@ export class CommentRepository {
         content: dto.content,
         depth: parentComment.depth + 1,
       },
-      select: COMMENT_SELECT
+      select: commentSelect(nestId)
     }).then(async (reply) => {
       await db.comment.update({
         where: { id: parentComment.id },
@@ -240,12 +247,12 @@ export class CommentRepository {
     })
   }
 
-  async updateById(commentId: string, dto: CommentUpdateDto, db: Database = this.prisma) {
+  async updateById(commentId: string, nestId: string, dto: CommentUpdateDto, db: Database = this.prisma) {
     try {
       return await db.comment.update({
         where: { id: commentId },
         data: { content: dto.content, editedAt: new Date() },
-        select: COMMENT_SELECT
+        select: commentSelect(nestId)
       })
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {

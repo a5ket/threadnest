@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Comment, CommentBlockFlags, CommentNode, CommentPage } from './types/comment'
+import { CommentBlockFlags, CommentNode, CommentPage, CommentWithRole } from './types/comment'
 
 @Injectable()
 export class CommentPresenter {
@@ -11,7 +11,7 @@ export class CommentPresenter {
     authorBlockedViewer: boolean,
   ) {
     if (!deletedAt) {
-      // authorBlockedViewer hides content the viewer genuinely can't see; 
+      // authorBlockedViewer hides content the viewer genuinely can't see;
       // viewerBlockedAuthor is informational only — the blocker can still see it
       return { hideContent: authorBlockedViewer, hideAuthor: false }
     }
@@ -24,13 +24,17 @@ export class CommentPresenter {
     return { hideContent: !canModerateContent, hideAuthor: !canModerateContent }
   }
 
-  toView(comment: Comment, blockFlags: CommentBlockFlags = { viewerBlockedAuthor: false, authorBlockedViewer: false }, canModerateContent = false) {
+  toView(comment: CommentWithRole, blockFlags: CommentBlockFlags = { viewerBlockedAuthor: false, authorBlockedViewer: false }, canModerateContent = false) {
     const { hideContent, hideAuthor } = this.redact(comment.deletedAt, comment.deletedById, comment.authorId, canModerateContent, blockFlags.authorBlockedViewer)
 
     return {
       id: comment.id,
       threadId: comment.threadId,
-      author: hideAuthor ? null : comment.author,
+      author: hideAuthor ? null : {
+        id: comment.author.id,
+        profile: comment.author.profile,
+        role: comment.author.nestMembership[0]?.role ?? null,
+      },
       parentId: comment.parentId,
       content: hideContent ? null : comment.content,
       replyCount: comment.replyCount,
@@ -57,6 +61,7 @@ export class CommentPresenter {
           displayName: node.authorDisplayName,
           avatarUrl: node.authorAvatarUrl,
         },
+        role: node.authorRole,
       },
       parentId: node.parentId,
       content: hideContent ? null : node.content,
@@ -74,7 +79,7 @@ export class CommentPresenter {
 
   toTreePage(page: CommentPage, canModerateContent = false) {
     return {
-      data: page.data.map((node) => this.toNodeView(node, canModerateContent)),
+      items: page.items.map((node) => this.toNodeView(node, canModerateContent)),
       meta: page.meta,
     }
   }

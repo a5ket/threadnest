@@ -1,4 +1,4 @@
 import { Prisma } from 'generated/prisma/client'
-import { THREAD_DETAILS_SELECT } from '../constants/thread.details.select'
+import { threadDetailsSelect } from '../constants/thread.details.select'
 
-export type ThreadDetails = Prisma.ThreadGetPayload<{ select: typeof THREAD_DETAILS_SELECT }>
+export type ThreadDetails = Prisma.ThreadGetPayload<{ select: ReturnType<typeof threadDetailsSelect> }>

@@ -1,6 +1,6 @@
 export type PaginatedResponse<T> = {
-  data: T[]
-  pagination: {
+  items: T[]
+  meta: {
     nextCursor: string | null
     hasMore: boolean
   }

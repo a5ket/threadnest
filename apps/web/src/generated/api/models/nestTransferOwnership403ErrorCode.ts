@@ -8,5 +8,6 @@
 export type NestTransferOwnership403ErrorCode = typeof NestTransferOwnership403ErrorCode[keyof typeof NestTransferOwnership403ErrorCode]
 
 export const NestTransferOwnership403ErrorCode = {
+  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
   EMAIL_VERIFICATION_REQUIRED: 'EMAIL_VERIFICATION_REQUIRED'
 } as const

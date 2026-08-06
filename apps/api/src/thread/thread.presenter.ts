@@ -3,8 +3,18 @@ import { ThreadDetails } from './types/thread.details'
 import { ThreadSummary } from './types/thread.summary'
 import { ThreadAccessContext } from './types/thread.access-context'
 
+type AuthorWithMembership = (ThreadSummary | ThreadDetails)['author']
+
 @Injectable()
 export class ThreadPresenter {
+  private toAuthorView(author: AuthorWithMembership) {
+    return {
+      id: author.id,
+      profile: author.profile,
+      role: author.nestMembership[0]?.role ?? null,
+    }
+  }
+
   toSummaryView(thread: ThreadSummary) {
     return {
       id: thread.id,
@@ -16,7 +26,7 @@ export class ThreadPresenter {
       commentCount: thread.commentCount,
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,
-      author: thread.author,
+      author: this.toAuthorView(thread.author),
     }
   }
 
@@ -32,7 +42,7 @@ export class ThreadPresenter {
       commentCount: thread.commentCount,
       deletedAt: ctx.canDeleteThread ? thread.deletedAt : undefined,
       deletedById: ctx.canDeleteThread ? thread.deletedById : undefined,
-      author: thread.author,
+      author: this.toAuthorView(thread.author),
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,
       access: ctx,

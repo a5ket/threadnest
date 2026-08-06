@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { UserReferenceDtoRole } from './userReferenceDtoRole'
 import type { UserReferenceProfileDto } from './userReferenceProfileDto'
 
 export interface UserReferenceDto {
@@ -14,4 +15,9 @@ export interface UserReferenceDto {
      * @nullable
      */
   profile: UserReferenceProfileDto | null
+  /**
+     * The user's role in the nest this reference was resolved for, or null if they are not a member
+     * @nullable
+     */
+  role: UserReferenceDtoRole
 }

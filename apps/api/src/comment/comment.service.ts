@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { BlockService } from 'src/block/block.service'
 import { EventBus } from 'src/event/event-bus'
+import { NestMemberRepository } from 'src/nest/member/nest-member.repository'
 import { TransactionManager } from 'src/prisma/transaction-manager'
 import { ThreadAccess } from 'src/thread/thread.access'
 import { ThreadService } from 'src/thread/thread.service'
@@ -24,6 +25,7 @@ export class CommentService {
     private readonly commentPresenter: CommentPresenter,
     private readonly transactionManager: TransactionManager,
     private readonly blocks: BlockService,
+    private readonly memberRepo: NestMemberRepository,
     private readonly eventBus: EventBus
   ) { }
 
@@ -33,7 +35,7 @@ export class CommentService {
 
     this.commentPolicy.assertCanReadThreadComment(threadCtx)
 
-    const page = await this.repo.getByThread(thread.id, viewerId, options)
+    const page = await this.repo.getByThread(thread.id, thread.nestId, viewerId, options)
 
     return this.commentPresenter.toTreePage(page, threadCtx.canModerateContent)
   }
@@ -45,7 +47,7 @@ export class CommentService {
 
     this.commentPolicy.assertCanReadThreadComment(threadCtx)
 
-    const page = await this.repo.getReplies(comment.id, viewerId, options)
+    const page = await this.repo.getReplies(comment.id, thread.nestId, viewerId, options)
 
     return this.commentPresenter.toTreePage(page, threadCtx.canModerateContent)
   }
@@ -62,7 +64,7 @@ export class CommentService {
     this.commentPolicy.assertCanCreateThreadComment(threadCtx)
 
     const comment = await this.transactionManager.run(async (tx) => {
-      const created = await this.repo.create(thread.id, userId, dto, tx)
+      const created = await this.repo.create(thread.id, userId, thread.nestId, dto, tx)
       await this.threads.adjustCommentCount(thread.id, 1, tx)
       await this.threads.updateLastCommentAt(thread.id, created.createdAt, tx)
       return created
@@ -84,7 +86,7 @@ export class CommentService {
     this.commentPolicy.assertCanReplyToComment(comment, threadCtx)
 
     const reply = await this.transactionManager.run(async (tx) => {
-      const created = await this.repo.createReply(comment, userId, dto, tx)
+      const created = await this.repo.createReply(comment, userId, thread.nestId, dto, tx)
       await this.threads.adjustCommentCount(thread.id, 1, tx)
       await this.threads.updateLastCommentAt(thread.id, created.createdAt, tx)
       return created
@@ -101,7 +103,12 @@ export class CommentService {
 
     this.commentPolicy.assertCanReadThreadComment(threadCtx)
 
-    return this.commentPresenter.toView(comment, await this.getBlockFlags(viewerId, comment.author.id), threadCtx.canModerateContent)
+    // nestId isn't known until the thread lookup above, so the role can't be joined
+    // in on the initial fetch — resolve it with one small indexed lookup instead.
+    const roles = await this.memberRepo.findRolesByUserIds(thread.nestId, [comment.author.id])
+    const commentWithRole = { ...comment, author: { ...comment.author, nestMembership: roles.has(comment.author.id) ? [{ role: roles.get(comment.author.id)! }] : [] } }
+
+    return this.commentPresenter.toView(commentWithRole, await this.getBlockFlags(viewerId, comment.author.id), threadCtx.canModerateContent)
   }
 
   async updateComment(
@@ -115,7 +122,7 @@ export class CommentService {
 
     this.commentPolicy.assertCanUpdateComment(comment, userId, threadCtx)
 
-    const updated = await this.repo.updateById(comment.id, dto)
+    const updated = await this.repo.updateById(comment.id, thread.nestId, dto)
     void this.eventBus.publish(new CommentUpdatedEvent({ commentId: comment.id, threadId: comment.threadId, authorId: comment.author.id }))
     return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
   }

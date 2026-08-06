@@ -1,7 +1,9 @@
+import type { NestMemberRole } from 'generated/prisma/enums'
 import type { Prisma } from 'generated/prisma/client'
-import type { COMMENT_SELECT } from '../constants/comment.select'
+import type { COMMENT_SELECT, commentSelect } from '../constants/comment.select'
 
 export type Comment = Prisma.CommentGetPayload<{ select: typeof COMMENT_SELECT }>
+export type CommentWithRole = Prisma.CommentGetPayload<{ select: ReturnType<typeof commentSelect> }>
 
 export type CommentSortBy = 'createdAt' | 'updatedAt'
 
@@ -26,6 +28,7 @@ export type CommentNode = {
     authorUsername: string | null
     authorDisplayName: string | null
     authorAvatarUrl: string | null
+    authorRole: NestMemberRole | null
     parentId: string | null
     content: string
     replyCount: number
@@ -38,11 +41,11 @@ export type CommentNode = {
 } & CommentBlockFlags
 
 export type CommentPage = {
-    data: CommentNode[]
+    items: CommentNode[]
     meta: {
         total: number
         limit: number
-        hasNextPage: boolean
+        hasMore: boolean
         nextCursor: string | null
     }
 }

@@ -8,5 +8,6 @@
 export type NestThreadCreate403ErrorCode = typeof NestThreadCreate403ErrorCode[keyof typeof NestThreadCreate403ErrorCode]
 
 export const NestThreadCreate403ErrorCode = {
+  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
   EMAIL_VERIFICATION_REQUIRED: 'EMAIL_VERIFICATION_REQUIRED'
 } as const

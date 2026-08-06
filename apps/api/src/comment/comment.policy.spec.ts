@@ -1,6 +1,11 @@
+import { NestMemberRole } from 'generated/prisma/enums'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.exception'
 import { createCommentPolicySubject } from 'test/factories/comment-policy-subject.factory'
+import { createMockNestAccess } from 'test/factories/nest-access.mock-factory'
+import { createNestAccessContext } from 'test/factories/nest-access-context.factory'
+import { createNestMember } from 'test/factories/nest-member.factory'
+import { createMockNestMemberRepository } from 'test/factories/nest-member-repository.mock-factory'
 import { createMockThreadAccess } from 'test/factories/thread-access.mock-factory'
 import { createThreadAccessContext } from 'test/factories/thread-access-context.factory'
 import { createMockThreadRepository } from 'test/factories/thread-repository.mock-factory'
@@ -10,13 +15,21 @@ import { CommentPolicy } from './comment.policy'
 describe('CommentPolicy', () => {
   const threadAccess = createMockThreadAccess()
   const threadsRepo = createMockThreadRepository()
-  const policy = new CommentPolicy(threadAccess as any, threadsRepo as any)
+  const nestAccess = createMockNestAccess()
+  const memberRepo = createMockNestMemberRepository()
+  const policy = new CommentPolicy(threadAccess as any, threadsRepo as any, nestAccess as any, memberRepo as any)
 
   const givenThread = (overrides: Parameters<typeof createThreadPolicySubject>[0]) =>
     threadsRepo.getById.mockResolvedValue(createThreadPolicySubject(overrides) as any)
 
   const givenThreadContext = (overrides: Parameters<typeof createThreadAccessContext>[0]) =>
     threadAccess.getContext.mockResolvedValue(createThreadAccessContext(overrides))
+
+  const givenActorRole = (role: NestMemberRole) =>
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ role }))
+
+  const givenAuthorMembership = (role: NestMemberRole | null) =>
+    memberRepo.findByUser.mockResolvedValue(role ? createNestMember({ role }) : null)
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -116,6 +129,8 @@ describe('CommentPolicy', () => {
     it('allows when user is not the author but can moderate content', async () => {
       givenThread({})
       givenThreadContext({ canViewThread: true, canModerateContent: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.MEMBER)
 
       await expect(
         policy.assertCanDeleteComment(
@@ -123,6 +138,34 @@ describe('CommentPolicy', () => {
           'user-1',
         ),
       ).resolves.toBeUndefined()
+    })
+
+    it('allows when the author is no longer a member of the nest', async () => {
+      givenThread({})
+      givenThreadContext({ canViewThread: true, canModerateContent: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(null)
+
+      await expect(
+        policy.assertCanDeleteComment(
+          createCommentPolicySubject({ authorId: 'author-1' }),
+          'user-1',
+        ),
+      ).resolves.toBeUndefined()
+    })
+
+    it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
+      givenThread({})
+      givenThreadContext({ canViewThread: true, canModerateContent: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.OWNER)
+
+      await expect(
+        policy.assertCanDeleteComment(
+          createCommentPolicySubject({ authorId: 'author-1' }),
+          'user-1',
+        ),
+      ).rejects.toThrow(InsufficientPermissionsException)
     })
 
     it('throws InsufficientPermissionsException when comment is already deleted', async () => {

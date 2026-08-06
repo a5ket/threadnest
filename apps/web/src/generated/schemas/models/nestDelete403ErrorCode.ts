@@ -8,5 +8,6 @@
 export type NestDelete403ErrorCode = typeof NestDelete403ErrorCode[keyof typeof NestDelete403ErrorCode]
 
 export const NestDelete403ErrorCode = {
+  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
   EMAIL_VERIFICATION_REQUIRED: 'EMAIL_VERIFICATION_REQUIRED'
 } as const

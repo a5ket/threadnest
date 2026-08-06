@@ -1,4 +1,4 @@
 import { Prisma } from 'generated/prisma/client'
-import { THREAD_SUMMARY_SELECT } from '../constants/thread.summary.select'
+import { threadSummarySelect } from '../constants/thread.summary.select'
 
-export type ThreadSummary = Prisma.ThreadGetPayload<{ select: typeof THREAD_SUMMARY_SELECT }>
+export type ThreadSummary = Prisma.ThreadGetPayload<{ select: ReturnType<typeof threadSummarySelect> }>

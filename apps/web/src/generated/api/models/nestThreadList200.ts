@@ -4,10 +4,8 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
-import type { PaginationDto } from './paginationDto'
-import type { ThreadSummaryResponseDto } from './threadSummaryResponseDto'
+import type { NestThreadList200Data } from './nestThreadList200Data'
 
 export type NestThreadList200 = {
-  data: ThreadSummaryResponseDto[]
-  pagination: PaginationDto
+  data: NestThreadList200Data
 }

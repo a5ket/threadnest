@@ -81,7 +81,7 @@ export class ThreadService {
 
     const page = await this.threadsRepo.listByNest(nest.id, query)
 
-    return { data: page.data.map((t) => this.threadPresenter.toSummaryView(t)), pagination: page.pagination }
+    return { items: page.items.map((t) => this.threadPresenter.toSummaryView(t)), meta: page.meta }
   }
 
   async updateThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ThreadUpdateDto) {
@@ -89,7 +89,7 @@ export class ThreadService {
 
     await this.threadsPolicy.assertCanUpdateThread(thread, actorUserId)
 
-    const updated = await this.threadsRepo.updateById(thread.id, dto)
+    const updated = await this.threadsRepo.updateById(thread.id, thread.nestId, dto)
 
     void this.eventBus.publish(new ThreadUpdatedEvent({
       threadId: updated.id,
@@ -125,7 +125,7 @@ export class ThreadService {
 
     await this.threadsPolicy.assertCanManageThreadLock(thread, actorUserId)
 
-    const updated = await this.threadsRepo.lock(thread.id)
+    const updated = await this.threadsRepo.lock(thread.id, thread.nestId)
 
     void this.eventBus.publish(new ThreadLockedEvent({
       threadId: updated.id,
@@ -143,7 +143,7 @@ export class ThreadService {
 
     await this.threadsPolicy.assertCanManageThreadLock(thread, actorUserId)
 
-    const updated = await this.threadsRepo.unlock(thread.id)
+    const updated = await this.threadsRepo.unlock(thread.id, thread.nestId)
 
     void this.eventBus.publish(new ThreadUnlockedEvent({
       threadId: updated.id,
@@ -161,7 +161,7 @@ export class ThreadService {
 
     await this.threadsPolicy.assertCanManageThreadPin(thread, actorUserId)
 
-    const updated = await this.threadsRepo.pin(thread.id)
+    const updated = await this.threadsRepo.pin(thread.id, thread.nestId)
 
     void this.eventBus.publish(new ThreadPinnedEvent({
       threadId: updated.id,
@@ -179,7 +179,7 @@ export class ThreadService {
 
     await this.threadsPolicy.assertCanManageThreadPin(thread, actorUserId)
 
-    const updated = await this.threadsRepo.unpin(thread.id)
+    const updated = await this.threadsRepo.unpin(thread.id, thread.nestId)
 
     void this.eventBus.publish(new ThreadUnpinnedEvent({
       threadId: updated.id,

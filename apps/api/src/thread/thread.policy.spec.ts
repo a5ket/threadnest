@@ -1,6 +1,9 @@
+import { NestMemberRole } from 'generated/prisma/enums'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { createNestAccessContext } from 'test/factories/nest-access-context.factory'
 import { createMockNestAccess } from 'test/factories/nest-access.mock-factory'
+import { createNestMember } from 'test/factories/nest-member.factory'
+import { createMockNestMemberRepository } from 'test/factories/nest-member-repository.mock-factory'
 import { createThreadAccessContext } from 'test/factories/thread-access-context.factory'
 import { createMockThreadAccess } from 'test/factories/thread-access.mock-factory'
 import { createThreadPolicySubject } from 'test/factories/thread-policy-subject.factory'
@@ -10,7 +13,8 @@ import { ThreadPolicy } from './thread.policy'
 describe('ThreadPolicy', () => {
   const nestAccess = createMockNestAccess()
   const threadAccess = createMockThreadAccess()
-  const policy = new ThreadPolicy(nestAccess as any, threadAccess as any)
+  const memberRepo = createMockNestMemberRepository()
+  const policy = new ThreadPolicy(nestAccess as any, threadAccess as any, memberRepo as any)
 
   const thread = createThreadPolicySubject()
 
@@ -19,6 +23,12 @@ describe('ThreadPolicy', () => {
 
   const givenThreadContext = (overrides: Parameters<typeof createThreadAccessContext>[0]) =>
     threadAccess.getContext.mockResolvedValue(createThreadAccessContext(overrides))
+
+  const givenActorRole = (role: NestMemberRole) =>
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ role }))
+
+  const givenAuthorMembership = (role: NestMemberRole | null) =>
+    memberRepo.findByUser.mockResolvedValue(role ? createNestMember({ role }) : null)
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -105,8 +115,30 @@ describe('ThreadPolicy', () => {
   })
 
   describe('assertCanDeleteThread', () => {
-    it('allows when canViewThread and canDeleteThread are true', async () => {
+    it('allows the author to delete their own thread without a role check', async () => {
       givenThreadContext({ canViewThread: true, canDeleteThread: true })
+
+      await expect(
+        policy.assertCanDeleteThread(thread, thread.authorId),
+      ).resolves.toBeUndefined()
+
+      expect(nestAccess.getContext).not.toHaveBeenCalled()
+    })
+
+    it('allows a higher-ranked moderator to delete another member\'s thread', async () => {
+      givenThreadContext({ canViewThread: true, canDeleteThread: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.MEMBER)
+
+      await expect(
+        policy.assertCanDeleteThread(thread, 'user-1'),
+      ).resolves.toBeUndefined()
+    })
+
+    it('allows deletion when the author is no longer a member of the nest', async () => {
+      givenThreadContext({ canViewThread: true, canDeleteThread: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(null)
 
       await expect(
         policy.assertCanDeleteThread(thread, 'user-1'),
@@ -128,11 +160,23 @@ describe('ThreadPolicy', () => {
         policy.assertCanDeleteThread(thread, 'user-1'),
       ).rejects.toThrow(InsufficientPermissionsException)
     })
+
+    it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
+      givenThreadContext({ canViewThread: true, canDeleteThread: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.OWNER)
+
+      await expect(
+        policy.assertCanDeleteThread(thread, 'user-1'),
+      ).rejects.toThrow(InsufficientPermissionsException)
+    })
   })
 
   describe('assertCanManageThreadLock', () => {
-    it('allows when canViewThread and canManageThreadLock are true', async () => {
+    it('allows a higher-ranked moderator to lock another member\'s thread', async () => {
       givenThreadContext({ canViewThread: true, canManageThreadLock: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.MEMBER)
 
       await expect(
         policy.assertCanManageThreadLock(thread, 'user-1'),
@@ -154,11 +198,23 @@ describe('ThreadPolicy', () => {
         policy.assertCanManageThreadLock(thread, 'user-1'),
       ).rejects.toThrow(InsufficientPermissionsException)
     })
+
+    it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
+      givenThreadContext({ canViewThread: true, canManageThreadLock: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.OWNER)
+
+      await expect(
+        policy.assertCanManageThreadLock(thread, 'user-1'),
+      ).rejects.toThrow(InsufficientPermissionsException)
+    })
   })
 
   describe('assertCanManageThreadPin', () => {
-    it('allows when canViewThread and canManageThreadPin are true', async () => {
+    it('allows a higher-ranked moderator to pin another member\'s thread', async () => {
       givenThreadContext({ canViewThread: true, canManageThreadPin: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.MEMBER)
 
       await expect(
         policy.assertCanManageThreadPin(thread, 'user-1'),
@@ -175,6 +231,16 @@ describe('ThreadPolicy', () => {
 
     it('throws InsufficientPermissionsException when canManageThreadPin is false', async () => {
       givenThreadContext({ canViewThread: true, canManageThreadPin: false })
+
+      await expect(
+        policy.assertCanManageThreadPin(thread, 'user-1'),
+      ).rejects.toThrow(InsufficientPermissionsException)
+    })
+
+    it('throws InsufficientPermissionsException when the author outranks the actor', async () => {
+      givenThreadContext({ canViewThread: true, canManageThreadPin: true })
+      givenActorRole(NestMemberRole.MODERATOR)
+      givenAuthorMembership(NestMemberRole.OWNER)
 
       await expect(
         policy.assertCanManageThreadPin(thread, 'user-1'),

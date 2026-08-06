@@ -4,8 +4,9 @@ import { customAlphabet } from 'nanoid'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
 import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
-import { THREAD_SUMMARY_SELECT } from './constants/thread.summary.select'
-import { THREAD_DETAILS_SELECT } from './constants/thread.details.select'
+import { threadSummarySelect } from './constants/thread.summary.select'
+import { threadDetailsSelect } from './constants/thread.details.select'
+import { THREAD_POLICY_SUBJECT_SELECT } from './constants/thread.policy-subject.select'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto, ThreadSortBy } from './dto/thread.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
@@ -39,7 +40,7 @@ export class ThreadRepository {
             content: dto.content,
             lastCommentAt: now,
           },
-          select: THREAD_DETAILS_SELECT,
+          select: threadDetailsSelect(nestId),
         })
       } catch (error) {
         if (this.prisma.isUniqueConstraintError(error, 'slug')) {
@@ -53,10 +54,12 @@ export class ThreadRepository {
     throw new InternalServerErrorException('Error creating thread')
   }
 
+  // Internal-only lookup (access-context checks) — nestId isn't known ahead of this
+  // call, and the result is never rendered, so it deliberately carries no author/role.
   async getById(threadId: string) {
     const thread = await this.prisma.thread.findUnique({
       where: { id: threadId },
-      select: THREAD_DETAILS_SELECT
+      select: THREAD_POLICY_SUBJECT_SELECT
     })
 
     if (!thread) {
@@ -69,7 +72,7 @@ export class ThreadRepository {
   async getBySlug(nestId: string, slug: string) {
     const thread = await this.prisma.thread.findUnique({
       where: { nestId_slug: { nestId, slug } },
-      select: THREAD_DETAILS_SELECT
+      select: threadDetailsSelect(nestId)
     })
 
     if (!thread) {
@@ -105,7 +108,7 @@ export class ThreadRepository {
 
     const threads = await this.prisma.thread.findMany({
       where: { nestId, deletedAt: null, ...cursorWhere },
-      select: THREAD_SUMMARY_SELECT,
+      select: threadSummarySelect(nestId),
       orderBy,
       take: limit + 1
     })
@@ -116,7 +119,7 @@ export class ThreadRepository {
     const sortField = sortBy === ThreadSortBy.LAST_COMMENT_AT ? last?.lastCommentAt : sortBy === ThreadSortBy.UPDATED_AT ? last?.updatedAt : last?.createdAt
     const nextCursor = last && hasMore ? encodeCursor(sortField ?? last.createdAt, last.id) : null
 
-    return { data: items, pagination: { nextCursor, hasMore } }
+    return { items, meta: { nextCursor, hasMore } }
   }
 
   async softDelete(threadId: string, deletedById: string, db: Database = this.prisma) {
@@ -139,7 +142,7 @@ export class ThreadRepository {
     }
   }
 
-  async updateById(threadId: string, dto: ThreadUpdateDto) {
+  async updateById(threadId: string, nestId: string, dto: ThreadUpdateDto) {
     try {
       return await this.prisma.thread.update({
         where: {
@@ -149,7 +152,7 @@ export class ThreadRepository {
           title: dto.title,
           content: dto.content
         },
-        select: THREAD_DETAILS_SELECT
+        select: threadDetailsSelect(nestId)
       })
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {
@@ -160,12 +163,12 @@ export class ThreadRepository {
     }
   }
 
-  private async setPinnedAt(threadId: string, pinnedAt: Date | null, db: Database = this.prisma) {
+  private async setPinnedAt(threadId: string, nestId: string, pinnedAt: Date | null, db: Database = this.prisma) {
     try {
       return await db.thread.update({
         where: { id: threadId },
         data: { pinnedAt },
-        select: THREAD_DETAILS_SELECT
+        select: threadDetailsSelect(nestId)
       })
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {
@@ -176,20 +179,20 @@ export class ThreadRepository {
     }
   }
 
-  async pin(threadId: string, db?: Database) {
-    return this.setPinnedAt(threadId, new Date(), db)
+  async pin(threadId: string, nestId: string, db?: Database) {
+    return this.setPinnedAt(threadId, nestId, new Date(), db)
   }
 
-  async unpin(threadId: string, db?: Database) {
-    return this.setPinnedAt(threadId, null, db)
+  async unpin(threadId: string, nestId: string, db?: Database) {
+    return this.setPinnedAt(threadId, nestId, null, db)
   }
 
-  private async setLockedAt(threadId: string, lockedAt: Date | null, db: Database = this.prisma) {
+  private async setLockedAt(threadId: string, nestId: string, lockedAt: Date | null, db: Database = this.prisma) {
     try {
       return await db.thread.update({
         where: { id: threadId },
         data: { lockedAt },
-        select: THREAD_DETAILS_SELECT
+        select: threadDetailsSelect(nestId)
       })
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {
@@ -200,12 +203,12 @@ export class ThreadRepository {
     }
   }
 
-  async lock(threadId: string, db?: Database) {
-    return this.setLockedAt(threadId, new Date(), db)
+  async lock(threadId: string, nestId: string, db?: Database) {
+    return this.setLockedAt(threadId, nestId, new Date(), db)
   }
 
-  async unlock(threadId: string, db?: Database) {
-    return this.setLockedAt(threadId, null, db)
+  async unlock(threadId: string, nestId: string, db?: Database) {
+    return this.setLockedAt(threadId, nestId, null, db)
   }
 
   async adjustCommentCount(

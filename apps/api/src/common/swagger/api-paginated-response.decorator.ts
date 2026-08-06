@@ -6,22 +6,29 @@ interface ApiPaginatedResponseOptions {
   status: number
   description: string
   type: Type<unknown>
+  metaType?: Type<unknown>
 }
 
-// Documents ResponseInterceptor's paginated wrap: `{ data: T[], pagination: PaginationDto }`.
-export function ApiPaginatedResponse({ status, description, type }: ApiPaginatedResponseOptions) {
+// Documents ResponseInterceptor's wrap of a paginated result: `{ data: { items: T[], meta } }`.
+export function ApiPaginatedResponse({ status, description, type, metaType = PaginationDto }: ApiPaginatedResponseOptions) {
   return applyDecorators(
-    ApiExtraModels(type, PaginationDto),
+    ApiExtraModels(type, metaType),
     ApiResponse({
       status,
       description,
       schema: {
         type: 'object',
         properties: {
-          data: { type: 'array', items: { $ref: getSchemaPath(type) } },
-          pagination: { $ref: getSchemaPath(PaginationDto) }
+          data: {
+            type: 'object',
+            properties: {
+              items: { type: 'array', items: { $ref: getSchemaPath(type) } },
+              meta: { $ref: getSchemaPath(metaType) }
+            },
+            required: ['items', 'meta']
+          }
         },
-        required: ['data', 'pagination']
+        required: ['data']
       }
     })
   )

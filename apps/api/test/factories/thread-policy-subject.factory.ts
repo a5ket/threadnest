@@ -6,6 +6,7 @@ export const createThreadPolicySubject = (
   id: 'thread-1',
   nestId: 'nest-1',
   authorId: 'author-1',
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
   deletedAt: null,
   deletedById: null,
   lockedAt: null,

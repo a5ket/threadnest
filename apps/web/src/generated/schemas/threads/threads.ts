@@ -23,28 +23,31 @@ export const NestThreadListQueryParams = zod.object({
 })
 
 export const NestThreadListResponse = zod.object({
-  data: zod.array(zod.object({
-    id: zod.string().describe('Thread ID'),
-    slug: zod.string().describe('Unique thread slug (within its nest)'),
-    title: zod.string().describe('Thread title'),
-    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
-    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
-    lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
-    commentCount: zod.number().describe('Number of comments on this thread'),
-    lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
-    pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
-    author: zod.object({
-      id: zod.string().describe('User ID'),
-      profile: zod.object({
-        username: zod.string().describe('Unique username'),
-        displayName: zod.string().nullable().describe('Display name'),
-        avatarUrl: zod.string().nullable().describe('Avatar URL')
-      }).nullable().describe('Null if the user has no profile')
-    }).describe('Thread author')
-  })),
-  pagination: zod.object({
-    nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
-    hasMore: zod.boolean().describe('Whether more results are available')
+  data: zod.object({
+    items: zod.array(zod.object({
+      id: zod.string().describe('Thread ID'),
+      slug: zod.string().describe('Unique thread slug (within its nest)'),
+      title: zod.string().describe('Thread title'),
+      createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+      updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+      lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
+      commentCount: zod.number().describe('Number of comments on this thread'),
+      lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
+      pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
+      author: zod.object({
+        id: zod.string().describe('User ID'),
+        profile: zod.object({
+          username: zod.string().describe('Unique username'),
+          displayName: zod.string().nullable().describe('Display name'),
+          avatarUrl: zod.string().nullable().describe('Avatar URL')
+        }).nullable().describe('Null if the user has no profile'),
+        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
+      }).describe('Thread author')
+    })),
+    meta: zod.object({
+      nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
+      hasMore: zod.boolean().describe('Whether more results are available')
+    })
   })
 })
 
@@ -83,7 +86,8 @@ export const NestThreadCreateResponse = zod.object({
         username: zod.string().describe('Unique username'),
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
-      }).nullable().describe('Null if the user has no profile')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
     }).describe('Thread author'),
     lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
     pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
@@ -130,7 +134,8 @@ export const NestThreadGetBySlugResponse = zod.object({
         username: zod.string().describe('Unique username'),
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
-      }).nullable().describe('Null if the user has no profile')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
     }).describe('Thread author'),
     lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
     pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
@@ -187,7 +192,8 @@ export const NestThreadUpdateResponse = zod.object({
         username: zod.string().describe('Unique username'),
         displayName: zod.string().nullable().describe('Display name'),
         avatarUrl: zod.string().nullable().describe('Avatar URL')
-      }).nullable().describe('Null if the user has no profile')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The user\'s role in the nest this reference was resolved for, or null if they are not a member')
     }).describe('Thread author'),
     lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
     pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),

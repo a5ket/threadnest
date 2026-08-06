@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { NestMemberRole } from 'generated/prisma/enums'
 
 export class UserReferenceProfileDto {
   @ApiProperty({ description: 'Unique username' })
@@ -17,4 +18,7 @@ export class UserReferenceDto {
 
   @ApiProperty({ type: UserReferenceProfileDto, nullable: true, description: 'Null if the user has no profile' })
   profile!: UserReferenceProfileDto | null
+
+  @ApiProperty({ enum: NestMemberRole, nullable: true, description: 'The user\'s role in the nest this reference was resolved for, or null if they are not a member' })
+  role!: NestMemberRole | null
 }

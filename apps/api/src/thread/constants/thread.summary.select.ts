@@ -1,22 +1,28 @@
 import { Prisma } from 'generated/prisma/client'
 import { USER_REFERENCE_SELECT } from 'src/user/constants/user.reference.select'
 
-export const THREAD_SUMMARY_SELECT = {
-  id: true,
+// nestId-parameterized so the author's role in *this* nest can be joined in directly
+export function threadSummarySelect(nestId: string) {
+  return {
+    id: true,
 
-  title: true,
-  slug: true,
+    title: true,
+    slug: true,
 
-  createdAt: true,
-  updatedAt: true,
-  lastCommentAt: true,
+    createdAt: true,
+    updatedAt: true,
+    lastCommentAt: true,
 
-  commentCount: true,
+    commentCount: true,
 
-  lockedAt: true,
-  pinnedAt: true,
+    lockedAt: true,
+    pinnedAt: true,
 
-  author: {
-    select: USER_REFERENCE_SELECT
-  }
-} satisfies Prisma.ThreadSelect
+    author: {
+      select: {
+        ...USER_REFERENCE_SELECT,
+        nestMembership: { where: { nestId }, select: { role: true }, take: 1 }
+      }
+    }
+  } satisfies Prisma.ThreadSelect
+}
