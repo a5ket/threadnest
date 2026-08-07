@@ -27,6 +27,34 @@ export const MeBootstrapResponse = zod.object({
 })
 
 /**
+ * @summary Change the current user's password
+ */
+export const meAuthChangePasswordBodyCurrentPasswordMin = 8
+export const meAuthChangePasswordBodyCurrentPasswordMax = 128
+
+export const meAuthChangePasswordBodyNewPasswordMin = 8
+export const meAuthChangePasswordBodyNewPasswordMax = 128
+
+export const MeAuthChangePasswordBody = zod.object({
+  currentPassword: zod.string().min(meAuthChangePasswordBodyCurrentPasswordMin).max(meAuthChangePasswordBodyCurrentPasswordMax),
+  newPassword: zod.string().min(meAuthChangePasswordBodyNewPasswordMin).max(meAuthChangePasswordBodyNewPasswordMax)
+})
+
+export const MeAuthChangePasswordResponse = zod.void()
+
+/**
+ * Sends a confirmation link to the new email address. The address isn't updated until the link is confirmed.
+ * @summary Request an email change for the current user
+ */
+export const meAuthChangeEmailBodyEmailMax = 320
+
+export const MeAuthChangeEmailBody = zod.object({
+  email: zod.email().max(meAuthChangeEmailBodyEmailMax)
+})
+
+export const MeAuthChangeEmailResponse = zod.void()
+
+/**
  * @summary List nests the current user is a member of
  */
 export const MeNestListResponse = zod.object({

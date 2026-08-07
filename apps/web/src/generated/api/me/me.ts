@@ -5,6 +5,16 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  ChangeEmailDto,
+  ChangePasswordDto,
+  MeAuthChangeEmail400,
+  MeAuthChangeEmail401,
+  MeAuthChangeEmail403,
+  MeAuthChangeEmail409,
+  MeAuthChangePassword400,
+  MeAuthChangePassword401,
+  MeAuthChangePassword403,
+  MeAuthChangePassword422,
   MeBootstrap200,
   MeBootstrap401,
   MeNestLeave401,
@@ -67,6 +77,111 @@ export const meBootstrap = async (options?: RequestInit): Promise<meBootstrapRes
       ...options,
       method: 'GET'
 
+    }
+  )
+}
+
+export type meAuthChangePasswordResponse204 = {
+  data: void
+  status: 204
+}
+
+export type meAuthChangePasswordResponse400 = {
+  data: MeAuthChangePassword400
+  status: 400
+}
+
+export type meAuthChangePasswordResponse401 = {
+  data: MeAuthChangePassword401
+  status: 401
+}
+
+export type meAuthChangePasswordResponse403 = {
+  data: MeAuthChangePassword403
+  status: 403
+}
+
+export type meAuthChangePasswordResponse422 = {
+  data: MeAuthChangePassword422
+  status: 422
+}
+
+export type meAuthChangePasswordResponseSuccess = (meAuthChangePasswordResponse204) & {
+  headers: Headers
+}
+export type meAuthChangePasswordResponseError = (meAuthChangePasswordResponse400 | meAuthChangePasswordResponse401 | meAuthChangePasswordResponse403 | meAuthChangePasswordResponse422) & {
+  headers: Headers
+}
+
+export type meAuthChangePasswordResponse = (meAuthChangePasswordResponseSuccess | meAuthChangePasswordResponseError)
+
+export const getMeAuthChangePasswordUrl = () => {
+  return `/me/auth/password`
+}
+
+/**
+ * @summary Change the current user's password
+ */
+export const meAuthChangePassword = async (changePasswordDto: ChangePasswordDto, options?: RequestInit): Promise<meAuthChangePasswordResponse> => {
+  return apiFetch<meAuthChangePasswordResponse>(getMeAuthChangePasswordUrl(),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(changePasswordDto)
+    }
+  )
+}
+
+export type meAuthChangeEmailResponse204 = {
+  data: void
+  status: 204
+}
+
+export type meAuthChangeEmailResponse400 = {
+  data: MeAuthChangeEmail400
+  status: 400
+}
+
+export type meAuthChangeEmailResponse401 = {
+  data: MeAuthChangeEmail401
+  status: 401
+}
+
+export type meAuthChangeEmailResponse403 = {
+  data: MeAuthChangeEmail403
+  status: 403
+}
+
+export type meAuthChangeEmailResponse409 = {
+  data: MeAuthChangeEmail409
+  status: 409
+}
+
+export type meAuthChangeEmailResponseSuccess = (meAuthChangeEmailResponse204) & {
+  headers: Headers
+}
+export type meAuthChangeEmailResponseError = (meAuthChangeEmailResponse400 | meAuthChangeEmailResponse401 | meAuthChangeEmailResponse403 | meAuthChangeEmailResponse409) & {
+  headers: Headers
+}
+
+export type meAuthChangeEmailResponse = (meAuthChangeEmailResponseSuccess | meAuthChangeEmailResponseError)
+
+export const getMeAuthChangeEmailUrl = () => {
+  return `/me/auth/email`
+}
+
+/**
+ * Sends a confirmation link to the new email address. The address isn't updated until the link is confirmed.
+ * @summary Request an email change for the current user
+ */
+export const meAuthChangeEmail = async (changeEmailDto: ChangeEmailDto, options?: RequestInit): Promise<meAuthChangeEmailResponse> => {
+  return apiFetch<meAuthChangeEmailResponse>(getMeAuthChangeEmailUrl(),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(changeEmailDto)
     }
   )
 }

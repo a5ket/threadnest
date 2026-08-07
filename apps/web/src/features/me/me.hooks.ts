@@ -1,5 +1,5 @@
 import { createMutationHook } from '@/common/api-mutation'
-import { meNestLeave, meProfileUpdate } from '@/generated/api/me/me'
+import { meAuthChangeEmail, meAuthChangePassword, meNestLeave, meProfileUpdate } from '@/generated/api/me/me'
 import { useMeStore } from './components/me-store-provider'
 
 export const useLeaveNest = createMutationHook(
@@ -8,6 +8,13 @@ export const useLeaveNest = createMutationHook(
 )
 
 export const useUpdateProfile = createMutationHook(meProfileUpdate, 200)
+
+export const useChangePassword = createMutationHook(
+  (dto: { currentPassword: string, newPassword: string }) => meAuthChangePassword(dto),
+  204
+)
+
+export const useChangeEmail = createMutationHook(meAuthChangeEmail, 204)
 
 export function useUser() {
   return useMeStore((s) => s.user)

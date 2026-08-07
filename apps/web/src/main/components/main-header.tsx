@@ -27,6 +27,7 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
               <>
                 <br />
                 {user && <Link href={`/users/${user.username}`}>My profile</Link>}
+                <Link href='/me/security'>Account security</Link>
                 <button onClick={() => logout.mutate()} disabled={logout.isPending}>Sign Out</button>
                 <div>
                   Veirifed:
