@@ -3,6 +3,7 @@ import {
   NestMemberRole,
   NestVisibility,
 } from 'generated/prisma/enums'
+import { NEST_ACCESS_LEVEL } from 'src/nest/constants/nest-access-level'
 import { NestAccessContext } from 'src/nest/types/nest.access-context'
 
 export const createNestAccessContext = (
@@ -10,6 +11,7 @@ export const createNestAccessContext = (
 ): NestAccessContext => ({
   isMember: true,
   role: NestMemberRole.MEMBER,
+  level: NEST_ACCESS_LEVEL.MEMBER,
   isBanned: false,
   isOwner: false,
 

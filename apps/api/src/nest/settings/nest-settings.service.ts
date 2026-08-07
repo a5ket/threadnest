@@ -1,10 +1,18 @@
 import { Injectable } from '@nestjs/common'
+import { NestVisibility } from 'generated/prisma/enums'
 import { EventBus } from 'src/event/event-bus'
+import { NEST_ACCESS_LEVEL } from '../constants/nest-access-level'
 import { NestRepository } from '../nest.repository'
 import { NestSettingsUpdateDto } from './dto/nest-settings.update.dto'
 import { NestSettingsPolicy } from './nest-settings.policy'
 import { NestSettingsRepository } from './nest-settings.repository'
 import { NestSettingsUpdatedEvent } from './events/nest-settings-updated.event'
+
+interface NestSettingsParticipationFields {
+  visibility: NestVisibility
+  minThreadCreationLevel: number
+  minCommentCreationLevel: number
+}
 
 @Injectable()
 export class NestSettingsService {
@@ -28,7 +36,10 @@ export class NestSettingsService {
 
     await this.settingsPolicy.assertCanUpdateSettings(nest.id, actorUserId)
 
-    const settings = await this.settingsRepo.update(nest.id, dto)
+    const currentSettings = await this.settingsRepo.get(nest.id)
+    const clampedDto = this.clampParticipationForPrivacy(dto, currentSettings)
+
+    const settings = await this.settingsRepo.update(nest.id, clampedDto)
 
     void this.eventBus.publish(new NestSettingsUpdatedEvent({
       nestId: nest.id,
@@ -36,5 +47,24 @@ export class NestSettingsService {
     }))
 
     return settings
+  }
+
+  // A private nest is invisible to non-members, so a non-member participation threshold
+  // would be a no-op at best — raise it to MEMBER instead of rejecting the update outright.
+  private clampParticipationForPrivacy(dto: NestSettingsUpdateDto, current: NestSettingsParticipationFields): NestSettingsUpdateDto {
+    const visibility = dto.visibility ?? current.visibility
+
+    if (visibility !== NestVisibility.PRIVATE) {
+      return dto
+    }
+
+    const minThreadCreationLevel = dto.minThreadCreationLevel ?? current.minThreadCreationLevel
+    const minCommentCreationLevel = dto.minCommentCreationLevel ?? current.minCommentCreationLevel
+
+    return {
+      ...dto,
+      minThreadCreationLevel: Math.max(minThreadCreationLevel, NEST_ACCESS_LEVEL.MEMBER),
+      minCommentCreationLevel: Math.max(minCommentCreationLevel, NEST_ACCESS_LEVEL.MEMBER),
+    }
   }
 }

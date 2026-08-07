@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { NestJoinPolicy, NestMemberRole, NestVisibility } from 'generated/prisma/enums'
+import { NestJoinPolicy, NestVisibility } from 'generated/prisma/enums'
 
 export class NestSettingsResponseDto {
   @ApiProperty({ enum: NestVisibility, description: 'Who can view the nest' })
@@ -8,39 +8,39 @@ export class NestSettingsResponseDto {
   @ApiProperty({ enum: NestJoinPolicy, description: 'How users can join the nest' })
   joinPolicy!: NestJoinPolicy
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to create a thread' })
-  minThreadCreationRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to create a thread — see the nest\'s roles list' })
+  minThreadCreationLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to comment' })
-  minCommentCreationRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to comment' })
+  minCommentCreationLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to edit the nest' })
-  minNestEditRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to edit the nest' })
+  minNestEditLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to lock/unlock threads' })
-  minThreadLockManageRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to lock/unlock threads' })
+  minThreadLockManageLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to pin/unpin threads' })
-  minThreadPinManageRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to pin/unpin threads' })
+  minThreadPinManageLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to pin/unpin comments' })
-  minCommentPinManageRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to pin/unpin comments' })
+  minCommentPinManageLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to moderate content' })
-  minContentModerateRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to moderate content' })
+  minContentModerateLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to view the member list' })
-  minMemberViewRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to view the member list' })
+  minMemberViewLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to manage invites' })
-  minInviteManageRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to manage invites' })
+  minInviteManageLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to remove members' })
-  minMemberRemoveRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to remove members' })
+  minMemberRemoveLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to manage join requests' })
-  minJoinRequestManageRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to manage join requests' })
+  minJoinRequestManageLevel!: number
 
-  @ApiProperty({ enum: NestMemberRole, description: 'Minimum role required to manage bans' })
-  minBanManageRole!: NestMemberRole
+  @ApiProperty({ description: 'Minimum level required to manage bans' })
+  minBanManageLevel!: number
 }

@@ -3,6 +3,7 @@ import { NestJoinPolicy, NestMemberRole, NestVisibility } from 'generated/prisma
 export interface NestAccessContext {
   isMember: boolean
   role: NestMemberRole | null
+  level: number
   isBanned: boolean,
   isOwner: boolean
 

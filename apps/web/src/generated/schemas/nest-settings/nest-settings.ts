@@ -17,18 +17,18 @@ export const NestSettingsGetResponse = zod.object({
   data: zod.object({
     visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Who can view the nest'),
     joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('How users can join the nest'),
-    minThreadCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to create a thread'),
-    minCommentCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to comment'),
-    minNestEditRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to edit the nest'),
-    minThreadLockManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to lock\/unlock threads'),
-    minThreadPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin threads'),
-    minCommentPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin comments'),
-    minContentModerateRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to moderate content'),
-    minMemberViewRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to view the member list'),
-    minInviteManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage invites'),
-    minMemberRemoveRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to remove members'),
-    minJoinRequestManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage join requests'),
-    minBanManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage bans')
+    minThreadCreationLevel: zod.number().describe('Minimum level required to create a thread — see the nest\'s roles list'),
+    minCommentCreationLevel: zod.number().describe('Minimum level required to comment'),
+    minNestEditLevel: zod.number().describe('Minimum level required to edit the nest'),
+    minThreadLockManageLevel: zod.number().describe('Minimum level required to lock\/unlock threads'),
+    minThreadPinManageLevel: zod.number().describe('Minimum level required to pin\/unpin threads'),
+    minCommentPinManageLevel: zod.number().describe('Minimum level required to pin\/unpin comments'),
+    minContentModerateLevel: zod.number().describe('Minimum level required to moderate content'),
+    minMemberViewLevel: zod.number().describe('Minimum level required to view the member list'),
+    minInviteManageLevel: zod.number().describe('Minimum level required to manage invites'),
+    minMemberRemoveLevel: zod.number().describe('Minimum level required to remove members'),
+    minJoinRequestManageLevel: zod.number().describe('Minimum level required to manage join requests'),
+    minBanManageLevel: zod.number().describe('Minimum level required to manage bans')
   })
 })
 
@@ -39,38 +39,74 @@ export const NestSettingsUpdateParams = zod.object({
   nestSlug: zod.string()
 })
 
+export const nestSettingsUpdateBodyMinThreadCreationLevelMin = 0
+export const nestSettingsUpdateBodyMinThreadCreationLevelMax = 30
+
+export const nestSettingsUpdateBodyMinCommentCreationLevelMin = 0
+export const nestSettingsUpdateBodyMinCommentCreationLevelMax = 30
+
+export const nestSettingsUpdateBodyMinNestEditLevelMin = 10
+export const nestSettingsUpdateBodyMinNestEditLevelMax = 30
+
+export const nestSettingsUpdateBodyMinThreadLockManageLevelMin = 10
+export const nestSettingsUpdateBodyMinThreadLockManageLevelMax = 30
+
+export const nestSettingsUpdateBodyMinThreadPinManageLevelMin = 10
+export const nestSettingsUpdateBodyMinThreadPinManageLevelMax = 30
+
+export const nestSettingsUpdateBodyMinCommentPinManageLevelMin = 10
+export const nestSettingsUpdateBodyMinCommentPinManageLevelMax = 30
+
+export const nestSettingsUpdateBodyMinContentModerateLevelMin = 10
+export const nestSettingsUpdateBodyMinContentModerateLevelMax = 30
+
+export const nestSettingsUpdateBodyMinMemberViewLevelMin = 10
+export const nestSettingsUpdateBodyMinMemberViewLevelMax = 30
+
+export const nestSettingsUpdateBodyMinInviteManageLevelMin = 10
+export const nestSettingsUpdateBodyMinInviteManageLevelMax = 30
+
+export const nestSettingsUpdateBodyMinMemberRemoveLevelMin = 10
+export const nestSettingsUpdateBodyMinMemberRemoveLevelMax = 30
+
+export const nestSettingsUpdateBodyMinJoinRequestManageLevelMin = 10
+export const nestSettingsUpdateBodyMinJoinRequestManageLevelMax = 30
+
+export const nestSettingsUpdateBodyMinBanManageLevelMin = 10
+export const nestSettingsUpdateBodyMinBanManageLevelMax = 30
+
 export const NestSettingsUpdateBody = zod.object({
   visibility: zod.enum(['PUBLIC', 'PRIVATE']).optional(),
   joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).optional(),
-  minThreadCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minCommentCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minNestEditRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minThreadLockManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minThreadPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minCommentPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minContentModerateRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minMemberViewRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minInviteManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minMemberRemoveRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minJoinRequestManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional(),
-  minBanManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).optional()
+  minThreadCreationLevel: zod.number().min(nestSettingsUpdateBodyMinThreadCreationLevelMin).max(nestSettingsUpdateBodyMinThreadCreationLevelMax).optional(),
+  minCommentCreationLevel: zod.number().min(nestSettingsUpdateBodyMinCommentCreationLevelMin).max(nestSettingsUpdateBodyMinCommentCreationLevelMax).optional(),
+  minNestEditLevel: zod.number().min(nestSettingsUpdateBodyMinNestEditLevelMin).max(nestSettingsUpdateBodyMinNestEditLevelMax).optional(),
+  minThreadLockManageLevel: zod.number().min(nestSettingsUpdateBodyMinThreadLockManageLevelMin).max(nestSettingsUpdateBodyMinThreadLockManageLevelMax).optional(),
+  minThreadPinManageLevel: zod.number().min(nestSettingsUpdateBodyMinThreadPinManageLevelMin).max(nestSettingsUpdateBodyMinThreadPinManageLevelMax).optional(),
+  minCommentPinManageLevel: zod.number().min(nestSettingsUpdateBodyMinCommentPinManageLevelMin).max(nestSettingsUpdateBodyMinCommentPinManageLevelMax).optional(),
+  minContentModerateLevel: zod.number().min(nestSettingsUpdateBodyMinContentModerateLevelMin).max(nestSettingsUpdateBodyMinContentModerateLevelMax).optional(),
+  minMemberViewLevel: zod.number().min(nestSettingsUpdateBodyMinMemberViewLevelMin).max(nestSettingsUpdateBodyMinMemberViewLevelMax).optional(),
+  minInviteManageLevel: zod.number().min(nestSettingsUpdateBodyMinInviteManageLevelMin).max(nestSettingsUpdateBodyMinInviteManageLevelMax).optional(),
+  minMemberRemoveLevel: zod.number().min(nestSettingsUpdateBodyMinMemberRemoveLevelMin).max(nestSettingsUpdateBodyMinMemberRemoveLevelMax).optional(),
+  minJoinRequestManageLevel: zod.number().min(nestSettingsUpdateBodyMinJoinRequestManageLevelMin).max(nestSettingsUpdateBodyMinJoinRequestManageLevelMax).optional(),
+  minBanManageLevel: zod.number().min(nestSettingsUpdateBodyMinBanManageLevelMin).max(nestSettingsUpdateBodyMinBanManageLevelMax).optional()
 })
 
 export const NestSettingsUpdateResponse = zod.object({
   data: zod.object({
     visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Who can view the nest'),
     joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('How users can join the nest'),
-    minThreadCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to create a thread'),
-    minCommentCreationRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to comment'),
-    minNestEditRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to edit the nest'),
-    minThreadLockManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to lock\/unlock threads'),
-    minThreadPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin threads'),
-    minCommentPinManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to pin\/unpin comments'),
-    minContentModerateRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to moderate content'),
-    minMemberViewRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to view the member list'),
-    minInviteManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage invites'),
-    minMemberRemoveRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to remove members'),
-    minJoinRequestManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage join requests'),
-    minBanManageRole: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Minimum role required to manage bans')
+    minThreadCreationLevel: zod.number().describe('Minimum level required to create a thread — see the nest\'s roles list'),
+    minCommentCreationLevel: zod.number().describe('Minimum level required to comment'),
+    minNestEditLevel: zod.number().describe('Minimum level required to edit the nest'),
+    minThreadLockManageLevel: zod.number().describe('Minimum level required to lock\/unlock threads'),
+    minThreadPinManageLevel: zod.number().describe('Minimum level required to pin\/unpin threads'),
+    minCommentPinManageLevel: zod.number().describe('Minimum level required to pin\/unpin comments'),
+    minContentModerateLevel: zod.number().describe('Minimum level required to moderate content'),
+    minMemberViewLevel: zod.number().describe('Minimum level required to view the member list'),
+    minInviteManageLevel: zod.number().describe('Minimum level required to manage invites'),
+    minMemberRemoveLevel: zod.number().describe('Minimum level required to remove members'),
+    minJoinRequestManageLevel: zod.number().describe('Minimum level required to manage join requests'),
+    minBanManageLevel: zod.number().describe('Minimum level required to manage bans')
   })
 })

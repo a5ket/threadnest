@@ -4,6 +4,8 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { NestCreateDtoJoinPolicy } from './nestCreateDtoJoinPolicy'
+import type { NestCreateDtoVisibility } from './nestCreateDtoVisibility'
 
 export interface NestCreateDto {
   /**
@@ -21,4 +23,6 @@ export interface NestCreateDto {
      * @maxLength 500
      */
   description?: string
+  visibility?: NestCreateDtoVisibility
+  joinPolicy?: NestCreateDtoJoinPolicy
 }

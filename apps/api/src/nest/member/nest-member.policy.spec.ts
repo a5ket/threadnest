@@ -143,7 +143,7 @@ describe('NestMemberPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when actor has no role', async () => {
-      givenContext({ role: null, canRemoveMembers: false })
+      givenContext({ isMember: false, role: null, canRemoveMembers: false })
 
       await expect(
         policy.assertCanRemoveMember(nest, 'actor-1', 'target-1'),
@@ -177,7 +177,7 @@ describe('NestMemberPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when actor has no role', async () => {
-      givenContext({ role: null, canManageMemberRoles: false })
+      givenContext({ isMember: false, role: null, canManageMemberRoles: false })
 
       await expect(
         policy.assertCanChangeRole(nest, 'actor-1', 'target-1', NestMemberRole.MODERATOR),

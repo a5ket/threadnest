@@ -1,5 +1,6 @@
-import { NestJoinPolicy, NestMemberRole, NestVisibility } from 'generated/prisma/enums'
-import { IsEnum, IsOptional } from 'class-validator'
+import { NestJoinPolicy, NestVisibility } from 'generated/prisma/enums'
+import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator'
+import { NEST_ACCESS_LEVEL, NON_MEMBER_LEVEL } from 'src/nest/constants/nest-access-level'
 
 export class NestSettingsUpdateDto {
   @IsEnum(NestVisibility)
@@ -10,51 +11,77 @@ export class NestSettingsUpdateDto {
   @IsOptional()
   joinPolicy?: NestJoinPolicy
 
-  @IsEnum(NestMemberRole)
+  // Participation thresholds — may be lowered to NON_MEMBER_LEVEL to let non-members interact.
+  @IsInt()
+  @Min(NON_MEMBER_LEVEL)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minThreadCreationRole?: NestMemberRole
+  minThreadCreationLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NON_MEMBER_LEVEL)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minCommentCreationRole?: NestMemberRole
+  minCommentCreationLevel?: number
 
-  @IsEnum(NestMemberRole)
+  // Moderation/management thresholds — always require real membership.
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minNestEditRole?: NestMemberRole
+  minNestEditLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minThreadLockManageRole?: NestMemberRole
+  minThreadLockManageLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minThreadPinManageRole?: NestMemberRole
+  minThreadPinManageLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minCommentPinManageRole?: NestMemberRole
+  minCommentPinManageLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minContentModerateRole?: NestMemberRole
+  minContentModerateLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minMemberViewRole?: NestMemberRole
+  minMemberViewLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minInviteManageRole?: NestMemberRole
+  minInviteManageLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minMemberRemoveRole?: NestMemberRole
+  minMemberRemoveLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minJoinRequestManageRole?: NestMemberRole
+  minJoinRequestManageLevel?: number
 
-  @IsEnum(NestMemberRole)
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MEMBER)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
-  minBanManageRole?: NestMemberRole
+  minBanManageLevel?: number
 }

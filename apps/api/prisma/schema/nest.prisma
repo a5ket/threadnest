@@ -25,23 +25,26 @@ model NestSettings {
     visibility NestVisibility @default(PUBLIC)
     joinPolicy NestJoinPolicy @default(OPEN)
 
-    minThreadCreationRole  NestMemberRole @default(MEMBER)
-    minCommentCreationRole NestMemberRole @default(MEMBER)
+    // Permission thresholds, expressed as a numeric level — see NEST_ACCESS_LEVEL for what a level
+    // means (0 = anyone including non-members). No DB default: NestSettingsRepository.create()
+    // always sets these explicitly, sourced from NEST_ACCESS_LEVEL, so the mapping lives in one place.
+    minThreadCreationLevel  Int
+    minCommentCreationLevel Int
 
-    minMemberViewRole NestMemberRole @default(MODERATOR)
+    minMemberViewLevel Int
 
-    minNestEditRole NestMemberRole @default(MODERATOR)
+    minNestEditLevel Int
 
-    minThreadLockManageRole NestMemberRole @default(MODERATOR)
-    minThreadPinManageRole  NestMemberRole @default(MODERATOR)
-    minCommentPinManageRole NestMemberRole @default(MODERATOR)
+    minThreadLockManageLevel Int
+    minThreadPinManageLevel  Int
+    minCommentPinManageLevel Int
 
-    minContentModerateRole NestMemberRole @default(MODERATOR)
+    minContentModerateLevel Int
 
-    minInviteManageRole      NestMemberRole @default(MODERATOR)
-    minMemberRemoveRole      NestMemberRole @default(MODERATOR)
-    minJoinRequestManageRole NestMemberRole @default(MODERATOR)
-    minBanManageRole         NestMemberRole @default(MODERATOR)
+    minInviteManageLevel      Int
+    minMemberRemoveLevel      Int
+    minJoinRequestManageLevel Int
+    minBanManageLevel         Int
 
     nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
 

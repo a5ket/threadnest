@@ -4,20 +4,20 @@ export const NEST_SETTINGS_SELECT = {
   visibility: true,
   joinPolicy: true,
 
-  minThreadCreationRole: true,
-  minCommentCreationRole: true,
+  minThreadCreationLevel: true,
+  minCommentCreationLevel: true,
 
-  minNestEditRole: true,
+  minNestEditLevel: true,
 
-  minThreadLockManageRole: true,
-  minThreadPinManageRole: true,
-  minCommentPinManageRole: true,
+  minThreadLockManageLevel: true,
+  minThreadPinManageLevel: true,
+  minCommentPinManageLevel: true,
 
-  minContentModerateRole: true,
-  minMemberViewRole: true,
+  minContentModerateLevel: true,
+  minMemberViewLevel: true,
 
-  minInviteManageRole: true,
-  minMemberRemoveRole: true,
-  minJoinRequestManageRole: true,
-  minBanManageRole: true
+  minInviteManageLevel: true,
+  minMemberRemoveLevel: true,
+  minJoinRequestManageLevel: true,
+  minBanManageLevel: true
 } satisfies Prisma.NestSettingsSelect

@@ -40,7 +40,7 @@ export class NestService {
     const nest = await this.transactionManager.run(async (tx) => {
       const nest = await this.nestsRepo.create(dto, tx)
 
-      await this.settingsRepo.create(nest.id, tx)
+      await this.settingsRepo.create(nest.id, { visibility: dto.visibility, joinPolicy: dto.joinPolicy }, tx)
       await this.membersRepo.createOwner(nest.id, actorUserId, tx)
 
       return nest

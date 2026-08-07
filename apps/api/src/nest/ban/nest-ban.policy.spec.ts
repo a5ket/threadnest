@@ -73,7 +73,7 @@ describe('NestBanPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when actor has no role', async () => {
-      givenContext({ role: null, canManageBans: true })
+      givenContext({ isMember: false, role: null, canManageBans: true })
 
       await expect(
         policy.assertCanBanUser('nest-1', 'actor-1', 'target-1'),
@@ -124,7 +124,7 @@ describe('NestBanPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when actor has no role', async () => {
-      givenContext({ role: null, canManageBans: true })
+      givenContext({ isMember: false, role: null, canManageBans: true })
 
       await expect(
         policy.assertCanUnbanUser('nest-1', 'actor-1', 'target-1'),
@@ -150,7 +150,7 @@ describe('NestBanPolicy', () => {
     })
 
     it('throws InsufficientPermissionsException when actor has no role', async () => {
-      givenContext({ role: null, canManageBans: true })
+      givenContext({ isMember: false, role: null, canManageBans: true })
 
       await expect(
         policy.assertCanViewBans('nest-1', 'actor-1'),

@@ -8,6 +8,9 @@ export class NestAccessContextDto {
   @ApiProperty({ description: 'The current user\'s role in the nest', enum: NestMemberRole, nullable: true })
   role!: NestMemberRole | null
 
+  @ApiProperty({ description: 'The current user\'s permission level — 0 if they aren\'t a member. See the nest\'s roles list for what a level unlocks' })
+  level!: number
+
   @ApiProperty({ description: 'Whether the current user is banned from the nest' })
   isBanned!: boolean
 

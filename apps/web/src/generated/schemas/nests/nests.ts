@@ -21,7 +21,9 @@ export const nestCreateBodyDescriptionMax = 500
 export const NestCreateBody = zod.object({
   name: zod.string().min(nestCreateBodyNameMin).max(nestCreateBodyNameMax),
   slug: zod.string().min(nestCreateBodySlugMin).max(nestCreateBodySlugMax),
-  description: zod.string().min(nestCreateBodyDescriptionMin).max(nestCreateBodyDescriptionMax).optional()
+  description: zod.string().min(nestCreateBodyDescriptionMin).max(nestCreateBodyDescriptionMax).optional(),
+  visibility: zod.enum(['PUBLIC', 'PRIVATE']).optional(),
+  joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).optional()
 })
 
 export const NestCreateResponse = zod.object({
@@ -31,6 +33,7 @@ export const NestCreateResponse = zod.object({
     access: zod.object({
       isMember: zod.boolean().describe('Whether the current user is a member of the nest'),
       role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The current user\'s role in the nest'),
+      level: zod.number().describe('The current user\'s permission level — 0 if they aren\'t a member. See the nest\'s roles list for what a level unlocks'),
       isBanned: zod.boolean().describe('Whether the current user is banned from the nest'),
       isOwner: zod.boolean().describe('Whether the current user owns the nest'),
       visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Nest visibility'),
@@ -81,6 +84,7 @@ export const NestGetBySlugResponse = zod.object({
     access: zod.object({
       isMember: zod.boolean().describe('Whether the current user is a member of the nest'),
       role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The current user\'s role in the nest'),
+      level: zod.number().describe('The current user\'s permission level — 0 if they aren\'t a member. See the nest\'s roles list for what a level unlocks'),
       isBanned: zod.boolean().describe('Whether the current user is banned from the nest'),
       isOwner: zod.boolean().describe('Whether the current user owns the nest'),
       visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Nest visibility'),
@@ -141,6 +145,7 @@ export const NestUpdateResponse = zod.object({
     access: zod.object({
       isMember: zod.boolean().describe('Whether the current user is a member of the nest'),
       role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The current user\'s role in the nest'),
+      level: zod.number().describe('The current user\'s permission level — 0 if they aren\'t a member. See the nest\'s roles list for what a level unlocks'),
       isBanned: zod.boolean().describe('Whether the current user is banned from the nest'),
       isOwner: zod.boolean().describe('Whether the current user owns the nest'),
       visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Nest visibility'),

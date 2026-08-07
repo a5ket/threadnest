@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common'
+import { NestJoinPolicy, NestVisibility } from 'generated/prisma/enums'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { NestSettingsNotFoundException } from './exceptions/nest-settings-not-found.exception'
 import { Database } from 'src/prisma/types/database'
+import { NEST_ACCESS_LEVEL } from '../constants/nest-access-level'
 import { NEST_SETTINGS_SELECT } from './constants/nest-settings.select'
 import { NestSettingsUpdateDto } from './dto/nest-settings.update.dto'
+
+interface NestSettingsCreateOptions {
+  visibility?: NestVisibility
+  joinPolicy?: NestJoinPolicy
+}
 
 @Injectable()
 export class NestSettingsRepository {
@@ -11,12 +18,34 @@ export class NestSettingsRepository {
     private readonly prisma: PrismaService
   ) { }
 
-  async create(nestId: string, db: Database = this.prisma) {
+  async create(nestId: string, options: NestSettingsCreateOptions = {}, db: Database = this.prisma) {
     return db.nestSettings.create({
-      data: { nestId },
+      data: {
+        nestId,
+
+        visibility: options.visibility,
+        joinPolicy: options.joinPolicy,
+
+        minThreadCreationLevel: NEST_ACCESS_LEVEL.MEMBER,
+        minCommentCreationLevel: NEST_ACCESS_LEVEL.MEMBER,
+
+        minMemberViewLevel: NEST_ACCESS_LEVEL.MODERATOR,
+
+        minNestEditLevel: NEST_ACCESS_LEVEL.MODERATOR,
+
+        minThreadLockManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+        minThreadPinManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+        minCommentPinManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+
+        minContentModerateLevel: NEST_ACCESS_LEVEL.MODERATOR,
+
+        minInviteManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+        minMemberRemoveLevel: NEST_ACCESS_LEVEL.MODERATOR,
+        minJoinRequestManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+        minBanManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+      },
       select: NEST_SETTINGS_SELECT,
     })
-
   }
 
   async get(nestId: string) {
@@ -40,22 +69,22 @@ export class NestSettingsRepository {
           visibility: dto.visibility,
           joinPolicy: dto.joinPolicy,
 
-          minThreadCreationRole: dto.minThreadCreationRole,
-          minCommentCreationRole: dto.minCommentCreationRole,
+          minThreadCreationLevel: dto.minThreadCreationLevel,
+          minCommentCreationLevel: dto.minCommentCreationLevel,
 
-          minNestEditRole: dto.minNestEditRole,
+          minNestEditLevel: dto.minNestEditLevel,
 
-          minThreadLockManageRole: dto.minThreadLockManageRole,
-          minThreadPinManageRole: dto.minThreadPinManageRole,
-          minCommentPinManageRole: dto.minCommentPinManageRole,
+          minThreadLockManageLevel: dto.minThreadLockManageLevel,
+          minThreadPinManageLevel: dto.minThreadPinManageLevel,
+          minCommentPinManageLevel: dto.minCommentPinManageLevel,
 
-          minContentModerateRole: dto.minContentModerateRole,
-          minMemberViewRole: dto.minMemberViewRole,
+          minContentModerateLevel: dto.minContentModerateLevel,
+          minMemberViewLevel: dto.minMemberViewLevel,
 
-          minInviteManageRole: dto.minInviteManageRole,
-          minMemberRemoveRole: dto.minMemberRemoveRole,
-          minJoinRequestManageRole: dto.minJoinRequestManageRole,
-          minBanManageRole: dto.minBanManageRole,
+          minInviteManageLevel: dto.minInviteManageLevel,
+          minMemberRemoveLevel: dto.minMemberRemoveLevel,
+          minJoinRequestManageLevel: dto.minJoinRequestManageLevel,
+          minBanManageLevel: dto.minBanManageLevel,
         },
         select: NEST_SETTINGS_SELECT,
       })

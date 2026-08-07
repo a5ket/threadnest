@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { NestMemberRole, NestVisibility } from 'generated/prisma/enums'
 import { NestBanRepository } from './ban/nest-ban.repository'
-import { NEST_ACCESS_LEVEL } from './constants/nest-access-level'
+import { NEST_ACCESS_LEVEL, NON_MEMBER_LEVEL } from './constants/nest-access-level'
 import { NestNotFoundException } from './exceptions/nest-not-found.exception'
 import { NestMemberRepository } from './member/nest-member.repository'
 import { NestSettingsRepository } from './settings/nest-settings.repository'
@@ -14,13 +14,6 @@ export class NestAccess {
     private readonly bansRepo: NestBanRepository,
     private readonly membersRepo: NestMemberRepository
   ) { }
-
-  private hasMinRole(
-    role: NestMemberRole | null,
-    minRole: NestMemberRole
-  ) {
-    return role !== null && NEST_ACCESS_LEVEL[role] >= NEST_ACCESS_LEVEL[minRole]
-  }
 
   isHigherRole(actorRole: NestMemberRole, targetRole: NestMemberRole) {
     return NEST_ACCESS_LEVEL[actorRole] > NEST_ACCESS_LEVEL[targetRole]
@@ -66,16 +59,18 @@ export class NestAccess {
     const membership = membershipResult.value
 
     const role = membership?.role ?? null
+    const level = role ? NEST_ACCESS_LEVEL[role] : NON_MEMBER_LEVEL
     const isMember = membership !== null
     const isBanned = Boolean(banResult.value)
     const canViewNest = settings.visibility === NestVisibility.PUBLIC || isMember
     const canParticipate = canViewNest && !isBanned
     const isOwner = role === NestMemberRole.OWNER
 
-    const hasAccess = (minRole: NestMemberRole) => canParticipate && this.hasMinRole(role, minRole)
+    const hasAccess = (minLevel: number) => canParticipate && level >= minLevel
 
     return {
       role,
+      level,
       isMember,
       isBanned,
       isOwner,
@@ -85,22 +80,22 @@ export class NestAccess {
 
       canViewNest,
 
-      canCreateThread: hasAccess(settings.minThreadCreationRole),
-      canCreateComment: hasAccess(settings.minCommentCreationRole),
+      canCreateThread: hasAccess(settings.minThreadCreationLevel),
+      canCreateComment: hasAccess(settings.minCommentCreationLevel),
 
-      canEditNest: hasAccess(settings.minNestEditRole),
+      canEditNest: hasAccess(settings.minNestEditLevel),
 
-      canManageThreadLock: hasAccess(settings.minThreadLockManageRole),
-      canManageThreadPin: hasAccess(settings.minThreadPinManageRole),
-      canManageCommentPin: hasAccess(settings.minCommentPinManageRole),
+      canManageThreadLock: hasAccess(settings.minThreadLockManageLevel),
+      canManageThreadPin: hasAccess(settings.minThreadPinManageLevel),
+      canManageCommentPin: hasAccess(settings.minCommentPinManageLevel),
 
-      canModerateContent: hasAccess(settings.minContentModerateRole),
+      canModerateContent: hasAccess(settings.minContentModerateLevel),
 
-      canViewMembers: hasAccess(settings.minMemberViewRole),
-      canManageInvites: hasAccess(settings.minInviteManageRole),
-      canRemoveMembers: hasAccess(settings.minMemberRemoveRole),
-      canManageJoinRequests: hasAccess(settings.minJoinRequestManageRole),
-      canManageBans: hasAccess(settings.minBanManageRole),
+      canViewMembers: hasAccess(settings.minMemberViewLevel),
+      canManageInvites: hasAccess(settings.minInviteManageLevel),
+      canRemoveMembers: hasAccess(settings.minMemberRemoveLevel),
+      canManageJoinRequests: hasAccess(settings.minJoinRequestManageLevel),
+      canManageBans: hasAccess(settings.minBanManageLevel),
 
       canManageSettings: isOwner,
       canDeleteNest: isOwner,

@@ -5,33 +5,69 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { NestSettingsUpdateDtoJoinPolicy } from './nestSettingsUpdateDtoJoinPolicy'
-import type { NestSettingsUpdateDtoMinBanManageRole } from './nestSettingsUpdateDtoMinBanManageRole'
-import type { NestSettingsUpdateDtoMinCommentCreationRole } from './nestSettingsUpdateDtoMinCommentCreationRole'
-import type { NestSettingsUpdateDtoMinCommentPinManageRole } from './nestSettingsUpdateDtoMinCommentPinManageRole'
-import type { NestSettingsUpdateDtoMinContentModerateRole } from './nestSettingsUpdateDtoMinContentModerateRole'
-import type { NestSettingsUpdateDtoMinInviteManageRole } from './nestSettingsUpdateDtoMinInviteManageRole'
-import type { NestSettingsUpdateDtoMinJoinRequestManageRole } from './nestSettingsUpdateDtoMinJoinRequestManageRole'
-import type { NestSettingsUpdateDtoMinMemberRemoveRole } from './nestSettingsUpdateDtoMinMemberRemoveRole'
-import type { NestSettingsUpdateDtoMinMemberViewRole } from './nestSettingsUpdateDtoMinMemberViewRole'
-import type { NestSettingsUpdateDtoMinNestEditRole } from './nestSettingsUpdateDtoMinNestEditRole'
-import type { NestSettingsUpdateDtoMinThreadCreationRole } from './nestSettingsUpdateDtoMinThreadCreationRole'
-import type { NestSettingsUpdateDtoMinThreadLockManageRole } from './nestSettingsUpdateDtoMinThreadLockManageRole'
-import type { NestSettingsUpdateDtoMinThreadPinManageRole } from './nestSettingsUpdateDtoMinThreadPinManageRole'
 import type { NestSettingsUpdateDtoVisibility } from './nestSettingsUpdateDtoVisibility'
 
 export interface NestSettingsUpdateDto {
   visibility?: NestSettingsUpdateDtoVisibility
   joinPolicy?: NestSettingsUpdateDtoJoinPolicy
-  minThreadCreationRole?: NestSettingsUpdateDtoMinThreadCreationRole
-  minCommentCreationRole?: NestSettingsUpdateDtoMinCommentCreationRole
-  minNestEditRole?: NestSettingsUpdateDtoMinNestEditRole
-  minThreadLockManageRole?: NestSettingsUpdateDtoMinThreadLockManageRole
-  minThreadPinManageRole?: NestSettingsUpdateDtoMinThreadPinManageRole
-  minCommentPinManageRole?: NestSettingsUpdateDtoMinCommentPinManageRole
-  minContentModerateRole?: NestSettingsUpdateDtoMinContentModerateRole
-  minMemberViewRole?: NestSettingsUpdateDtoMinMemberViewRole
-  minInviteManageRole?: NestSettingsUpdateDtoMinInviteManageRole
-  minMemberRemoveRole?: NestSettingsUpdateDtoMinMemberRemoveRole
-  minJoinRequestManageRole?: NestSettingsUpdateDtoMinJoinRequestManageRole
-  minBanManageRole?: NestSettingsUpdateDtoMinBanManageRole
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  minThreadCreationLevel?: number
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  minCommentCreationLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minNestEditLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minThreadLockManageLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minThreadPinManageLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minCommentPinManageLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minContentModerateLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minMemberViewLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minInviteManageLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minMemberRemoveLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minJoinRequestManageLevel?: number
+  /**
+     * @minimum 10
+     * @maximum 30
+     */
+  minBanManageLevel?: number
 }

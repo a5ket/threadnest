@@ -3,6 +3,7 @@
 import { useCreateNest } from '@/features/nest/nest.hooks'
 import { createNestSchema, type CreateNestFormValues } from '@/features/nest/nest.schemas'
 import type { NestDetail } from '@/features/nest/nest.types'
+import { NestCreateDtoJoinPolicy, NestCreateDtoVisibility } from '@/generated/api/models'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
@@ -24,7 +25,9 @@ export function CreateNestForm({ onCreated }: CreateNestFormProps) {
     defaultValues: {
       name: '',
       slug: '',
-      description: ''
+      description: '',
+      visibility: NestCreateDtoVisibility.PUBLIC,
+      joinPolicy: NestCreateDtoJoinPolicy.OPEN
     }
   })
 
@@ -156,6 +159,37 @@ export function CreateNestForm({ onCreated }: CreateNestFormProps) {
             {errors.description.message}
           </p>
         )}
+      </div>
+
+      <div className='flex flex-col gap-1.5'>
+        <label htmlFor='visibility' className='text-sm font-medium'>
+          Visibility
+        </label>
+
+        <select
+          id='visibility'
+          className='rounded-md border border-input bg-background px-3 py-2 text-sm'
+          {...register('visibility')}
+        >
+          <option value={NestCreateDtoVisibility.PUBLIC}>Public</option>
+          <option value={NestCreateDtoVisibility.PRIVATE}>Private</option>
+        </select>
+      </div>
+
+      <div className='flex flex-col gap-1.5'>
+        <label htmlFor='joinPolicy' className='text-sm font-medium'>
+          Join policy
+        </label>
+
+        <select
+          id='joinPolicy'
+          className='rounded-md border border-input bg-background px-3 py-2 text-sm'
+          {...register('joinPolicy')}
+        >
+          <option value={NestCreateDtoJoinPolicy.OPEN}>Open</option>
+          <option value={NestCreateDtoJoinPolicy.BY_REQUEST}>By request</option>
+          <option value={NestCreateDtoJoinPolicy.BY_INVITE}>By invite</option>
+        </select>
       </div>
 
       {errors.root && (

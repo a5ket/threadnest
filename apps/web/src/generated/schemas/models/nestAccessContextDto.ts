@@ -16,6 +16,8 @@ export interface NestAccessContextDto {
      * @nullable
      */
   role: NestAccessContextDtoRole
+  /** The current user's permission level — 0 if they aren't a member. See the nest's roles list for what a level unlocks */
+  level: number
   /** Whether the current user is banned from the nest */
   isBanned: boolean
   /** Whether the current user owns the nest */

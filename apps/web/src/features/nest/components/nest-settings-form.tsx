@@ -1,10 +1,12 @@
 'use client'
 
+import { ConfirmDialog } from '@/common/components/confirm-dialog'
 import { useUpdateNestSettings } from '@/features/nest/nest-settings.hooks'
 import { updateNestSettingsSchema, type UpdateNestSettingsFormValues } from '@/features/nest/nest-settings.schemas'
 import type { NestSettings } from '@/features/nest/nest-settings.types'
 import { NestSettingsUpdateDtoJoinPolicy, NestSettingsUpdateDtoVisibility } from '@/generated/api/models'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 interface NestSettingsFormProps {
@@ -13,28 +15,49 @@ interface NestSettingsFormProps {
   readOnly: boolean
 }
 
-const ROLE_OPTIONS = ['MEMBER', 'MODERATOR', 'OWNER'] as const
+const NON_MEMBER_LEVEL = 0
+const MEMBER_LEVEL = 10
 
-const PERMISSION_FIELDS: { name: keyof UpdateNestSettingsFormValues, label: string }[] = [
-  { name: 'minThreadCreationRole', label: 'Create threads' },
-  { name: 'minCommentCreationRole', label: 'Comment' },
-  { name: 'minNestEditRole', label: 'Edit nest details' },
-  { name: 'minThreadLockManageRole', label: 'Lock/unlock threads' },
-  { name: 'minThreadPinManageRole', label: 'Pin/unpin threads' },
-  { name: 'minCommentPinManageRole', label: 'Pin/unpin comments' },
-  { name: 'minContentModerateRole', label: 'Moderate content' },
-  { name: 'minMemberViewRole', label: 'View member list' },
-  { name: 'minInviteManageRole', label: 'Manage invites' },
-  { name: 'minMemberRemoveRole', label: 'Remove members' },
-  { name: 'minJoinRequestManageRole', label: 'Manage join requests' },
-  { name: 'minBanManageRole', label: 'Manage bans' }
+const LEVEL_LABELS: Record<number, string> = {
+  [NON_MEMBER_LEVEL]: 'Anyone',
+  [MEMBER_LEVEL]: 'Member',
+  20: 'Moderator',
+  30: 'Owner'
+}
+
+const MANAGEMENT_LEVELS = [10, 20, 30]
+
+type PermissionFieldName = Exclude<keyof UpdateNestSettingsFormValues, 'visibility' | 'joinPolicy'>
+type ParticipationFieldName = 'minThreadCreationLevel' | 'minCommentCreationLevel'
+
+const PARTICIPATION_FIELDS: { name: ParticipationFieldName, label: string }[] = [
+  { name: 'minThreadCreationLevel', label: 'Create threads' },
+  { name: 'minCommentCreationLevel', label: 'Comment' }
+]
+
+const MANAGEMENT_FIELDS: { name: PermissionFieldName, label: string }[] = [
+  { name: 'minNestEditLevel', label: 'Edit nest details' },
+  { name: 'minThreadLockManageLevel', label: 'Lock/unlock threads' },
+  { name: 'minThreadPinManageLevel', label: 'Pin/unpin threads' },
+  { name: 'minCommentPinManageLevel', label: 'Pin/unpin comments' },
+  { name: 'minContentModerateLevel', label: 'Moderate content' },
+  { name: 'minMemberViewLevel', label: 'View member list' },
+  { name: 'minInviteManageLevel', label: 'Manage invites' },
+  { name: 'minMemberRemoveLevel', label: 'Remove members' },
+  { name: 'minJoinRequestManageLevel', label: 'Manage join requests' },
+  { name: 'minBanManageLevel', label: 'Manage bans' }
 ]
 
 export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsFormProps) {
+  const [confirmingPrivacy, setConfirmingPrivacy] = useState(false)
+
   const {
     register,
     handleSubmit,
     setError,
+    setValue,
+    getValues,
+    watch,
     formState: {
       isSubmitting,
       errors
@@ -43,6 +66,9 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
     resolver: zodResolver(updateNestSettingsSchema),
     defaultValues: settings
   })
+
+  const visibility = watch('visibility')
+  const isPrivate = visibility === NestSettingsUpdateDtoVisibility.PRIVATE
 
   const updateSettings = useUpdateNestSettings({
     onError: (error) => {
@@ -80,6 +106,45 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
 
   const isPending = updateSettings.isPending || isSubmitting
 
+  const clampParticipationToMember = () => {
+    for (const { name } of PARTICIPATION_FIELDS) {
+      if (getValues(name) === NON_MEMBER_LEVEL) {
+        setValue(name, MEMBER_LEVEL)
+      }
+    }
+  }
+
+  const handleVisibilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextVisibility = e.target.value as NestSettingsUpdateDtoVisibility
+    const opensParticipationToNonMembers = PARTICIPATION_FIELDS.some(({ name }) => getValues(name) === NON_MEMBER_LEVEL)
+
+    if (nextVisibility === NestSettingsUpdateDtoVisibility.PRIVATE && opensParticipationToNonMembers) {
+      setConfirmingPrivacy(true)
+      return
+    }
+
+    setValue('visibility', nextVisibility)
+  }
+
+  const renderLevelField = (name: PermissionFieldName, label: string, levels: number[]) => (
+    <div key={name} className='flex items-center justify-between gap-4'>
+      <label htmlFor={name} className='text-sm'>
+        {label}
+      </label>
+
+      <select
+        id={name}
+        disabled={readOnly}
+        className='rounded-md border border-input bg-background px-3 py-1.5 text-sm disabled:opacity-50'
+        {...register(name, { valueAsNumber: true })}
+      >
+        {levels.map((level) => (
+          <option key={level} value={level}>{LEVEL_LABELS[level]}</option>
+        ))}
+      </select>
+    </div>
+  )
+
   return (
     <form onSubmit={onSubmit} noValidate className='flex flex-col gap-6'>
       <div className='flex flex-col gap-4'>
@@ -95,6 +160,7 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
             disabled={readOnly}
             className='rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50'
             {...register('visibility')}
+            onChange={handleVisibilityChange}
           >
             <option value={NestSettingsUpdateDtoVisibility.PUBLIC}>Public</option>
             <option value={NestSettingsUpdateDtoVisibility.PRIVATE}>Private</option>
@@ -121,25 +187,13 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
 
       <div className='flex flex-col gap-3'>
         <h2 className='text-sm font-semibold'>Permissions</h2>
+        <p className='text-xs text-muted-foreground'>
+          &quot;Anyone&quot; also lets people who aren&apos;t members participate — only available on public nests.
+        </p>
 
-        {PERMISSION_FIELDS.map(({ name, label }) => (
-          <div key={name} className='flex items-center justify-between gap-4'>
-            <label htmlFor={name} className='text-sm'>
-              {label}
-            </label>
-
-            <select
-              id={name}
-              disabled={readOnly}
-              className='rounded-md border border-input bg-background px-3 py-1.5 text-sm disabled:opacity-50'
-              {...register(name)}
-            >
-              {ROLE_OPTIONS.map((role) => (
-                <option key={role} value={role}>{role}</option>
-              ))}
-            </select>
-          </div>
-        ))}
+        {PARTICIPATION_FIELDS.map(({ name, label }) =>
+          renderLevelField(name, label, isPrivate ? MANAGEMENT_LEVELS : [NON_MEMBER_LEVEL, ...MANAGEMENT_LEVELS]))}
+        {MANAGEMENT_FIELDS.map(({ name, label }) => renderLevelField(name, label, MANAGEMENT_LEVELS))}
       </div>
 
       {errors.root && (
@@ -157,6 +211,22 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
           {isPending ? 'Saving...' : 'Save settings'}
         </button>
       )}
+
+      <ConfirmDialog
+        open={confirmingPrivacy}
+        title='Make this nest private?'
+        description={'Non-members won\'t be able to view a private nest, so "Create threads" and "Comment" will be raised to Member.'}
+        confirmLabel='Make private'
+        onCancel={() => {
+          setValue('visibility', NestSettingsUpdateDtoVisibility.PUBLIC)
+          setConfirmingPrivacy(false)
+        }}
+        onConfirm={() => {
+          setValue('visibility', NestSettingsUpdateDtoVisibility.PRIVATE)
+          clampParticipationToMember()
+          setConfirmingPrivacy(false)
+        }}
+      />
     </form>
   )
 }

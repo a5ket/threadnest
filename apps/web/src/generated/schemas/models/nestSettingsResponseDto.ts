@@ -5,18 +5,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { NestSettingsResponseDtoJoinPolicy } from './nestSettingsResponseDtoJoinPolicy'
-import type { NestSettingsResponseDtoMinBanManageRole } from './nestSettingsResponseDtoMinBanManageRole'
-import type { NestSettingsResponseDtoMinCommentCreationRole } from './nestSettingsResponseDtoMinCommentCreationRole'
-import type { NestSettingsResponseDtoMinCommentPinManageRole } from './nestSettingsResponseDtoMinCommentPinManageRole'
-import type { NestSettingsResponseDtoMinContentModerateRole } from './nestSettingsResponseDtoMinContentModerateRole'
-import type { NestSettingsResponseDtoMinInviteManageRole } from './nestSettingsResponseDtoMinInviteManageRole'
-import type { NestSettingsResponseDtoMinJoinRequestManageRole } from './nestSettingsResponseDtoMinJoinRequestManageRole'
-import type { NestSettingsResponseDtoMinMemberRemoveRole } from './nestSettingsResponseDtoMinMemberRemoveRole'
-import type { NestSettingsResponseDtoMinMemberViewRole } from './nestSettingsResponseDtoMinMemberViewRole'
-import type { NestSettingsResponseDtoMinNestEditRole } from './nestSettingsResponseDtoMinNestEditRole'
-import type { NestSettingsResponseDtoMinThreadCreationRole } from './nestSettingsResponseDtoMinThreadCreationRole'
-import type { NestSettingsResponseDtoMinThreadLockManageRole } from './nestSettingsResponseDtoMinThreadLockManageRole'
-import type { NestSettingsResponseDtoMinThreadPinManageRole } from './nestSettingsResponseDtoMinThreadPinManageRole'
 import type { NestSettingsResponseDtoVisibility } from './nestSettingsResponseDtoVisibility'
 
 export interface NestSettingsResponseDto {
@@ -24,28 +12,28 @@ export interface NestSettingsResponseDto {
   visibility: NestSettingsResponseDtoVisibility
   /** How users can join the nest */
   joinPolicy: NestSettingsResponseDtoJoinPolicy
-  /** Minimum role required to create a thread */
-  minThreadCreationRole: NestSettingsResponseDtoMinThreadCreationRole
-  /** Minimum role required to comment */
-  minCommentCreationRole: NestSettingsResponseDtoMinCommentCreationRole
-  /** Minimum role required to edit the nest */
-  minNestEditRole: NestSettingsResponseDtoMinNestEditRole
-  /** Minimum role required to lock/unlock threads */
-  minThreadLockManageRole: NestSettingsResponseDtoMinThreadLockManageRole
-  /** Minimum role required to pin/unpin threads */
-  minThreadPinManageRole: NestSettingsResponseDtoMinThreadPinManageRole
-  /** Minimum role required to pin/unpin comments */
-  minCommentPinManageRole: NestSettingsResponseDtoMinCommentPinManageRole
-  /** Minimum role required to moderate content */
-  minContentModerateRole: NestSettingsResponseDtoMinContentModerateRole
-  /** Minimum role required to view the member list */
-  minMemberViewRole: NestSettingsResponseDtoMinMemberViewRole
-  /** Minimum role required to manage invites */
-  minInviteManageRole: NestSettingsResponseDtoMinInviteManageRole
-  /** Minimum role required to remove members */
-  minMemberRemoveRole: NestSettingsResponseDtoMinMemberRemoveRole
-  /** Minimum role required to manage join requests */
-  minJoinRequestManageRole: NestSettingsResponseDtoMinJoinRequestManageRole
-  /** Minimum role required to manage bans */
-  minBanManageRole: NestSettingsResponseDtoMinBanManageRole
+  /** Minimum level required to create a thread — see the nest's roles list */
+  minThreadCreationLevel: number
+  /** Minimum level required to comment */
+  minCommentCreationLevel: number
+  /** Minimum level required to edit the nest */
+  minNestEditLevel: number
+  /** Minimum level required to lock/unlock threads */
+  minThreadLockManageLevel: number
+  /** Minimum level required to pin/unpin threads */
+  minThreadPinManageLevel: number
+  /** Minimum level required to pin/unpin comments */
+  minCommentPinManageLevel: number
+  /** Minimum level required to moderate content */
+  minContentModerateLevel: number
+  /** Minimum level required to view the member list */
+  minMemberViewLevel: number
+  /** Minimum level required to manage invites */
+  minInviteManageLevel: number
+  /** Minimum level required to remove members */
+  minMemberRemoveLevel: number
+  /** Minimum level required to manage join requests */
+  minJoinRequestManageLevel: number
+  /** Minimum level required to manage bans */
+  minBanManageLevel: number
 }
