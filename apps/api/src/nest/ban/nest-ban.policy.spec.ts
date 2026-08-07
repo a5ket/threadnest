@@ -5,6 +5,7 @@ import { createMockNestAccess } from 'test/factories/nest-access.mock-factory'
 import { createMockNestBanRepository } from 'test/factories/nest-ban-repository.mock-factory'
 import { createMockNestMemberRepository } from 'test/factories/nest-member-repository.mock-factory'
 import { createNestMember } from 'test/factories/nest-member.factory'
+import { createMockUserService } from 'test/factories/user-service.mock-factory'
 import { CannotBanYourselfException } from './exceptions/cannot-ban-yourself.exception'
 import { CannotUnbanYourselfException } from './exceptions/cannot-unban-yourself.exception'
 import { UserAlreadyBannedException } from './exceptions/user-already-banned.exception'
@@ -14,7 +15,8 @@ describe('NestBanPolicy', () => {
   const nestAccess = createMockNestAccess()
   const membersRepo = createMockNestMemberRepository()
   const bansRepo = createMockNestBanRepository()
-  const policy = new NestBanPolicy(nestAccess as any, membersRepo as any, bansRepo as any)
+  const users = createMockUserService()
+  const policy = new NestBanPolicy(nestAccess as any, membersRepo as any, bansRepo as any, users as any)
 
   const givenContext = (overrides: Parameters<typeof createNestAccessContext>[0]) =>
     nestAccess.getContext.mockResolvedValue(createNestAccessContext(overrides))

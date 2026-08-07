@@ -5,6 +5,7 @@ import { NestPresenter } from '../nest.presenter'
 import { NestRepository } from '../nest.repository'
 import { NestMemberQueryDto } from './dto/nest-member.query.dto'
 import { NestMemberUpdateRoleDto } from './dto/nest-member.update-role.dto'
+import { MemberJoinedEvent } from './events/member-joined.event'
 import { MemberLeftEvent } from './events/member-left.event'
 import { MemberRemovedEvent } from './events/member-removed.event'
 import { MemberRoleChangedEvent } from './events/member-role-changed.event'
@@ -38,6 +39,22 @@ export class NestMemberService {
     const { items, meta } = await this.membersRepo.listByNestId(nest.id, query)
 
     return { items: items.map((item) => this.memberPresenter.toView(item)), meta }
+  }
+
+  async joinNest(nestSlug: string, userId: string) {
+    const nest = await this.nestsRepo.getBySlug(nestSlug)
+
+    await this.policy.assertCanJoinNest(nest, userId)
+
+    const member = await this.transactionManager.run(async (tx) => {
+      const created = await this.membersRepo.createMember(nest.id, userId, tx)
+      await this.nestsRepo.adjustMemberCount(nest.id, 1, tx)
+      return created
+    })
+
+    void this.eventBus.publish(new MemberJoinedEvent({ nestId: nest.id, userId }))
+
+    return this.memberPresenter.toView(member)
   }
 
   async leaveNest(nestSlug: string, userId: string) {

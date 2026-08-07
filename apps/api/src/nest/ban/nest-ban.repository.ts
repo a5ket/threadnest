@@ -45,7 +45,8 @@ export class NestBanRepository {
           nestId,
           userId,
           bannedById
-        }
+        },
+        select: NEST_BAN_SUMMARY_SELECT
       })
     } catch (error) {
       if (this.prisma.isUniqueConstraintError(error)) {
@@ -57,28 +58,25 @@ export class NestBanRepository {
   }
 
   async revoke(nestId: string, userId: string, revokedById: string, db: Database = this.prisma) {
-    try {
-      return await db.nestBan.update({
-        where: { nestId_userId: { nestId, userId } },
-        data: {
-          status: NestBanStatus.REVOKED,
-          revokedAt: new Date(),
-          revokedById,
-        }
-      })
-    } catch (error) {
-      if (this.prisma.isRecordNotFoundError(error)) {
-        throw new BanNotFoundException()
+    const result = await db.nestBan.updateMany({
+      where: { nestId, userId, status: NestBanStatus.ACTIVE },
+      data: {
+        status: NestBanStatus.REVOKED,
+        revokedAt: new Date(),
+        revokedById,
       }
+    })
 
-      throw error
+    if (result.count === 0) {
+      throw new BanNotFoundException()
     }
   }
 
   async listSummaryByNestId(nestId: string) {
     return this.prisma.nestBan.findMany({
       where: {
-        nestId
+        nestId,
+        status: NestBanStatus.ACTIVE
       },
       select: NEST_BAN_SUMMARY_SELECT
     })

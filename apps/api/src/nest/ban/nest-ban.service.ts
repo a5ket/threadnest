@@ -36,7 +36,7 @@ export class NestBanService {
     })
     void this.eventBus.publish(new UserBannedEvent({ nestId: nest.id, userId: targetUserId, bannedById: actorUserId }))
 
-    return ban
+    return this.presenter.toSummaryView(ban)
   }
 
   async unbanUser(nestSlug: string, actorUserId: string, targetUserId: string) {

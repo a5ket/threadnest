@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { UsernameTakenException } from './exceptions/username-taken.exception'
+import { UserNotFoundException } from './exceptions/user-not-found.exception'
 import { UserProfileRepository } from './user-profile.repository'
 import { UserRepository } from './user.repository'
 
@@ -15,7 +16,9 @@ export class UserService {
     private readonly prisma: PrismaService
   ) { }
   async assertUserExists(userId: string) {
-    await this.existsById(userId)
+    if (!(await this.existsById(userId))) {
+      throw new UserNotFoundException()
+    }
   }
 
   async existsById(userId: string) {

@@ -5,7 +5,6 @@ import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exc
 import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { USER_REFERENCE_SELECT } from 'src/user/constants/user.reference.select'
 import { NEST_REFERENCE_SELECT } from '../constants/nest-reference.select'
 import { NEST_SUMMARY_SELECT } from '../constants/nest.summary.select'
 import { NEST_MEMBER_SELECT } from './constants/nest-member.select'
@@ -79,7 +78,7 @@ export class NestMemberRepository {
 
     const members = await this.prisma.nestMember.findMany({
       where: { nestId, ...cursorWhere },
-      select: { role: true, createdAt: true, userId: true, user: { select: USER_REFERENCE_SELECT } },
+      select: NEST_MEMBER_SELECT,
       orderBy: [{ createdAt: 'asc' }, { userId: 'asc' }],
       take: limit + 1
     })
@@ -119,7 +118,7 @@ export class NestMemberRepository {
     return db.nestMember.update({
       where: { nestId_userId: { nestId, userId } },
       data: { role },
-      select: { role: true, createdAt: true, userId: true, user: { select: USER_REFERENCE_SELECT } },
+      select: NEST_MEMBER_SELECT,
     })
   }
 

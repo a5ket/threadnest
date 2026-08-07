@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
+import { UserService } from 'src/user/user.service'
 import { NestMemberRepository } from '../member/nest-member.repository'
 import { NestAccess } from '../nest.access'
 import { CannotBanYourselfException } from './exceptions/cannot-ban-yourself.exception'
@@ -12,7 +13,8 @@ export class NestBanPolicy {
   constructor(
     private readonly nestAccess: NestAccess,
     private readonly membersRepo: NestMemberRepository,
-    private readonly bansRepo: NestBanRepository
+    private readonly bansRepo: NestBanRepository,
+    private readonly users: UserService
   ) { }
 
   async assertCanBanUser(nestId: string, actorUserId: string, targetUserId: string) {
@@ -25,6 +27,8 @@ export class NestBanPolicy {
     if (!accessContext.canManageBans || !accessContext.role) {
       throw new InsufficientPermissionsException()
     }
+
+    await this.users.assertUserExists(targetUserId)
 
     const [targetMembership, isBanned] = await Promise.all([
       this.membersRepo.findByUser(nestId, targetUserId),

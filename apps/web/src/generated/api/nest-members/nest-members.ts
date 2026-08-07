@@ -10,6 +10,11 @@ import type {
   NestMemberChangeRole401,
   NestMemberChangeRole403,
   NestMemberChangeRole404,
+  NestMemberJoin201,
+  NestMemberJoin401,
+  NestMemberJoin403,
+  NestMemberJoin404,
+  NestMemberJoin409,
   NestMemberList200,
   NestMemberList400,
   NestMemberList401,
@@ -83,6 +88,57 @@ export const nestMemberList = async (nestSlug: string,
     {
       ...options,
       method: 'GET'
+
+    }
+  )
+}
+
+export type nestMemberJoinResponse201 = {
+  data: NestMemberJoin201
+  status: 201
+}
+
+export type nestMemberJoinResponse401 = {
+  data: NestMemberJoin401
+  status: 401
+}
+
+export type nestMemberJoinResponse403 = {
+  data: NestMemberJoin403
+  status: 403
+}
+
+export type nestMemberJoinResponse404 = {
+  data: NestMemberJoin404
+  status: 404
+}
+
+export type nestMemberJoinResponse409 = {
+  data: NestMemberJoin409
+  status: 409
+}
+
+export type nestMemberJoinResponseSuccess = (nestMemberJoinResponse201) & {
+  headers: Headers
+}
+export type nestMemberJoinResponseError = (nestMemberJoinResponse401 | nestMemberJoinResponse403 | nestMemberJoinResponse404 | nestMemberJoinResponse409) & {
+  headers: Headers
+}
+
+export type nestMemberJoinResponse = (nestMemberJoinResponseSuccess | nestMemberJoinResponseError)
+
+export const getNestMemberJoinUrl = (nestSlug: string) => {
+  return `/nests/${nestSlug}/members`
+}
+
+/**
+ * @summary Join a nest
+ */
+export const nestMemberJoin = async (nestSlug: string, options?: RequestInit): Promise<nestMemberJoinResponse> => {
+  return apiFetch<nestMemberJoinResponse>(getNestMemberJoinUrl(nestSlug),
+    {
+      ...options,
+      method: 'POST'
 
     }
   )

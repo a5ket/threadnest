@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Query, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
@@ -15,12 +15,15 @@ import { Verified } from 'src/security/decorators/verified.decorator'
 import { NestMemberResponseDto } from './dto/nest-member-response.dto'
 import { NestMemberQueryDto } from './dto/nest-member.query.dto'
 import { NestMemberUpdateRoleDto } from './dto/nest-member.update-role.dto'
+import { AlreadyMemberException } from './exceptions/already-member.exception'
 import { CannotAssignHigherOrEqualRoleException } from './exceptions/cannot-assign-higher-or-equal-role.exception'
 import { CannotChangeYourOwnRoleException } from './exceptions/cannot-change-your-own-role.exception'
 import { CannotManageHigherRoleMemberException } from './exceptions/cannot-manage-higher-role-member.exception'
 import { CannotRemoveYourselfException } from './exceptions/cannot-remove-yourself.exception'
+import { JoinNotOpenException } from './exceptions/join-not-open.exception'
 import { MemberNotFoundException } from './exceptions/member-not-found.exception'
 import { MemberRoleUnchangedException } from './exceptions/member-role-unchanged.exception'
+import { UserIsBannedException } from './exceptions/user-is-banned.exception'
 import { NestMemberService } from './nest-member.service'
 
 @ApiTags('Nest Members')
@@ -40,6 +43,22 @@ export class NestMemberController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.nestMember.listMembers(nestSlug, user.id, query)
+  }
+
+  @Post()
+  @ApiOperation({ operationId: 'nestMemberJoin', summary: 'Join a nest' })
+  @ApiDataResponse({ status: 201, description: 'Joined nest', type: NestMemberResponseDto })
+  @ApiExceptionResponses(
+    NestNotFoundException,
+    UserIsBannedException,
+    AlreadyMemberException,
+    JoinNotOpenException,
+  )
+  join(
+    @Param('nestSlug') nestSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.nestMember.joinNest(nestSlug, user.id)
   }
 
   @Delete(':userId')

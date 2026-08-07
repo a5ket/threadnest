@@ -43,6 +43,29 @@ export const NestMemberListResponse = zod.object({
 })
 
 /**
+ * @summary Join a nest
+ */
+export const NestMemberJoinParams = zod.object({
+  nestSlug: zod.string()
+})
+
+export const NestMemberJoinResponse = zod.object({
+  data: zod.object({
+    user: zod.object({
+      id: zod.string().describe('User ID'),
+      profile: zod.object({
+        username: zod.string().describe('Unique username'),
+        displayName: zod.string().nullable().describe('Display name'),
+        avatarUrl: zod.string().nullable().describe('Avatar URL')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+    }).describe('The member'),
+    role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('The member\'s role in the nest'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the user joined the nest')
+  })
+})
+
+/**
  * @summary Remove a member from a nest
  */
 export const NestMemberRemoveParams = zod.object({

@@ -1,17 +1,20 @@
-import { NestMemberRole } from 'generated/prisma/enums'
+import { NestJoinPolicy, NestMemberRole } from 'generated/prisma/enums'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { createNestAccessContext } from 'test/factories/nest-access-context.factory'
 import { createMockNestAccess } from 'test/factories/nest-access.mock-factory'
 import { createMockNestMemberRepository } from 'test/factories/nest-member-repository.mock-factory'
 import { createNestMember } from 'test/factories/nest-member.factory'
 import { createNestPolicySubject } from 'test/factories/nest-policy-subject.factory'
+import { AlreadyMemberException } from './exceptions/already-member.exception'
 import { CannotAssignHigherOrEqualRoleException } from './exceptions/cannot-assign-higher-or-equal-role.exception'
 import { CannotChangeYourOwnRoleException } from './exceptions/cannot-change-your-own-role.exception'
 import { CannotManageHigherRoleMemberException } from './exceptions/cannot-manage-higher-role-member.exception'
 import { CannotRemoveYourselfException } from './exceptions/cannot-remove-yourself.exception'
+import { JoinNotOpenException } from './exceptions/join-not-open.exception'
 import { MemberNotFoundException } from './exceptions/member-not-found.exception'
 import { MemberRoleUnchangedException } from './exceptions/member-role-unchanged.exception'
 import { OwnerCannotLeaveException } from './exceptions/owner-cannot-leave.exception'
+import { UserIsBannedException } from './exceptions/user-is-banned.exception'
 import { NestMemberPolicy } from './nest-member.policy'
 
 describe('NestMemberPolicy', () => {
@@ -35,6 +38,40 @@ describe('NestMemberPolicy', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  describe('assertCanJoinNest', () => {
+    it('allows joining an open nest', async () => {
+      givenContext({ isMember: false, role: null, isBanned: false, joinPolicy: NestJoinPolicy.OPEN })
+
+      await expect(
+        policy.assertCanJoinNest(nest, 'user-1'),
+      ).resolves.toBeUndefined()
+    })
+
+    it('throws UserIsBannedException when the user is banned', async () => {
+      givenContext({ isMember: false, role: null, isBanned: true, joinPolicy: NestJoinPolicy.OPEN })
+
+      await expect(
+        policy.assertCanJoinNest(nest, 'user-1'),
+      ).rejects.toThrow(UserIsBannedException)
+    })
+
+    it('throws AlreadyMemberException when the user is already a member', async () => {
+      givenContext({ isMember: true, role: NestMemberRole.MEMBER, isBanned: false, joinPolicy: NestJoinPolicy.OPEN })
+
+      await expect(
+        policy.assertCanJoinNest(nest, 'user-1'),
+      ).rejects.toThrow(AlreadyMemberException)
+    })
+
+    it('throws JoinNotOpenException when the nest is not open', async () => {
+      givenContext({ isMember: false, role: null, isBanned: false, joinPolicy: NestJoinPolicy.BY_REQUEST })
+
+      await expect(
+        policy.assertCanJoinNest(nest, 'user-1'),
+      ).rejects.toThrow(JoinNotOpenException)
+    })
   })
 
   describe('assertCanLeaveNest', () => {

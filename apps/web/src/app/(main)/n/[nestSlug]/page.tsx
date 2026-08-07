@@ -1,5 +1,6 @@
 import { RoleBadge } from '@/common/components/role-badge'
 import { getUserDisplayName } from '@/common/user-display-name'
+import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import { getNestServer } from '@/features/nest/nest.server'
 import { getThreadsServer } from '@/features/thread/thread.server'
 import Link from 'next/link'
@@ -56,10 +57,20 @@ export default async function NestPage({
             </Link>
           )}
 
+          {nest.access.canManageBans && (
+            <Link href={`/n/${nestSlug}/bans`} className='text-sm text-muted-foreground hover:underline'>
+              Bans
+            </Link>
+          )}
+
           {nest.access.canModerateContent && (
             <Link href={`/n/${nestSlug}/settings`} className='text-sm text-muted-foreground hover:underline'>
               Settings
             </Link>
+          )}
+
+          {!nest.access.isMember && (
+            <JoinNestControl nestSlug={nestSlug} joinPolicy={nest.access.joinPolicy} />
           )}
 
           <Link
