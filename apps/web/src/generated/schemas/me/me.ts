@@ -25,3 +25,27 @@ export const MeBootstrapResponse = zod.object({
     })).describe('Nests the user is a member of')
   })
 })
+
+/**
+ * @summary List nests the current user is a member of
+ */
+export const MeNestListResponse = zod.object({
+  data: zod.array(zod.object({
+    name: zod.string().describe('Nest display name'),
+    slug: zod.string().describe('Unique nest slug'),
+    description: zod.string().nullable().describe('Nest description'),
+    memberCount: zod.number().describe('Number of members'),
+    threadCount: zod.number().describe('Number of threads'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp')
+  }))
+})
+
+/**
+ * @summary Leave a nest
+ */
+export const MeNestLeaveParams = zod.object({
+  nestSlug: zod.string()
+})
+
+export const MeNestLeaveResponse = zod.void()

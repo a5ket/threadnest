@@ -6,7 +6,13 @@
  */
 import type {
   MeBootstrap200,
-  MeBootstrap401
+  MeBootstrap401,
+  MeNestLeave401,
+  MeNestLeave403,
+  MeNestLeave404,
+  MeNestLeave409,
+  MeNestList200,
+  MeNestList401
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
@@ -43,6 +49,93 @@ export const meBootstrap = async (options?: RequestInit): Promise<meBootstrapRes
     {
       ...options,
       method: 'GET'
+
+    }
+  )
+}
+
+export type meNestListResponse200 = {
+  data: MeNestList200
+  status: 200
+}
+
+export type meNestListResponse401 = {
+  data: MeNestList401
+  status: 401
+}
+
+export type meNestListResponseSuccess = (meNestListResponse200) & {
+  headers: Headers
+}
+export type meNestListResponseError = (meNestListResponse401) & {
+  headers: Headers
+}
+
+export type meNestListResponse = (meNestListResponseSuccess | meNestListResponseError)
+
+export const getMeNestListUrl = () => {
+  return `/me/nests`
+}
+
+/**
+ * @summary List nests the current user is a member of
+ */
+export const meNestList = async (options?: RequestInit): Promise<meNestListResponse> => {
+  return apiFetch<meNestListResponse>(getMeNestListUrl(),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
+
+export type meNestLeaveResponse204 = {
+  data: void
+  status: 204
+}
+
+export type meNestLeaveResponse401 = {
+  data: MeNestLeave401
+  status: 401
+}
+
+export type meNestLeaveResponse403 = {
+  data: MeNestLeave403
+  status: 403
+}
+
+export type meNestLeaveResponse404 = {
+  data: MeNestLeave404
+  status: 404
+}
+
+export type meNestLeaveResponse409 = {
+  data: MeNestLeave409
+  status: 409
+}
+
+export type meNestLeaveResponseSuccess = (meNestLeaveResponse204) & {
+  headers: Headers
+}
+export type meNestLeaveResponseError = (meNestLeaveResponse401 | meNestLeaveResponse403 | meNestLeaveResponse404 | meNestLeaveResponse409) & {
+  headers: Headers
+}
+
+export type meNestLeaveResponse = (meNestLeaveResponseSuccess | meNestLeaveResponseError)
+
+export const getMeNestLeaveUrl = (nestSlug: string) => {
+  return `/me/nests/${nestSlug}`
+}
+
+/**
+ * @summary Leave a nest
+ */
+export const meNestLeave = async (nestSlug: string, options?: RequestInit): Promise<meNestLeaveResponse> => {
+  return apiFetch<meNestLeaveResponse>(getMeNestLeaveUrl(nestSlug),
+    {
+      ...options,
+      method: 'DELETE'
 
     }
   )

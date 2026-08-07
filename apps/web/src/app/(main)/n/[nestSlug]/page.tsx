@@ -1,6 +1,7 @@
 import { RoleBadge } from '@/common/components/role-badge'
 import { getUserDisplayName } from '@/common/user-display-name'
 import { JoinNestControl } from '@/features/nest/components/join-nest-control'
+import { LeaveNestButton } from '@/features/nest/components/leave-nest-button'
 import { getNestServer } from '@/features/nest/nest.server'
 import { getThreadsServer } from '@/features/thread/thread.server'
 import Link from 'next/link'
@@ -71,6 +72,10 @@ export default async function NestPage({
 
           {!nest.access.isMember && (
             <JoinNestControl nestSlug={nestSlug} joinPolicy={nest.access.joinPolicy} />
+          )}
+
+          {nest.access.canLeaveNest && (
+            <LeaveNestButton nestSlug={nestSlug} />
           )}
 
           <Link
