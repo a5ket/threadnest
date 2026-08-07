@@ -36,6 +36,7 @@ export default async function NestMembersPage({
         members={members}
         canRemoveMembers={nest.access.canRemoveMembers}
         canManageMemberRoles={nest.access.canManageMemberRoles}
+        canTransferOwnership={nest.access.canTransferOwnership}
       />
     </div>
   )

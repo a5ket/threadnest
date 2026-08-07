@@ -6,9 +6,10 @@ interface MemberListProps {
   members: NestMember[]
   canRemoveMembers: boolean
   canManageMemberRoles: boolean
+  canTransferOwnership: boolean
 }
 
-export function MemberList({ nestSlug, members, canRemoveMembers, canManageMemberRoles }: MemberListProps) {
+export function MemberList({ nestSlug, members, canRemoveMembers, canManageMemberRoles, canTransferOwnership }: MemberListProps) {
   return (
     <ul className='flex flex-col gap-3'>
       {members.map((member) => (
@@ -18,6 +19,7 @@ export function MemberList({ nestSlug, members, canRemoveMembers, canManageMembe
           member={member}
           canRemoveMembers={canRemoveMembers}
           canManageMemberRoles={canManageMemberRoles}
+          canTransferOwnership={canTransferOwnership}
         />
       ))}
 
