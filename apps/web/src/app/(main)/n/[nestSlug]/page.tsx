@@ -72,7 +72,7 @@ export default async function NestPage({
           )}
 
           {!nest.access.isMember && (
-            <JoinNestControl nestSlug={nestSlug} joinPolicy={nest.access.joinPolicy} />
+            <JoinNestControl nestSlug={nestSlug} nestName={nest.name} joinPolicy={nest.access.joinPolicy} />
           )}
 
           {nest.access.isMember && (

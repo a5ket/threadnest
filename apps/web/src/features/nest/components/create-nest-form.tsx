@@ -1,5 +1,6 @@
 'use client'
 
+import { useAddNest } from '@/features/me/me.hooks'
 import { useCreateNest } from '@/features/nest/nest.hooks'
 import { createNestSchema, type CreateNestFormValues } from '@/features/nest/nest.schemas'
 import type { NestDetail } from '@/features/nest/nest.types'
@@ -12,6 +13,7 @@ interface CreateNestFormProps {
 }
 
 export function CreateNestForm({ onCreated }: CreateNestFormProps) {
+  const addNest = useAddNest()
   const {
     register,
     handleSubmit,
@@ -32,7 +34,10 @@ export function CreateNestForm({ onCreated }: CreateNestFormProps) {
   })
 
   const createNest = useCreateNest({
-    onSuccess: onCreated,
+    onSuccess: (nest) => {
+      addNest({ name: nest.name, slug: nest.slug })
+      onCreated(nest)
+    },
     onError: (error) => {
       switch (error.errorCode) {
         case 'NEST_SLUG_RESERVED':

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCreateJoinRequest } from '@/features/join-request/join-request.hooks'
-import { useIsSignedIn } from '@/features/me/me.hooks'
+import { useAddNest, useIsSignedIn } from '@/features/me/me.hooks'
 import { useJoinNest } from '@/features/nest-member/nest-member.hooks'
 import { NestAccessContextDtoJoinPolicy } from '@/generated/api/models'
 import { useRouter } from 'next/navigation'
@@ -9,16 +9,21 @@ import { useState } from 'react'
 
 interface JoinNestControlProps {
   nestSlug: string
+  nestName: string
   joinPolicy: NestAccessContextDtoJoinPolicy
 }
 
-export function JoinNestControl({ nestSlug, joinPolicy }: JoinNestControlProps) {
+export function JoinNestControl({ nestSlug, nestName, joinPolicy }: JoinNestControlProps) {
   const router = useRouter()
+  const addNest = useAddNest()
   const isSignedIn = useIsSignedIn()
   const [message, setMessage] = useState<string | null>(null)
 
   const joinNest = useJoinNest({
-    onSuccess: () => router.refresh(),
+    onSuccess: () => {
+      addNest({ name: nestName, slug: nestSlug })
+      router.refresh()
+    },
     onError: (error) => {
       switch (error.errorCode) {
         case 'ALREADY_A_MEMBER':

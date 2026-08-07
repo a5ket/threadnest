@@ -1,7 +1,7 @@
 'use client'
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
-import { useLeaveNest } from '@/features/me/me.hooks'
+import { useLeaveNest, useRemoveNest } from '@/features/me/me.hooks'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -12,10 +12,12 @@ interface LeaveNestButtonProps {
 
 export function LeaveNestButton({ nestSlug, nestName }: LeaveNestButtonProps) {
   const router = useRouter()
+  const removeNest = useRemoveNest()
   const [error, setError] = useState<string | null>(null)
 
   const leaveNest = useLeaveNest({
     onSuccess: () => {
+      removeNest(nestSlug)
       router.push('/')
       router.refresh()
     },

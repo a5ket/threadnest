@@ -27,3 +27,11 @@ export function useIsSignedIn() {
 export function useMeNests() {
   return useMeStore((s) => s.nests)
 }
+
+export function useAddNest() {
+  return useMeStore((s) => s.addNest)
+}
+
+export function useRemoveNest() {
+  return useMeStore((s) => s.removeNest)
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import { ConfirmDialog } from '@/common/components/confirm-dialog'
+import { useRemoveNest } from '@/features/me/me.hooks'
 import { useDeleteNest } from '@/features/nest/nest.hooks'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -12,11 +13,13 @@ interface DeleteNestButtonProps {
 
 export function DeleteNestButton({ nestSlug, nestName }: DeleteNestButtonProps) {
   const router = useRouter()
+  const removeNest = useRemoveNest()
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const deleteNest = useDeleteNest({
     onSuccess: () => {
+      removeNest(nestSlug)
       router.push('/')
       router.refresh()
     },

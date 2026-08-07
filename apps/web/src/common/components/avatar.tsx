@@ -5,7 +5,6 @@ interface AvatarProps {
   className?: string
 }
 
-// Renders as inline phrasing content (span/img only) so it can be embedded inside a <p>.
 export function Avatar({ avatarUrl, label, size = 40, className = '' }: AvatarProps) {
   if (avatarUrl) {
     return (
