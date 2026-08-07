@@ -13,13 +13,23 @@ import type {
   MeNestLeave409,
   MeNestList200,
   MeNestList401,
+  MeNestPreferenceGet200,
+  MeNestPreferenceGet401,
+  MeNestPreferenceGet403,
+  MeNestPreferenceGet404,
+  MeNestPreferenceUpdate200,
+  MeNestPreferenceUpdate400,
+  MeNestPreferenceUpdate401,
+  MeNestPreferenceUpdate403,
+  MeNestPreferenceUpdate404,
   MeProfileGet200,
   MeProfileGet401,
   MeProfileUpdate200,
   MeProfileUpdate400,
   MeProfileUpdate401,
   MeProfileUpdate409,
-  UpdateProfileDto
+  UpdateProfileDto,
+  UserNestPreferenceUpdateDto
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
@@ -144,6 +154,105 @@ export const meNestLeave = async (nestSlug: string, options?: RequestInit): Prom
       ...options,
       method: 'DELETE'
 
+    }
+  )
+}
+
+export type meNestPreferenceGetResponse200 = {
+  data: MeNestPreferenceGet200
+  status: 200
+}
+
+export type meNestPreferenceGetResponse401 = {
+  data: MeNestPreferenceGet401
+  status: 401
+}
+
+export type meNestPreferenceGetResponse403 = {
+  data: MeNestPreferenceGet403
+  status: 403
+}
+
+export type meNestPreferenceGetResponse404 = {
+  data: MeNestPreferenceGet404
+  status: 404
+}
+
+export type meNestPreferenceGetResponseSuccess = (meNestPreferenceGetResponse200) & {
+  headers: Headers
+}
+export type meNestPreferenceGetResponseError = (meNestPreferenceGetResponse401 | meNestPreferenceGetResponse403 | meNestPreferenceGetResponse404) & {
+  headers: Headers
+}
+
+export type meNestPreferenceGetResponse = (meNestPreferenceGetResponseSuccess | meNestPreferenceGetResponseError)
+
+export const getMeNestPreferenceGetUrl = (nestSlug: string) => {
+  return `/me/nests/${nestSlug}/preferences`
+}
+
+/**
+ * @summary Get the current user's preferences for a nest
+ */
+export const meNestPreferenceGet = async (nestSlug: string, options?: RequestInit): Promise<meNestPreferenceGetResponse> => {
+  return apiFetch<meNestPreferenceGetResponse>(getMeNestPreferenceGetUrl(nestSlug),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
+
+export type meNestPreferenceUpdateResponse200 = {
+  data: MeNestPreferenceUpdate200
+  status: 200
+}
+
+export type meNestPreferenceUpdateResponse400 = {
+  data: MeNestPreferenceUpdate400
+  status: 400
+}
+
+export type meNestPreferenceUpdateResponse401 = {
+  data: MeNestPreferenceUpdate401
+  status: 401
+}
+
+export type meNestPreferenceUpdateResponse403 = {
+  data: MeNestPreferenceUpdate403
+  status: 403
+}
+
+export type meNestPreferenceUpdateResponse404 = {
+  data: MeNestPreferenceUpdate404
+  status: 404
+}
+
+export type meNestPreferenceUpdateResponseSuccess = (meNestPreferenceUpdateResponse200) & {
+  headers: Headers
+}
+export type meNestPreferenceUpdateResponseError = (meNestPreferenceUpdateResponse400 | meNestPreferenceUpdateResponse401 | meNestPreferenceUpdateResponse403 | meNestPreferenceUpdateResponse404) & {
+  headers: Headers
+}
+
+export type meNestPreferenceUpdateResponse = (meNestPreferenceUpdateResponseSuccess | meNestPreferenceUpdateResponseError)
+
+export const getMeNestPreferenceUpdateUrl = (nestSlug: string) => {
+  return `/me/nests/${nestSlug}/preferences`
+}
+
+/**
+ * @summary Update the current user's preferences for a nest
+ */
+export const meNestPreferenceUpdate = async (nestSlug: string,
+  userNestPreferenceUpdateDto: UserNestPreferenceUpdateDto, options?: RequestInit): Promise<meNestPreferenceUpdateResponse> => {
+  return apiFetch<meNestPreferenceUpdateResponse>(getMeNestPreferenceUpdateUrl(nestSlug),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(userNestPreferenceUpdateDto)
     }
   )
 }

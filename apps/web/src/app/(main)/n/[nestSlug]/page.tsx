@@ -3,6 +3,7 @@ import { UserLink } from '@/common/components/user-link'
 import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import { LeaveNestButton } from '@/features/nest/components/leave-nest-button'
 import { getNestServer } from '@/features/nest/nest.server'
+import { NestPreferenceToggle } from '@/features/nest-preference/components/nest-preference-toggle'
 import { getThreadsServer } from '@/features/thread/thread.server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -72,6 +73,10 @@ export default async function NestPage({
 
           {!nest.access.isMember && (
             <JoinNestControl nestSlug={nestSlug} joinPolicy={nest.access.joinPolicy} />
+          )}
+
+          {nest.access.isMember && (
+            <NestPreferenceToggle nestSlug={nestSlug} />
           )}
 
           {nest.access.canLeaveNest && (

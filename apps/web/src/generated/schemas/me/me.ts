@@ -51,6 +51,43 @@ export const MeNestLeaveParams = zod.object({
 export const MeNestLeaveResponse = zod.void()
 
 /**
+ * @summary Get the current user's preferences for a nest
+ */
+export const MeNestPreferenceGetParams = zod.object({
+  nestSlug: zod.string()
+})
+
+export const MeNestPreferenceGetResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    nestId: zod.string().describe('Nest ID'),
+    allowInvites: zod.boolean().describe('Whether other members can send this user invites to the nest'),
+    muted: zod.boolean().describe('Whether this user has muted notifications for the nest')
+  })
+})
+
+/**
+ * @summary Update the current user's preferences for a nest
+ */
+export const MeNestPreferenceUpdateParams = zod.object({
+  nestSlug: zod.string()
+})
+
+export const MeNestPreferenceUpdateBody = zod.object({
+  allowInvites: zod.boolean().optional(),
+  muted: zod.boolean().optional()
+})
+
+export const MeNestPreferenceUpdateResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    nestId: zod.string().describe('Nest ID'),
+    allowInvites: zod.boolean().describe('Whether other members can send this user invites to the nest'),
+    muted: zod.boolean().describe('Whether this user has muted notifications for the nest')
+  })
+})
+
+/**
  * @summary Get the current user's profile
  */
 export const MeProfileGetResponse = zod.object({
