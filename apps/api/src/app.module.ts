@@ -14,8 +14,12 @@ import { ThreadModule } from './thread/thread.module'
 import { UserModule } from './user/user.module'
 import { QueueModule } from './queue/queue.module'
 import { EmailModule } from './email/email.module'
+import { AppController } from './app.controller'
 
 @Module({
+  controllers: [
+    AppController
+  ],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
