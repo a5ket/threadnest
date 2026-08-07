@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { USER_AUTH_SELECT } from './constants/user.auth.select'
+import { USER_AUTH_SELECT } from './selects/user.auth.select'
 import { UserNotFoundException } from './exceptions/user-not-found.exception'
 
 @Injectable()

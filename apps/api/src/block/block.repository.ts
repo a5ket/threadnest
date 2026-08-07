@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { BLOCK_SELECT } from './constants/block.select'
-import { BLOCKED_USER_SELECT } from './constants/blocked.user.select'
+import { BLOCK_SELECT } from './selects/block.select'
+import { BLOCKED_USER_SELECT } from './selects/blocked.user.select'
 import { AlreadyBlockedException } from './exceptions/already-blocked.exception'
 import { NotBlockedException } from './exceptions/not-blocked.exception'
 

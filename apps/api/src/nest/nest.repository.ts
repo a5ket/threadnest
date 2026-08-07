@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { NEST_SUMMARY_SELECT } from './constants/nest.summary.select'
+import { NEST_SUMMARY_SELECT } from './selects/nest.summary.select'
 import { NestCreateDto } from './dto/nest.create.dto'
 import { NestUpdateDto } from './dto/nest.update.dto'
 import { NestNotFoundException } from './exceptions/nest-not-found.exception'

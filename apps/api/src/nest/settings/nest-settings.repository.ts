@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { NestSettingsNotFoundException } from './exceptions/nest-settings-not-found.exception'
 import { Database } from 'src/prisma/types/database'
 import { NEST_ACCESS_LEVEL } from '../constants/nest-access-level'
-import { NEST_SETTINGS_SELECT } from './constants/nest-settings.select'
+import { NEST_SETTINGS_SELECT } from './selects/nest-settings.select'
 import { NestSettingsUpdateDto } from './dto/nest-settings.update.dto'
 
 interface NestSettingsCreateOptions {

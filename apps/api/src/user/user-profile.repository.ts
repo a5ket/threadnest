@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { USER_PROFILE_SELECT } from './constants/user-profile.select'
+import { USER_PROFILE_SELECT } from './selects/user-profile.select'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { UserNotFoundException } from './exceptions/user-not-found.exception'
 

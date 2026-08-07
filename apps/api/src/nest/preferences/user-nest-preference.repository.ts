@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { USER_NEST_PREFERENCE_SELECT } from './constants/user-nest-preference.select'
+import { USER_NEST_PREFERENCE_SELECT } from './selects/user-nest-preference.select'
 
 @Injectable()
 export class UserNestPreferenceRepository {

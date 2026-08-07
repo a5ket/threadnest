@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { NEST_BAN_SUMMARY_SELECT } from './constants/nest-ban.summary.select'
+import { NEST_BAN_SUMMARY_SELECT } from './selects/nest-ban.summary.select'
 import { BanNotFoundException } from './exceptions/ban-not-found.exception'
 import { UserAlreadyBannedException } from './exceptions/user-already-banned.exception'
 import { NestBanStatus } from 'generated/prisma/enums'

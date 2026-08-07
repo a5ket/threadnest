@@ -1,9 +1,10 @@
 import type { NestMemberRole } from 'generated/prisma/enums'
 import type { Prisma } from 'generated/prisma/client'
-import type { COMMENT_SELECT, commentSelect } from '../constants/comment.select'
+import type { COMMENT_SELECT } from '../selects/comment.select'
+import type { commentRoleSelect } from '../selects/comment.role.select'
 
 export type Comment = Prisma.CommentGetPayload<{ select: typeof COMMENT_SELECT }>
-export type CommentWithRole = Prisma.CommentGetPayload<{ select: ReturnType<typeof commentSelect> }>
+export type CommentWithRole = Prisma.CommentGetPayload<{ select: ReturnType<typeof commentRoleSelect> }>
 
 export type CommentSortBy = 'createdAt' | 'updatedAt'
 

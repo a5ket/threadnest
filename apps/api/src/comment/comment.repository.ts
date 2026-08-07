@@ -4,7 +4,8 @@ import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exc
 import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { COMMENT_SELECT, commentSelect } from './constants/comment.select'
+import { COMMENT_SELECT } from './selects/comment.select'
+import { commentRoleSelect } from './selects/comment.role.select'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
 import { CommentNotFoundException } from './exceptions/comment-not-found.exception'
@@ -224,7 +225,7 @@ export class CommentRepository {
         authorId,
         content: dto.content
       },
-      select: commentSelect(nestId)
+      select: commentRoleSelect(nestId)
     })
   }
 
@@ -237,7 +238,7 @@ export class CommentRepository {
         content: dto.content,
         depth: parentComment.depth + 1,
       },
-      select: commentSelect(nestId)
+      select: commentRoleSelect(nestId)
     }).then(async (reply) => {
       await db.comment.update({
         where: { id: parentComment.id },
@@ -252,7 +253,7 @@ export class CommentRepository {
       return await db.comment.update({
         where: { id: commentId },
         data: { content: dto.content, editedAt: new Date() },
-        select: commentSelect(nestId)
+        select: commentRoleSelect(nestId)
       })
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {
