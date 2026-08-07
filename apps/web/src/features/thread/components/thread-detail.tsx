@@ -6,7 +6,7 @@ import { formatDateTime } from '@/common/format-date'
 import { getUserDisplayName } from '@/common/user-display-name'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
-import { useDeleteThread } from '@/features/thread/thread.hooks'
+import { useDeleteThread, useLockThread, usePinThread, useUnlockThread, useUnpinThread } from '@/features/thread/thread.hooks'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -25,6 +25,13 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
   const deleteThread = useDeleteThread({
     onSuccess: () => router.push(`/n/${nestSlug}`)
   })
+
+  const setThread = threadStore.getState().setThread
+
+  const lockThread = useLockThread({ onSuccess: setThread })
+  const unlockThread = useUnlockThread({ onSuccess: setThread })
+  const pinThread = usePinThread({ onSuccess: setThread })
+  const unpinThread = useUnpinThread({ onSuccess: setThread })
 
   if (isEditing) {
     return (
@@ -95,6 +102,54 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
           <button type='button' onClick={() => setIsEditing(true)} className='text-sm text-muted-foreground hover:underline'>
             Edit
           </button>
+        )}
+
+        {thread.access.canManageThreadLock && (
+          thread.lockedAt
+            ? (
+                <button
+                  type='button'
+                  disabled={unlockThread.isPending}
+                  onClick={() => unlockThread.mutate({ nestSlug, threadSlug: thread.slug })}
+                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                >
+                  {unlockThread.isPending ? 'Unlocking...' : 'Unlock'}
+                </button>
+              )
+            : (
+                <button
+                  type='button'
+                  disabled={lockThread.isPending}
+                  onClick={() => lockThread.mutate({ nestSlug, threadSlug: thread.slug })}
+                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                >
+                  {lockThread.isPending ? 'Locking...' : 'Lock'}
+                </button>
+              )
+        )}
+
+        {thread.access.canManageThreadPin && (
+          thread.pinnedAt
+            ? (
+                <button
+                  type='button'
+                  disabled={unpinThread.isPending}
+                  onClick={() => unpinThread.mutate({ nestSlug, threadSlug: thread.slug })}
+                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                >
+                  {unpinThread.isPending ? 'Unpinning...' : 'Unpin'}
+                </button>
+              )
+            : (
+                <button
+                  type='button'
+                  disabled={pinThread.isPending}
+                  onClick={() => pinThread.mutate({ nestSlug, threadSlug: thread.slug })}
+                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                >
+                  {pinThread.isPending ? 'Pinning...' : 'Pin'}
+                </button>
+              )
         )}
 
         {thread.access.canDeleteThread && (

@@ -20,6 +20,22 @@ import type {
   NestThreadList403,
   NestThreadList404,
   NestThreadListParams,
+  NestThreadLock200,
+  NestThreadLock401,
+  NestThreadLock403,
+  NestThreadLock404,
+  NestThreadPin200,
+  NestThreadPin401,
+  NestThreadPin403,
+  NestThreadPin404,
+  NestThreadUnlock200,
+  NestThreadUnlock401,
+  NestThreadUnlock403,
+  NestThreadUnlock404,
+  NestThreadUnpin200,
+  NestThreadUnpin401,
+  NestThreadUnpin403,
+  NestThreadUnpin404,
   NestThreadUpdate200,
   NestThreadUpdate400,
   NestThreadUpdate401,
@@ -275,6 +291,198 @@ export const getNestThreadDeleteUrl = (nestSlug: string,
 export const nestThreadDelete = async (nestSlug: string,
   threadSlug: string, options?: RequestInit): Promise<nestThreadDeleteResponse> => {
   return apiFetch<nestThreadDeleteResponse>(getNestThreadDeleteUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'DELETE'
+
+    }
+  )
+}
+
+export type nestThreadLockResponse200 = {
+  data: NestThreadLock200
+  status: 200
+}
+
+export type nestThreadLockResponse401 = {
+  data: NestThreadLock401
+  status: 401
+}
+
+export type nestThreadLockResponse403 = {
+  data: NestThreadLock403
+  status: 403
+}
+
+export type nestThreadLockResponse404 = {
+  data: NestThreadLock404
+  status: 404
+}
+
+export type nestThreadLockResponseSuccess = (nestThreadLockResponse200) & {
+  headers: Headers
+}
+export type nestThreadLockResponseError = (nestThreadLockResponse401 | nestThreadLockResponse403 | nestThreadLockResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadLockResponse = (nestThreadLockResponseSuccess | nestThreadLockResponseError)
+
+export const getNestThreadLockUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/lock`
+}
+
+/**
+ * @summary Lock a thread
+ */
+export const nestThreadLock = async (nestSlug: string,
+  threadSlug: string, options?: RequestInit): Promise<nestThreadLockResponse> => {
+  return apiFetch<nestThreadLockResponse>(getNestThreadLockUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'POST'
+
+    }
+  )
+}
+
+export type nestThreadUnlockResponse200 = {
+  data: NestThreadUnlock200
+  status: 200
+}
+
+export type nestThreadUnlockResponse401 = {
+  data: NestThreadUnlock401
+  status: 401
+}
+
+export type nestThreadUnlockResponse403 = {
+  data: NestThreadUnlock403
+  status: 403
+}
+
+export type nestThreadUnlockResponse404 = {
+  data: NestThreadUnlock404
+  status: 404
+}
+
+export type nestThreadUnlockResponseSuccess = (nestThreadUnlockResponse200) & {
+  headers: Headers
+}
+export type nestThreadUnlockResponseError = (nestThreadUnlockResponse401 | nestThreadUnlockResponse403 | nestThreadUnlockResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadUnlockResponse = (nestThreadUnlockResponseSuccess | nestThreadUnlockResponseError)
+
+export const getNestThreadUnlockUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/lock`
+}
+
+/**
+ * @summary Unlock a thread
+ */
+export const nestThreadUnlock = async (nestSlug: string,
+  threadSlug: string, options?: RequestInit): Promise<nestThreadUnlockResponse> => {
+  return apiFetch<nestThreadUnlockResponse>(getNestThreadUnlockUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'DELETE'
+
+    }
+  )
+}
+
+export type nestThreadPinResponse200 = {
+  data: NestThreadPin200
+  status: 200
+}
+
+export type nestThreadPinResponse401 = {
+  data: NestThreadPin401
+  status: 401
+}
+
+export type nestThreadPinResponse403 = {
+  data: NestThreadPin403
+  status: 403
+}
+
+export type nestThreadPinResponse404 = {
+  data: NestThreadPin404
+  status: 404
+}
+
+export type nestThreadPinResponseSuccess = (nestThreadPinResponse200) & {
+  headers: Headers
+}
+export type nestThreadPinResponseError = (nestThreadPinResponse401 | nestThreadPinResponse403 | nestThreadPinResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadPinResponse = (nestThreadPinResponseSuccess | nestThreadPinResponseError)
+
+export const getNestThreadPinUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/pin`
+}
+
+/**
+ * @summary Pin a thread
+ */
+export const nestThreadPin = async (nestSlug: string,
+  threadSlug: string, options?: RequestInit): Promise<nestThreadPinResponse> => {
+  return apiFetch<nestThreadPinResponse>(getNestThreadPinUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'POST'
+
+    }
+  )
+}
+
+export type nestThreadUnpinResponse200 = {
+  data: NestThreadUnpin200
+  status: 200
+}
+
+export type nestThreadUnpinResponse401 = {
+  data: NestThreadUnpin401
+  status: 401
+}
+
+export type nestThreadUnpinResponse403 = {
+  data: NestThreadUnpin403
+  status: 403
+}
+
+export type nestThreadUnpinResponse404 = {
+  data: NestThreadUnpin404
+  status: 404
+}
+
+export type nestThreadUnpinResponseSuccess = (nestThreadUnpinResponse200) & {
+  headers: Headers
+}
+export type nestThreadUnpinResponseError = (nestThreadUnpinResponse401 | nestThreadUnpinResponse403 | nestThreadUnpinResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadUnpinResponse = (nestThreadUnpinResponseSuccess | nestThreadUnpinResponseError)
+
+export const getNestThreadUnpinUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/pin`
+}
+
+/**
+ * @summary Unpin a thread
+ */
+export const nestThreadUnpin = async (nestSlug: string,
+  threadSlug: string, options?: RequestInit): Promise<nestThreadUnpinResponse> => {
+  return apiFetch<nestThreadUnpinResponse>(getNestThreadUnpinUrl(nestSlug, threadSlug),
     {
       ...options,
       method: 'DELETE'

@@ -223,3 +223,195 @@ export const NestThreadDeleteParams = zod.object({
 })
 
 export const NestThreadDeleteResponse = zod.void()
+
+/**
+ * @summary Lock a thread
+ */
+export const NestThreadLockParams = zod.object({
+  nestSlug: zod.string(),
+  threadSlug: zod.string()
+})
+
+export const NestThreadLockResponse = zod.object({
+  data: zod.object({
+    id: zod.string().describe('Thread ID'),
+    slug: zod.string().describe('Unique thread slug (within its nest)'),
+    title: zod.string().describe('Thread title'),
+    content: zod.string().nullable().describe('Thread content. Null if the current user cannot read it'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+    lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
+    commentCount: zod.number().describe('Number of comments on this thread'),
+    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    author: zod.object({
+      id: zod.string().describe('User ID'),
+      profile: zod.object({
+        username: zod.string().describe('Unique username'),
+        displayName: zod.string().nullable().describe('Display name'),
+        avatarUrl: zod.string().nullable().describe('Avatar URL')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+    }).describe('Thread author'),
+    lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
+    pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
+    access: zod.object({
+      isAuthor: zod.boolean().describe('Whether the current user authored this thread'),
+      isDeleted: zod.boolean().describe('Whether the thread has been deleted'),
+      isLocked: zod.boolean().describe('Whether the thread is locked'),
+      isPinned: zod.boolean().describe('Whether the thread is pinned'),
+      canViewThread: zod.boolean().describe('Whether the current user can view the thread'),
+      canReadContent: zod.boolean().describe('Whether the current user can read the thread\'s content'),
+      canEditThread: zod.boolean().describe('Whether the current user can edit the thread'),
+      canDeleteThread: zod.boolean().describe('Whether the current user can delete the thread'),
+      canCommentThread: zod.boolean().describe('Whether the current user can comment on the thread'),
+      canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
+      canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
+      canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
+    }).describe('The current user\'s access and permissions for this thread')
+  })
+})
+
+/**
+ * @summary Unlock a thread
+ */
+export const NestThreadUnlockParams = zod.object({
+  nestSlug: zod.string(),
+  threadSlug: zod.string()
+})
+
+export const NestThreadUnlockResponse = zod.object({
+  data: zod.object({
+    id: zod.string().describe('Thread ID'),
+    slug: zod.string().describe('Unique thread slug (within its nest)'),
+    title: zod.string().describe('Thread title'),
+    content: zod.string().nullable().describe('Thread content. Null if the current user cannot read it'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+    lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
+    commentCount: zod.number().describe('Number of comments on this thread'),
+    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    author: zod.object({
+      id: zod.string().describe('User ID'),
+      profile: zod.object({
+        username: zod.string().describe('Unique username'),
+        displayName: zod.string().nullable().describe('Display name'),
+        avatarUrl: zod.string().nullable().describe('Avatar URL')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+    }).describe('Thread author'),
+    lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
+    pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
+    access: zod.object({
+      isAuthor: zod.boolean().describe('Whether the current user authored this thread'),
+      isDeleted: zod.boolean().describe('Whether the thread has been deleted'),
+      isLocked: zod.boolean().describe('Whether the thread is locked'),
+      isPinned: zod.boolean().describe('Whether the thread is pinned'),
+      canViewThread: zod.boolean().describe('Whether the current user can view the thread'),
+      canReadContent: zod.boolean().describe('Whether the current user can read the thread\'s content'),
+      canEditThread: zod.boolean().describe('Whether the current user can edit the thread'),
+      canDeleteThread: zod.boolean().describe('Whether the current user can delete the thread'),
+      canCommentThread: zod.boolean().describe('Whether the current user can comment on the thread'),
+      canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
+      canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
+      canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
+    }).describe('The current user\'s access and permissions for this thread')
+  })
+})
+
+/**
+ * @summary Pin a thread
+ */
+export const NestThreadPinParams = zod.object({
+  nestSlug: zod.string(),
+  threadSlug: zod.string()
+})
+
+export const NestThreadPinResponse = zod.object({
+  data: zod.object({
+    id: zod.string().describe('Thread ID'),
+    slug: zod.string().describe('Unique thread slug (within its nest)'),
+    title: zod.string().describe('Thread title'),
+    content: zod.string().nullable().describe('Thread content. Null if the current user cannot read it'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+    lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
+    commentCount: zod.number().describe('Number of comments on this thread'),
+    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    author: zod.object({
+      id: zod.string().describe('User ID'),
+      profile: zod.object({
+        username: zod.string().describe('Unique username'),
+        displayName: zod.string().nullable().describe('Display name'),
+        avatarUrl: zod.string().nullable().describe('Avatar URL')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+    }).describe('Thread author'),
+    lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
+    pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
+    access: zod.object({
+      isAuthor: zod.boolean().describe('Whether the current user authored this thread'),
+      isDeleted: zod.boolean().describe('Whether the thread has been deleted'),
+      isLocked: zod.boolean().describe('Whether the thread is locked'),
+      isPinned: zod.boolean().describe('Whether the thread is pinned'),
+      canViewThread: zod.boolean().describe('Whether the current user can view the thread'),
+      canReadContent: zod.boolean().describe('Whether the current user can read the thread\'s content'),
+      canEditThread: zod.boolean().describe('Whether the current user can edit the thread'),
+      canDeleteThread: zod.boolean().describe('Whether the current user can delete the thread'),
+      canCommentThread: zod.boolean().describe('Whether the current user can comment on the thread'),
+      canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
+      canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
+      canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
+    }).describe('The current user\'s access and permissions for this thread')
+  })
+})
+
+/**
+ * @summary Unpin a thread
+ */
+export const NestThreadUnpinParams = zod.object({
+  nestSlug: zod.string(),
+  threadSlug: zod.string()
+})
+
+export const NestThreadUnpinResponse = zod.object({
+  data: zod.object({
+    id: zod.string().describe('Thread ID'),
+    slug: zod.string().describe('Unique thread slug (within its nest)'),
+    title: zod.string().describe('Thread title'),
+    content: zod.string().nullable().describe('Thread content. Null if the current user cannot read it'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+    lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
+    commentCount: zod.number().describe('Number of comments on this thread'),
+    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    author: zod.object({
+      id: zod.string().describe('User ID'),
+      profile: zod.object({
+        username: zod.string().describe('Unique username'),
+        displayName: zod.string().nullable().describe('Display name'),
+        avatarUrl: zod.string().nullable().describe('Avatar URL')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+    }).describe('Thread author'),
+    lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
+    pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
+    access: zod.object({
+      isAuthor: zod.boolean().describe('Whether the current user authored this thread'),
+      isDeleted: zod.boolean().describe('Whether the thread has been deleted'),
+      isLocked: zod.boolean().describe('Whether the thread is locked'),
+      isPinned: zod.boolean().describe('Whether the thread is pinned'),
+      canViewThread: zod.boolean().describe('Whether the current user can view the thread'),
+      canReadContent: zod.boolean().describe('Whether the current user can read the thread\'s content'),
+      canEditThread: zod.boolean().describe('Whether the current user can edit the thread'),
+      canDeleteThread: zod.boolean().describe('Whether the current user can delete the thread'),
+      canCommentThread: zod.boolean().describe('Whether the current user can comment on the thread'),
+      canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
+      canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
+      canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
+    }).describe('The current user\'s access and permissions for this thread')
+  })
+})

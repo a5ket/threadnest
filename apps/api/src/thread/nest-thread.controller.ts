@@ -108,4 +108,58 @@ export class NestThreadController {
   ) {
     await this.threads.deleteThread(nestSlug, threadSlug, user.id)
   }
+
+  @Post(':threadSlug/lock')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ operationId: 'nestThreadLock', summary: 'Lock a thread' })
+  @ApiDataResponse({ status: 200, description: 'Thread locked', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  lock(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.threads.lockThread(nestSlug, threadSlug, user.id)
+  }
+
+  @Delete(':threadSlug/lock')
+  @ApiOperation({ operationId: 'nestThreadUnlock', summary: 'Unlock a thread' })
+  @ApiDataResponse({ status: 200, description: 'Thread unlocked', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  unlock(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.threads.unlockThread(nestSlug, threadSlug, user.id)
+  }
+
+  @Post(':threadSlug/pin')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ operationId: 'nestThreadPin', summary: 'Pin a thread' })
+  @ApiDataResponse({ status: 200, description: 'Thread pinned', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  pin(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.threads.pinThread(nestSlug, threadSlug, user.id)
+  }
+
+  @Delete(':threadSlug/pin')
+  @ApiOperation({ operationId: 'nestThreadUnpin', summary: 'Unpin a thread' })
+  @ApiDataResponse({ status: 200, description: 'Thread unpinned', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  unpin(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.threads.unpinThread(nestSlug, threadSlug, user.id)
+  }
 }
