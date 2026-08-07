@@ -20,6 +20,7 @@ import { NestJoinRequestRepository } from './join-request/nest-join-request.repo
 import { NestJoinRequestService } from './join-request/nest-join-request.service'
 import { NestMemberController } from './member/nest-member.controller'
 import { NestMemberPolicy } from './member/nest-member.policy'
+import { NestMemberPresenter } from './member/nest-member.presenter'
 import { NestMemberRepository } from './member/nest-member.repository'
 import { NestMemberService } from './member/nest-member.service'
 import { NestSlugController } from './nest-slug.controller'
@@ -77,6 +78,7 @@ import { NestSettingsService } from './settings/nest-settings.service'
     NestInvitePresenter,
     NestJoinRequestPresenter,
     NestBanPresenter,
+    NestMemberPresenter,
     NestAccess,
     NestPresenter,
     NestPolicy

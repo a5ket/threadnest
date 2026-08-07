@@ -9,6 +9,7 @@ import { MemberLeftEvent } from './events/member-left.event'
 import { MemberRemovedEvent } from './events/member-removed.event'
 import { MemberRoleChangedEvent } from './events/member-role-changed.event'
 import { NestMemberPolicy } from './nest-member.policy'
+import { NestMemberPresenter } from './nest-member.presenter'
 import { NestMemberRepository } from './nest-member.repository'
 
 @Injectable()
@@ -18,6 +19,7 @@ export class NestMemberService {
     private readonly nestsRepo: NestRepository,
     private readonly policy: NestMemberPolicy,
     private readonly presenter: NestPresenter,
+    private readonly memberPresenter: NestMemberPresenter,
     private readonly transactionManager: TransactionManager,
     private readonly eventBus: EventBus
   ) { }
@@ -33,7 +35,9 @@ export class NestMemberService {
 
     await this.policy.assertCanListMembers(nest, actorUserId)
 
-    return this.membersRepo.listByNestId(nest.id, query)
+    const { items, meta } = await this.membersRepo.listByNestId(nest.id, query)
+
+    return { items: items.map((item) => this.memberPresenter.toView(item)), meta }
   }
 
   async leaveNest(nestSlug: string, userId: string) {
@@ -71,7 +75,7 @@ export class NestMemberService {
 
     void this.eventBus.publish(new MemberRoleChangedEvent({ nestId: nest.id, actorUserId, targetUserId, newRole: dto.role }))
 
-    return updated
+    return this.memberPresenter.toView(updated)
   }
 
   async listNestsByUser(userId: string) {

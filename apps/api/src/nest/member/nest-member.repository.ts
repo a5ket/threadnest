@@ -89,7 +89,7 @@ export class NestMemberRepository {
     const last = items.at(-1)
     const nextCursor = last && hasMore ? encodeCursor(last.createdAt, last.userId) : null
 
-    return { data: items, pagination: { nextCursor, hasMore } }
+    return { items, meta: { nextCursor, hasMore } }
   }
 
   async deleteByUserId(nestId: string, userId: string, db: Database = this.prisma) {
@@ -119,7 +119,7 @@ export class NestMemberRepository {
     return db.nestMember.update({
       where: { nestId_userId: { nestId, userId } },
       data: { role },
-      select: NEST_MEMBER_SELECT,
+      select: { role: true, createdAt: true, userId: true, user: { select: USER_REFERENCE_SELECT } },
     })
   }
 
