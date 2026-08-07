@@ -7,9 +7,10 @@ import { useState } from 'react'
 
 interface LeaveNestButtonProps {
   nestSlug: string
+  nestName: string
 }
 
-export function LeaveNestButton({ nestSlug }: LeaveNestButtonProps) {
+export function LeaveNestButton({ nestSlug, nestName }: LeaveNestButtonProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
 
@@ -38,6 +39,9 @@ export function LeaveNestButton({ nestSlug }: LeaveNestButtonProps) {
     <div className='flex flex-col items-end gap-1'>
       <DeleteConfirmButton
         label='Leave nest'
+        confirmLabel='Leave nest'
+        title={`Leave ${nestName}?`}
+        description={'You\'ll need to rejoin to get access again.'}
         isPending={leaveNest.isPending}
         onConfirm={() => {
           setError(null)

@@ -3,6 +3,7 @@
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
+import { getUserDisplayName } from '@/common/user-display-name'
 import { useRevokeInvite } from '@/features/invite/invite.hooks'
 import type { Invite } from '@/features/invite/invite.types'
 import { useRouter } from 'next/navigation'
@@ -43,6 +44,9 @@ export function InviteItem({ nestSlug, invite }: InviteItemProps) {
       {invite.status === 'PENDING' && (
         <DeleteConfirmButton
           label='Revoke'
+          confirmLabel='Revoke invite'
+          title={`Revoke ${getUserDisplayName(invite.user)}'s invite?`}
+          description={'They won\'t be able to use this invite to join the nest anymore.'}
           isPending={revokeInvite.isPending}
           onConfirm={() => revokeInvite.mutate({ nestSlug, inviteId: invite.id })}
         />

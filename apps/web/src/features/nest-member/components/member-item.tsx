@@ -4,6 +4,7 @@ import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
 import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
+import { getUserDisplayName } from '@/common/user-display-name'
 import { useUser } from '@/features/me/me.hooks'
 import { NestMemberUpdateRoleDtoRole } from '@/generated/api/models'
 import { useRouter } from 'next/navigation'
@@ -126,6 +127,9 @@ export function MemberItem({ nestSlug, member, canRemoveMembers, canManageMember
         {canRemoveMembers && !isSelf && (
           <DeleteConfirmButton
             label='Remove'
+            confirmLabel='Remove member'
+            title={`Remove ${getUserDisplayName(member.user)}?`}
+            description={'They\'ll lose access to this nest and will need to rejoin to get it back.'}
             isPending={removeMember.isPending}
             onConfirm={() => {
               setError(null)

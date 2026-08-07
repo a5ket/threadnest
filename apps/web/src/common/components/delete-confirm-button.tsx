@@ -1,40 +1,49 @@
 'use client'
 
+import { ConfirmDialog } from '@/common/components/confirm-dialog'
 import { useState } from 'react'
 
 interface DeleteConfirmButtonProps {
   onConfirm: () => void
   isPending: boolean
+  title: string
+  description: string
   label?: string
+  confirmLabel?: string
 }
 
-export function DeleteConfirmButton({ onConfirm, isPending, label = 'Delete' }: DeleteConfirmButtonProps) {
+export function DeleteConfirmButton({
+  onConfirm,
+  isPending,
+  title,
+  description,
+  label = 'Delete',
+  confirmLabel = 'Delete'
+}: DeleteConfirmButtonProps) {
   const [confirming, setConfirming] = useState(false)
 
-  if (confirming) {
-    return (
-      <span className='flex items-center gap-2 text-sm'>
-        <span className='text-muted-foreground'>Are you sure?</span>
-
-        <button
-          type='button'
-          onClick={onConfirm}
-          disabled={isPending}
-          className='font-medium text-destructive hover:underline disabled:opacity-50'
-        >
-          {isPending ? 'Deleting...' : 'Yes, delete'}
-        </button>
-
-        <button type='button' onClick={() => setConfirming(false)} className='text-muted-foreground hover:underline'>
-          Cancel
-        </button>
-      </span>
-    )
-  }
-
   return (
-    <button type='button' onClick={() => setConfirming(true)} className='text-sm text-destructive hover:underline'>
-      {label}
-    </button>
+    <>
+      <button
+        type='button'
+        disabled={isPending}
+        onClick={() => setConfirming(true)}
+        className='text-sm text-destructive hover:underline disabled:opacity-50'
+      >
+        {isPending ? 'Working...' : label}
+      </button>
+
+      <ConfirmDialog
+        open={confirming}
+        title={title}
+        description={description}
+        confirmLabel={confirmLabel}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false)
+          onConfirm()
+        }}
+      />
+    </>
   )
 }

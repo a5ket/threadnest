@@ -153,7 +153,12 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
         )}
 
         {thread.access.canDeleteThread && (
-          <DeleteConfirmButton isPending={deleteThread.isPending} onConfirm={() => deleteThread.mutate({ nestSlug, threadSlug: thread.slug })} />
+          <DeleteConfirmButton
+            title='Delete this thread?'
+            description='This permanently deletes the thread and all its comments. This cannot be undone.'
+            isPending={deleteThread.isPending}
+            onConfirm={() => deleteThread.mutate({ nestSlug, threadSlug: thread.slug })}
+          />
         )}
       </div>
     </div>

@@ -80,7 +80,7 @@ export default async function NestPage({
           )}
 
           {nest.access.canLeaveNest && (
-            <LeaveNestButton nestSlug={nestSlug} />
+            <LeaveNestButton nestSlug={nestSlug} nestName={nest.name} />
           )}
 
           <Link

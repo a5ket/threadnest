@@ -3,6 +3,7 @@
 import { useAuthSuccessHandler, useLogin } from '@/features/auth/auth.hooks'
 import { loginSchema, type LoginFormValues } from '@/features/auth/auth.schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 
 interface LoginFormProps {
@@ -114,6 +115,10 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
             {errors.password.message}
           </p>
         )}
+
+        <Link href='/reset-password' className='self-end text-xs text-muted-foreground hover:underline'>
+          Forgot password?
+        </Link>
       </div>
 
       {errors.root && (

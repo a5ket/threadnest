@@ -69,6 +69,9 @@ export function BanItem({ nestSlug, ban }: BanItemProps) {
 
       <DeleteConfirmButton
         label='Unban'
+        confirmLabel='Unban'
+        title={`Unban ${ban.user.displayName ?? ban.user.username ?? 'this user'}?`}
+        description={'They\'ll be able to view and interact with this nest again.'}
         isPending={unbanUser.isPending}
         onConfirm={() => {
           setError(null)
