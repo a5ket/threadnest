@@ -1,5 +1,5 @@
 import { RoleBadge } from '@/common/components/role-badge'
-import { getUserDisplayName } from '@/common/user-display-name'
+import { UserLink } from '@/common/components/user-link'
 import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import { LeaveNestButton } from '@/features/nest/components/leave-nest-button'
 import { getNestServer } from '@/features/nest/nest.server'
@@ -107,7 +107,7 @@ export default async function NestPage({
             </div>
 
             <p className='flex items-center gap-2 text-sm text-muted-foreground'>
-              <span>{getUserDisplayName(thread.author)}</span>
+              <UserLink user={thread.author} />
               <RoleBadge role={thread.author.role} />
               <span>
                 {' · '}

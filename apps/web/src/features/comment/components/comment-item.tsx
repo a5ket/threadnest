@@ -2,8 +2,8 @@
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
+import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
-import { getUserDisplayName } from '@/common/user-display-name'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore } from '@/features/thread/components/thread-store-provider'
 import { useDeleteComment } from '@/features/comment/comment.hooks'
@@ -33,7 +33,6 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
     onSuccess: () => router.refresh()
   })
 
-  const authorName = comment.author ? getUserDisplayName(comment.author) : '[deleted]'
   const hiddenReplyCount = comment.replyCount - childrenCount
   const isDeleted = comment.deletedAt !== null
   const isAuthor = user !== null && comment.author?.id === user.id
@@ -58,7 +57,7 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
   return (
     <div className='flex flex-col gap-1'>
       <div className='flex items-center gap-2 text-sm'>
-        <span className='font-medium'>{authorName}</span>
+        <UserLink user={comment.author} className='font-medium' />
         {comment.author?.role && <RoleBadge role={comment.author.role} />}
         <span className='text-xs text-muted-foreground'>{formatDateTime(comment.createdAt)}</span>
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
+import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
-import { getUserDisplayName } from '@/common/user-display-name'
 import { useApproveJoinRequest, useRejectJoinRequest } from '@/features/join-request/join-request.hooks'
 import type { JoinRequest } from '@/features/join-request/join-request.types'
 import { useRouter } from 'next/navigation'
@@ -35,7 +35,7 @@ export function JoinRequestItem({ nestSlug, request }: JoinRequestItemProps) {
   return (
     <li className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
       <div>
-        <p className='text-sm font-medium'>{getUserDisplayName(request.user)}</p>
+        <p className='text-sm font-medium'><UserLink user={request.user} /></p>
         <p className='text-xs text-muted-foreground'>
           {STATUS_LABELS[request.status]}
           {' · '}

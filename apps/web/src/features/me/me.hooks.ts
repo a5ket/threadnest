@@ -1,11 +1,13 @@
 import { createMutationHook } from '@/common/api-mutation'
-import { meNestLeave } from '@/generated/api/me/me'
+import { meNestLeave, meProfileUpdate } from '@/generated/api/me/me'
 import { useMeStore } from './components/me-store-provider'
 
 export const useLeaveNest = createMutationHook(
   (nestSlug: string) => meNestLeave(nestSlug),
   204
 )
+
+export const useUpdateProfile = createMutationHook(meProfileUpdate, 200)
 
 export function useUser() {
   return useMeStore((s) => s.user)

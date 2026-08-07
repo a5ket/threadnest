@@ -31,7 +31,7 @@ export class UserProfileRepository {
   async getByUserId(userId: string) {
     const profile = await this.prisma.userProfile.findUnique({
       where: { userId },
-      select: USER_PROFILE_SELECT
+      select: { userId: true, ...USER_PROFILE_SELECT }
     })
 
     if (!profile) {
@@ -58,7 +58,7 @@ export class UserProfileRepository {
     return this.prisma.userProfile.update({
       where: { userId },
       data: dto,
-      select: USER_PROFILE_SELECT
+      select: { userId: true, ...USER_PROFILE_SELECT }
     })
   }
 

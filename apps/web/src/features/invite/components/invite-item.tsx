@@ -1,8 +1,8 @@
 'use client'
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
+import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
-import { getUserDisplayName } from '@/common/user-display-name'
 import { useRevokeInvite } from '@/features/invite/invite.hooks'
 import type { Invite } from '@/features/invite/invite.types'
 import { useRouter } from 'next/navigation'
@@ -30,11 +30,11 @@ export function InviteItem({ nestSlug, invite }: InviteItemProps) {
   return (
     <li className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
       <div>
-        <p className='text-sm font-medium'>{getUserDisplayName(invite.user)}</p>
+        <p className='text-sm font-medium'><UserLink user={invite.user} /></p>
         <p className='text-xs text-muted-foreground'>
           {STATUS_LABELS[invite.status]}
           {' · invited by '}
-          {getUserDisplayName(invite.invitedBy)}
+          <UserLink user={invite.invitedBy} />
           {' · '}
           {formatDateTime(invite.createdAt)}
         </p>

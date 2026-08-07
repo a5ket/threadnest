@@ -12,7 +12,14 @@ import type {
   MeNestLeave404,
   MeNestLeave409,
   MeNestList200,
-  MeNestList401
+  MeNestList401,
+  MeProfileGet200,
+  MeProfileGet401,
+  MeProfileUpdate200,
+  MeProfileUpdate400,
+  MeProfileUpdate401,
+  MeProfileUpdate409,
+  UpdateProfileDto
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
@@ -137,6 +144,89 @@ export const meNestLeave = async (nestSlug: string, options?: RequestInit): Prom
       ...options,
       method: 'DELETE'
 
+    }
+  )
+}
+
+export type meProfileGetResponse200 = {
+  data: MeProfileGet200
+  status: 200
+}
+
+export type meProfileGetResponse401 = {
+  data: MeProfileGet401
+  status: 401
+}
+
+export type meProfileGetResponseSuccess = (meProfileGetResponse200) & {
+  headers: Headers
+}
+export type meProfileGetResponseError = (meProfileGetResponse401) & {
+  headers: Headers
+}
+
+export type meProfileGetResponse = (meProfileGetResponseSuccess | meProfileGetResponseError)
+
+export const getMeProfileGetUrl = () => {
+  return `/me/profile`
+}
+
+/**
+ * @summary Get the current user's profile
+ */
+export const meProfileGet = async (options?: RequestInit): Promise<meProfileGetResponse> => {
+  return apiFetch<meProfileGetResponse>(getMeProfileGetUrl(),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
+
+export type meProfileUpdateResponse200 = {
+  data: MeProfileUpdate200
+  status: 200
+}
+
+export type meProfileUpdateResponse400 = {
+  data: MeProfileUpdate400
+  status: 400
+}
+
+export type meProfileUpdateResponse401 = {
+  data: MeProfileUpdate401
+  status: 401
+}
+
+export type meProfileUpdateResponse409 = {
+  data: MeProfileUpdate409
+  status: 409
+}
+
+export type meProfileUpdateResponseSuccess = (meProfileUpdateResponse200) & {
+  headers: Headers
+}
+export type meProfileUpdateResponseError = (meProfileUpdateResponse400 | meProfileUpdateResponse401 | meProfileUpdateResponse409) & {
+  headers: Headers
+}
+
+export type meProfileUpdateResponse = (meProfileUpdateResponseSuccess | meProfileUpdateResponseError)
+
+export const getMeProfileUpdateUrl = () => {
+  return `/me/profile`
+}
+
+/**
+ * @summary Update the current user's profile
+ */
+export const meProfileUpdate = async (updateProfileDto: UpdateProfileDto, options?: RequestInit): Promise<meProfileUpdateResponse> => {
+  return apiFetch<meProfileUpdateResponse>(getMeProfileUpdateUrl(),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(updateProfileDto)
     }
   )
 }

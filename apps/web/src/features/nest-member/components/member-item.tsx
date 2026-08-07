@@ -2,8 +2,8 @@
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
+import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
-import { getUserDisplayName } from '@/common/user-display-name'
 import { useUser } from '@/features/me/me.hooks'
 import { NestMemberUpdateRoleDtoRole } from '@/generated/api/models'
 import { useRouter } from 'next/navigation'
@@ -90,7 +90,7 @@ export function MemberItem({ nestSlug, member, canRemoveMembers, canManageMember
     <li className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
       <div>
         <p className='flex items-center gap-2 text-sm font-medium'>
-          {getUserDisplayName(member.user)}
+          <UserLink user={member.user} />
           <RoleBadge role={member.role} />
         </p>
 

@@ -2,8 +2,8 @@
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
+import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
-import { getUserDisplayName } from '@/common/user-display-name'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
 import { useDeleteThread, useLockThread, usePinThread, useUnlockThread, useUnpinThread } from '@/features/thread/thread.hooks'
@@ -76,7 +76,7 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
         </div>
 
         <p className='flex items-center gap-2 text-sm text-muted-foreground'>
-          <span>{getUserDisplayName(thread.author)}</span>
+          <UserLink user={thread.author} />
           <RoleBadge role={thread.author.role} />
           <span>
             {' · '}

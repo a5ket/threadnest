@@ -49,3 +49,48 @@ export const MeNestLeaveParams = zod.object({
 })
 
 export const MeNestLeaveResponse = zod.void()
+
+/**
+ * @summary Get the current user's profile
+ */
+export const MeProfileGetResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    username: zod.string().describe('Unique username'),
+    displayName: zod.string().nullable().describe('Display name'),
+    bio: zod.string().nullable().describe('Bio'),
+    avatarUrl: zod.string().nullable().describe('Avatar URL'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+  })
+})
+
+/**
+ * @summary Update the current user's profile
+ */
+export const meProfileUpdateBodyUsernameMin = 3
+export const meProfileUpdateBodyUsernameMax = 32
+
+export const meProfileUpdateBodyUsernameRegExp = new RegExp('^[a-zA-Z0-9_]+$')
+export const meProfileUpdateBodyDisplayNameMin = 0
+export const meProfileUpdateBodyDisplayNameMax = 64
+
+export const meProfileUpdateBodyBioMin = 0
+export const meProfileUpdateBodyBioMax = 500
+
+export const MeProfileUpdateBody = zod.object({
+  username: zod.string().min(meProfileUpdateBodyUsernameMin).max(meProfileUpdateBodyUsernameMax).regex(meProfileUpdateBodyUsernameRegExp).optional(),
+  displayName: zod.string().min(meProfileUpdateBodyDisplayNameMin).max(meProfileUpdateBodyDisplayNameMax).optional(),
+  bio: zod.string().min(meProfileUpdateBodyBioMin).max(meProfileUpdateBodyBioMax).optional(),
+  avatarUrl: zod.string().optional()
+})
+
+export const MeProfileUpdateResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    username: zod.string().describe('Unique username'),
+    displayName: zod.string().nullable().describe('Display name'),
+    bio: zod.string().nullable().describe('Bio'),
+    avatarUrl: zod.string().nullable().describe('Avatar URL'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+  })
+})

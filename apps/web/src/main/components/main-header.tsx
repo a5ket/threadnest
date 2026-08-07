@@ -1,6 +1,7 @@
 import { useAuthOverlayStore } from '@/features/auth/auth-overlay.store'
 import { useAuthSignOutHandler, useLogout } from '@/features/auth/auth.hooks'
 import { useIsSignedIn, useUser } from '@/features/me/me.hooks'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export type AppHeaderProps = {
@@ -25,6 +26,7 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
           ? (
               <>
                 <br />
+                {user && <Link href={`/users/${user.username}`}>My profile</Link>}
                 <button onClick={() => logout.mutate()} disabled={logout.isPending}>Sign Out</button>
                 <div>
                   Veirifed:
