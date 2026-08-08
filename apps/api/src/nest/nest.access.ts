@@ -4,6 +4,7 @@ import { NestBanRepository } from './ban/nest-ban.repository'
 import { NEST_ACCESS_LEVEL, NON_MEMBER_LEVEL } from './constants/nest-access-level'
 import { NestNotFoundException } from './exceptions/nest-not-found.exception'
 import { NestMemberRepository } from './member/nest-member.repository'
+import { NestSettingsNotFoundException } from './settings/exceptions/nest-settings-not-found.exception'
 import { NestSettingsRepository } from './settings/nest-settings.repository'
 import { NestAccessContext } from './types/nest.access-context'
 
@@ -42,7 +43,7 @@ export class NestAccess {
     ])
 
     if (settingsResult.status === 'rejected') {
-      throw settingsResult.reason instanceof NestNotFoundException
+      throw settingsResult.reason instanceof NestSettingsNotFoundException
         ? new NestNotFoundException()
         : settingsResult.reason
     }
