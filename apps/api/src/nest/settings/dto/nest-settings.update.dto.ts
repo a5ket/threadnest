@@ -24,6 +24,18 @@ export class NestSettingsUpdateDto {
   @IsOptional()
   minCommentCreationLevel?: number
 
+  @IsInt()
+  @Min(NON_MEMBER_LEVEL)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
+  @IsOptional()
+  minThreadVoteLevel?: number
+
+  @IsInt()
+  @Min(NON_MEMBER_LEVEL)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
+  @IsOptional()
+  minCommentVoteLevel?: number
+
   // Moderation/management thresholds — always require real membership.
   @IsInt()
   @Min(NEST_ACCESS_LEVEL.MEMBER)

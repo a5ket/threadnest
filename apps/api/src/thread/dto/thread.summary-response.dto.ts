@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { VoteType } from 'generated/prisma/enums'
 import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
 
 export class ThreadSummaryResponseDto {
@@ -22,6 +23,12 @@ export class ThreadSummaryResponseDto {
 
   @ApiProperty({ description: 'Number of comments on this thread' })
   commentCount!: number
+
+  @ApiProperty({ description: 'Net vote score (upvotes minus downvotes)' })
+  score!: number
+
+  @ApiProperty({ enum: VoteType, description: 'The current user\'s vote on this thread, if any', nullable: true })
+  viewerVote!: VoteType | null
 
   @ApiProperty({ description: 'When the thread was locked, if it is', nullable: true, type: 'string' })
   lockedAt!: Date | null

@@ -84,6 +84,9 @@ export class NestAccess {
       canCreateThread: hasAccess(settings.minThreadCreationLevel),
       canCreateComment: hasAccess(settings.minCommentCreationLevel),
 
+      canVoteThread: hasAccess(settings.minThreadVoteLevel),
+      canVoteComment: hasAccess(settings.minCommentVoteLevel),
+
       canEditNest: hasAccess(settings.minNestEditLevel),
 
       canManageThreadLock: hasAccess(settings.minThreadLockManageLevel),

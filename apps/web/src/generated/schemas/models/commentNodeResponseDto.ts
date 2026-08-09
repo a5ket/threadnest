@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { CommentNodeResponseDtoViewerVote } from './commentNodeResponseDtoViewerVote'
 import type { UserReferenceDto } from './userReferenceDto'
 
 export interface CommentNodeResponseDto {
@@ -28,6 +29,13 @@ export interface CommentNodeResponseDto {
   content: string | null
   /** Number of direct replies to this comment */
   replyCount: number
+  /** Net vote score (upvotes minus downvotes) */
+  score: number
+  /**
+     * The current user's vote on this comment, if any
+     * @nullable
+     */
+  viewerVote: CommentNodeResponseDtoViewerVote
   /** Creation timestamp */
   createdAt: string
   /** Last update timestamp */

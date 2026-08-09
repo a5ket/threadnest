@@ -55,6 +55,16 @@ export class ThreadAccess {
         !isLocked &&
         nestAccess.canCreateComment,
 
+      canVoteThread:
+        canViewThread &&
+        !isDeleted &&
+        nestAccess.canVoteThread,
+
+      canVoteComment:
+        canViewThread &&
+        !isDeleted &&
+        nestAccess.canVoteComment,
+
       canModerateContent: nestAccess.canModerateContent,
 
       canManageThreadLock:

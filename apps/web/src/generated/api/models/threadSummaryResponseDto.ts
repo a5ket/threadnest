@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { ThreadSummaryResponseDtoViewerVote } from './threadSummaryResponseDtoViewerVote'
 import type { UserReferenceDto } from './userReferenceDto'
 
 export interface ThreadSummaryResponseDto {
@@ -24,6 +25,13 @@ export interface ThreadSummaryResponseDto {
   lastCommentAt: string | null
   /** Number of comments on this thread */
   commentCount: number
+  /** Net vote score (upvotes minus downvotes) */
+  score: number
+  /**
+     * The current user's vote on this thread, if any
+     * @nullable
+     */
+  viewerVote: ThreadSummaryResponseDtoViewerVote
   /**
      * When the thread was locked, if it is
      * @nullable

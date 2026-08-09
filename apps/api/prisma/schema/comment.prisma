@@ -6,6 +6,7 @@ model Comment {
     content     String
     depth       Int       @default(0)
     replyCount  Int       @default(0)
+    score       Int       @default(0)
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
     editedAt    DateTime?
@@ -15,9 +16,10 @@ model Comment {
     parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
     replies Comment[] @relation("CommentReplies")
 
-    thread    Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-    author    User   @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-    deletedBy User?  @relation("CommentDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+    thread       Thread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
+    author       User          @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+    deletedBy    User?         @relation("CommentDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+    commentVotes CommentVote[]
 
     @@index([threadId, parentId, createdAt, id])
     @@index([threadId, parentId, updatedAt, id])
@@ -25,4 +27,15 @@ model Comment {
     @@index([parentId, updatedAt, id])
     @@index([authorId, createdAt, id])
     @@index([deletedById])
+}
+
+model CommentVote {
+    commentId String
+    userId    String
+    type      VoteType
+
+    comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([commentId, userId])
 }

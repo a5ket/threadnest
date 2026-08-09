@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { VoteType } from 'generated/prisma/enums'
 import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
 import { ThreadAccessContextDto } from './thread.access-context.dto'
 
@@ -26,6 +27,12 @@ export class ThreadDetailResponseDto {
 
   @ApiProperty({ description: 'Number of comments on this thread' })
   commentCount!: number
+
+  @ApiProperty({ description: 'Net vote score (upvotes minus downvotes)' })
+  score!: number
+
+  @ApiProperty({ enum: VoteType, description: 'The current user\'s vote on this thread, if any', nullable: true })
+  viewerVote!: VoteType | null
 
   @ApiProperty({ description: 'Deletion timestamp. Only present when the current user can delete the thread', required: false, nullable: true, type: 'string' })
   deletedAt?: Date | null

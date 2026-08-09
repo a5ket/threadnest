@@ -29,6 +29,8 @@ export const CommentGetResponse = zod.object({
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
+    score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+    viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
     createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
@@ -68,6 +70,8 @@ export const CommentUpdateResponse = zod.object({
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
+    score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+    viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
     createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
@@ -126,6 +130,8 @@ export const CommentListRepliesResponse = zod.object({
       parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
       content: zod.string().nullable().describe('Comment content. Null if hidden'),
       replyCount: zod.number().describe('Number of direct replies to this comment'),
+      score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+      viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
       createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
       updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
       editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
@@ -173,6 +179,82 @@ export const CommentCreateReplyResponse = zod.object({
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
+    score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+    viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+    editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
+    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
+    authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
+  })
+})
+
+/**
+ * @summary Cast or change a vote on a comment
+ */
+export const CommentVoteParams = zod.object({
+  commentId: zod.string()
+})
+
+export const CommentVoteBody = zod.object({
+  type: zod.enum(['UPVOTE', 'DOWNVOTE'])
+})
+
+export const CommentVoteResponse = zod.object({
+  data: zod.object({
+    id: zod.string().describe('Comment ID'),
+    threadId: zod.string().describe('ID of the thread this comment belongs to'),
+    author: zod.object({
+      id: zod.string().describe('User ID'),
+      profile: zod.object({
+        username: zod.string().describe('Unique username'),
+        displayName: zod.string().nullable().describe('Display name'),
+        avatarUrl: zod.string().nullable().describe('Avatar URL')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+    }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
+    parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
+    content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    replyCount: zod.number().describe('Number of direct replies to this comment'),
+    score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+    viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+    updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+    editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
+    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
+    authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
+  })
+})
+
+/**
+ * @summary Remove the current user's vote on a comment
+ */
+export const CommentRemoveVoteParams = zod.object({
+  commentId: zod.string()
+})
+
+export const CommentRemoveVoteResponse = zod.object({
+  data: zod.object({
+    id: zod.string().describe('Comment ID'),
+    threadId: zod.string().describe('ID of the thread this comment belongs to'),
+    author: zod.object({
+      id: zod.string().describe('User ID'),
+      profile: zod.object({
+        username: zod.string().describe('Unique username'),
+        displayName: zod.string().nullable().describe('Display name'),
+        avatarUrl: zod.string().nullable().describe('Avatar URL')
+      }).nullable().describe('Null if the user has no profile'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+    }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
+    parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
+    content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    replyCount: zod.number().describe('Number of direct replies to this comment'),
+    score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+    viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
     createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
@@ -223,6 +305,8 @@ export const NestThreadCommentListResponse = zod.object({
       parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
       content: zod.string().nullable().describe('Comment content. Null if hidden'),
       replyCount: zod.number().describe('Number of direct replies to this comment'),
+      score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+      viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
       createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
       updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
       editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
@@ -271,6 +355,8 @@ export const NestThreadCommentCreateResponse = zod.object({
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
+    score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+    viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
     createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),

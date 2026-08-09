@@ -3,10 +3,11 @@
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
 import { UserLink } from '@/common/components/user-link'
+import { VoteButtons } from '@/common/components/vote-buttons'
 import { formatDateTime } from '@/common/format-date'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
-import { useDeleteThread, useLockThread, usePinThread, useUnlockThread, useUnpinThread } from '@/features/thread/thread.hooks'
+import { useDeleteThread, useLockThread, usePinThread, useRemoveThreadVote, useUnlockThread, useUnpinThread, useVoteThread } from '@/features/thread/thread.hooks'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -32,6 +33,8 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
   const unlockThread = useUnlockThread({ onSuccess: setThread })
   const pinThread = usePinThread({ onSuccess: setThread })
   const unpinThread = useUnpinThread({ onSuccess: setThread })
+  const voteThread = useVoteThread({ onSuccess: setThread })
+  const removeThreadVote = useRemoveThreadVote({ onSuccess: setThread })
 
   if (isEditing) {
     return (
@@ -93,6 +96,17 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
       </div>
 
       <div className='flex items-center gap-4'>
+        {thread.access.canVoteThread && (
+          <VoteButtons
+            score={thread.score}
+            viewerVote={thread.viewerVote}
+            disabled={voteThread.isPending || removeThreadVote.isPending}
+            onUpvote={() => voteThread.mutate({ nestSlug, threadSlug: thread.slug, type: 'UPVOTE' })}
+            onDownvote={() => voteThread.mutate({ nestSlug, threadSlug: thread.slug, type: 'DOWNVOTE' })}
+            onRemove={() => removeThreadVote.mutate({ nestSlug, threadSlug: thread.slug })}
+          />
+        )}
+
         <p className='text-sm text-muted-foreground'>
           {thread.commentCount}
           {' comments'}

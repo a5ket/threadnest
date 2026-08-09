@@ -19,6 +19,8 @@ export const NestSettingsGetResponse = zod.object({
     joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('How users can join the nest'),
     minThreadCreationLevel: zod.number().describe('Minimum level required to create a thread — see the nest\'s roles list'),
     minCommentCreationLevel: zod.number().describe('Minimum level required to comment'),
+    minThreadVoteLevel: zod.number().describe('Minimum level required to vote on threads'),
+    minCommentVoteLevel: zod.number().describe('Minimum level required to vote on comments'),
     minNestEditLevel: zod.number().describe('Minimum level required to edit the nest'),
     minThreadLockManageLevel: zod.number().describe('Minimum level required to lock\/unlock threads'),
     minThreadPinManageLevel: zod.number().describe('Minimum level required to pin\/unpin threads'),
@@ -44,6 +46,12 @@ export const nestSettingsUpdateBodyMinThreadCreationLevelMax = 30
 
 export const nestSettingsUpdateBodyMinCommentCreationLevelMin = 0
 export const nestSettingsUpdateBodyMinCommentCreationLevelMax = 30
+
+export const nestSettingsUpdateBodyMinThreadVoteLevelMin = 0
+export const nestSettingsUpdateBodyMinThreadVoteLevelMax = 30
+
+export const nestSettingsUpdateBodyMinCommentVoteLevelMin = 0
+export const nestSettingsUpdateBodyMinCommentVoteLevelMax = 30
 
 export const nestSettingsUpdateBodyMinNestEditLevelMin = 10
 export const nestSettingsUpdateBodyMinNestEditLevelMax = 30
@@ -80,6 +88,8 @@ export const NestSettingsUpdateBody = zod.object({
   joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).optional(),
   minThreadCreationLevel: zod.number().min(nestSettingsUpdateBodyMinThreadCreationLevelMin).max(nestSettingsUpdateBodyMinThreadCreationLevelMax).optional(),
   minCommentCreationLevel: zod.number().min(nestSettingsUpdateBodyMinCommentCreationLevelMin).max(nestSettingsUpdateBodyMinCommentCreationLevelMax).optional(),
+  minThreadVoteLevel: zod.number().min(nestSettingsUpdateBodyMinThreadVoteLevelMin).max(nestSettingsUpdateBodyMinThreadVoteLevelMax).optional(),
+  minCommentVoteLevel: zod.number().min(nestSettingsUpdateBodyMinCommentVoteLevelMin).max(nestSettingsUpdateBodyMinCommentVoteLevelMax).optional(),
   minNestEditLevel: zod.number().min(nestSettingsUpdateBodyMinNestEditLevelMin).max(nestSettingsUpdateBodyMinNestEditLevelMax).optional(),
   minThreadLockManageLevel: zod.number().min(nestSettingsUpdateBodyMinThreadLockManageLevelMin).max(nestSettingsUpdateBodyMinThreadLockManageLevelMax).optional(),
   minThreadPinManageLevel: zod.number().min(nestSettingsUpdateBodyMinThreadPinManageLevelMin).max(nestSettingsUpdateBodyMinThreadPinManageLevelMax).optional(),
@@ -98,6 +108,8 @@ export const NestSettingsUpdateResponse = zod.object({
     joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('How users can join the nest'),
     minThreadCreationLevel: zod.number().describe('Minimum level required to create a thread — see the nest\'s roles list'),
     minCommentCreationLevel: zod.number().describe('Minimum level required to comment'),
+    minThreadVoteLevel: zod.number().describe('Minimum level required to vote on threads'),
+    minCommentVoteLevel: zod.number().describe('Minimum level required to vote on comments'),
     minNestEditLevel: zod.number().describe('Minimum level required to edit the nest'),
     minThreadLockManageLevel: zod.number().describe('Minimum level required to lock\/unlock threads'),
     minThreadPinManageLevel: zod.number().describe('Minimum level required to pin\/unpin threads'),

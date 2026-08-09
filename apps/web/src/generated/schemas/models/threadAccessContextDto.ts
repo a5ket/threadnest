@@ -24,6 +24,10 @@ export interface ThreadAccessContextDto {
   canDeleteThread: boolean
   /** Whether the current user can comment on the thread */
   canCommentThread: boolean
+  /** Whether the current user can vote on the thread */
+  canVoteThread: boolean
+  /** Whether the current user can vote on comments in this thread */
+  canVoteComment: boolean
   /** Whether the current user can moderate content on the thread */
   canModerateContent: boolean
   /** Whether the current user can lock/unlock the thread */

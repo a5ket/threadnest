@@ -10,6 +10,7 @@ export const COMMENT_SELECT = {
   content: true,
   depth: true,
   replyCount: true,
+  score: true,
   createdAt: true,
   updatedAt: true,
   editedAt: true,

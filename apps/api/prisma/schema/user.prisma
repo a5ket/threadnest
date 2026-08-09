@@ -32,6 +32,9 @@ model User {
     nestInvitesIssued   NestInvite[]         @relation("NestIssuedInvites")
     nestInvitesResolved NestInvite[]         @relation("NestResolvedInvites")
     userNestPreferences UserNestPreference[]
+
+    threadVotes  ThreadVote[]
+    commentVotes CommentVote[]
 }
 
 model UserProfile {

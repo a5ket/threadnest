@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { VoteType } from 'generated/prisma/enums'
 import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
 
 export class CommentNodeResponseDto {
@@ -19,6 +20,12 @@ export class CommentNodeResponseDto {
 
   @ApiProperty({ description: 'Number of direct replies to this comment' })
   replyCount!: number
+
+  @ApiProperty({ description: 'Net vote score (upvotes minus downvotes)' })
+  score!: number
+
+  @ApiProperty({ enum: VoteType, description: 'The current user\'s vote on this comment, if any', nullable: true })
+  viewerVote!: VoteType | null
 
   @ApiProperty({ description: 'Creation timestamp' })
   createdAt!: Date

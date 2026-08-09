@@ -16,6 +16,10 @@ export interface NestSettingsResponseDto {
   minThreadCreationLevel: number
   /** Minimum level required to comment */
   minCommentCreationLevel: number
+  /** Minimum level required to vote on threads */
+  minThreadVoteLevel: number
+  /** Minimum level required to vote on comments */
+  minCommentVoteLevel: number
   /** Minimum level required to edit the nest */
   minNestEditLevel: number
   /** Minimum level required to lock/unlock threads */

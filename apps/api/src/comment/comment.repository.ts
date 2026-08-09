@@ -5,11 +5,11 @@ import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
 import { COMMENT_SELECT } from './selects/comment.select'
-import { commentRoleSelect } from './selects/comment.role.select'
+import { commentViewerSelect } from './selects/comment.viewer.select'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
 import { CommentNotFoundException } from './exceptions/comment-not-found.exception'
-import type { Comment, CommentNode, CommentPage, CommentSortBy, CommentTreeOptions } from './types/comment'
+import type { Comment, CommentNode, CommentPage, CommentSortBy, CommentTreeOptions, CommentViewerSelectResult, CommentWithRole } from './types/comment'
 
 const SORTABLE_COLUMNS = {
   createdAt: Prisma.sql`"createdAt"`,
@@ -20,6 +20,10 @@ const SORTABLE_COLUMNS = {
 export class CommentRepository {
   constructor(private readonly prisma: PrismaService) { }
 
+  private toCommentWithRole(comment: CommentViewerSelectResult): CommentWithRole {
+    const { commentVotes, ...rest } = comment
+    return { ...rest, viewerVote: commentVotes[0]?.type ?? null }
+  }
 
   private buildTreeSql(
     anchor: Prisma.Sql,
@@ -33,11 +37,11 @@ export class CommentRepository {
   ) {
     return Prisma.sql`
       WITH RECURSIVE comment_tree AS (
-        SELECT id, "threadId", "authorId", "parentId", content, "replyCount", "createdAt", "updatedAt", "editedAt", "deletedAt", "deletedById", 0 AS depth, id AS root_id
+        SELECT id, "threadId", "authorId", "parentId", content, "replyCount", "score", "createdAt", "updatedAt", "editedAt", "deletedAt", "deletedById", 0 AS depth, id AS root_id
         FROM "Comment"
         WHERE ${anchor}
         UNION ALL
-        SELECT r.id, r."threadId", r."authorId", r."parentId", r.content, r."replyCount", r."createdAt", r."updatedAt", r."editedAt", r."deletedAt", r."deletedById", ct.depth + 1, ct.root_id
+        SELECT r.id, r."threadId", r."authorId", r."parentId", r.content, r."replyCount", r."score", r."createdAt", r."updatedAt", r."editedAt", r."deletedAt", r."deletedById", ct.depth + 1, ct.root_id
         FROM comment_tree ct
         CROSS JOIN LATERAL (
           SELECT c.*
@@ -49,19 +53,21 @@ export class CommentRepository {
         WHERE ct.depth < ${maxDepth}
       )
       SELECT
-        t.id, t."threadId", t."authorId", t."parentId", t.content, t."replyCount",
+        t.id, t."threadId", t."authorId", t."parentId", t.content, t."replyCount", t."score",
         t."createdAt", t."updatedAt", t."editedAt", t."deletedAt", t."deletedById", t.depth,
         (vba."blockerId" IS NOT NULL) AS "viewerBlockedAuthor",
         (abv."blockerId" IS NOT NULL) AS "authorBlockedViewer",
         up.username AS "authorUsername",
         up."displayName" AS "authorDisplayName",
         up."avatarUrl" AS "authorAvatarUrl",
-        nm.role AS "authorRole"
+        nm.role AS "authorRole",
+        cv.type AS "viewerVote"
       FROM comment_tree t
       LEFT JOIN "UserProfile" up ON up."userId" = t."authorId"
       LEFT JOIN "UserBlock" vba ON vba."blockerId" = ${viewerId} AND vba."blockedId" = t."authorId"
       LEFT JOIN "UserBlock" abv ON abv."blockerId" = t."authorId" AND abv."blockedId" = ${viewerId}
       LEFT JOIN "NestMember" nm ON nm."userId" = t."authorId" AND nm."nestId" = ${nestId}
+      LEFT JOIN "CommentVote" cv ON cv."commentId" = t.id AND cv."userId" = ${viewerId}
       ORDER BY ${orderBy}
     `
   }
@@ -204,7 +210,20 @@ export class CommentRepository {
     return { items, meta: { total, limit, hasMore: hasNextPage, nextCursor } }
   }
 
-  // Internal-shape lookup (no author role) — nestId isn't known ahead of this call.
+  // For call sites where nestId/viewerId is only known after an initial getById lookup.
+  async getByIdForViewer(commentId: string, nestId: string, viewerId?: string) {
+    const comment = await this.prisma.comment.findUnique({
+      where: { id: commentId },
+      select: commentViewerSelect(nestId, viewerId)
+    })
+
+    if (!comment) {
+      throw new CommentNotFoundException()
+    }
+
+    return this.toCommentWithRole(comment)
+  }
+
   async getById(commentId: string) {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId },
@@ -218,19 +237,20 @@ export class CommentRepository {
     return comment
   }
 
-  create(threadId: string, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
-    return db.comment.create({
+  async create(threadId: string, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
+    const comment = await db.comment.create({
       data: {
         threadId,
         authorId,
         content: dto.content
       },
-      select: commentRoleSelect(nestId)
+      select: commentViewerSelect(nestId, authorId)
     })
+    return this.toCommentWithRole(comment)
   }
 
-  createReply(parentComment: Comment, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
-    return db.comment.create({
+  async createReply(parentComment: Comment, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
+    const reply = await db.comment.create({
       data: {
         threadId: parentComment.threadId,
         parentId: parentComment.id,
@@ -238,23 +258,25 @@ export class CommentRepository {
         content: dto.content,
         depth: parentComment.depth + 1,
       },
-      select: commentRoleSelect(nestId)
-    }).then(async (reply) => {
-      await db.comment.update({
-        where: { id: parentComment.id },
-        data: { replyCount: { increment: 1 } }
-      })
-      return reply
+      select: commentViewerSelect(nestId, authorId)
     })
+
+    await db.comment.update({
+      where: { id: parentComment.id },
+      data: { replyCount: { increment: 1 } }
+    })
+
+    return this.toCommentWithRole(reply)
   }
 
-  async updateById(commentId: string, nestId: string, dto: CommentUpdateDto, db: Database = this.prisma) {
+  async updateById(commentId: string, nestId: string, dto: CommentUpdateDto, viewerId?: string, db: Database = this.prisma) {
     try {
-      return await db.comment.update({
+      const comment = await db.comment.update({
         where: { id: commentId },
         data: { content: dto.content, editedAt: new Date() },
-        select: commentRoleSelect(nestId)
+        select: commentViewerSelect(nestId, viewerId)
       })
+      return this.toCommentWithRole(comment)
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {
         throw new CommentNotFoundException()
@@ -301,5 +323,14 @@ export class CommentRepository {
       where: { id: commentId, replyCount: { gt: 0 } },
       data: { replyCount: { decrement: 1 } }
     })
+  }
+
+  async adjustScore(commentId: string, delta: number, nestId: string, viewerId?: string, db: Database = this.prisma) {
+    const comment = await db.comment.update({
+      where: { id: commentId },
+      data: { score: { increment: delta } },
+      select: commentViewerSelect(nestId, viewerId)
+    })
+    return this.toCommentWithRole(comment)
   }
 }

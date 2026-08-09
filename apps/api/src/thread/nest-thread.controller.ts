@@ -31,6 +31,7 @@ import { ThreadDetailResponseDto } from './dto/thread.detail-response.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
 import { ThreadSummaryResponseDto } from './dto/thread.summary-response.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
+import { ThreadVoteDto } from './dto/thread.vote.dto'
 import { ThreadNotFoundException } from './exceptions/thread-not-found.exception'
 import { ThreadService } from './thread.service'
 
@@ -161,5 +162,32 @@ export class NestThreadController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.threads.unpinThread(nestSlug, threadSlug, user.id)
+  }
+
+  @Patch(':threadSlug/vote')
+  @ApiOperation({ operationId: 'nestThreadVote', summary: 'Cast or change a vote on a thread' })
+  @ApiDataResponse({ status: 200, description: 'Thread voted', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(ValidationException, NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  vote(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: ThreadVoteDto,
+  ) {
+    return this.threads.voteOnThread(nestSlug, threadSlug, user.id, dto.type)
+  }
+
+  @Delete(':threadSlug/vote')
+  @ApiOperation({ operationId: 'nestThreadRemoveVote', summary: 'Remove the current user\'s vote on a thread' })
+  @ApiDataResponse({ status: 200, description: 'Vote removed', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  removeVote(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.threads.removeThreadVote(nestSlug, threadSlug, user.id)
   }
 }

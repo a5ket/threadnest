@@ -25,11 +25,12 @@ model NestSettings {
     visibility NestVisibility @default(PUBLIC)
     joinPolicy NestJoinPolicy @default(OPEN)
 
-    // Permission thresholds, expressed as a numeric level — see NEST_ACCESS_LEVEL for what a level
-    // means (0 = anyone including non-members). No DB default: NestSettingsRepository.create()
-    // always sets these explicitly, sourced from NEST_ACCESS_LEVEL, so the mapping lives in one place.
+    // Permission thresholds, expressed as a numeric level — see NEST_ACCESS_LEVEL(0 = anyone including non-members)
     minThreadCreationLevel  Int
     minCommentCreationLevel Int
+
+    minThreadVoteLevel  Int
+    minCommentVoteLevel Int
 
     minMemberViewLevel Int
 

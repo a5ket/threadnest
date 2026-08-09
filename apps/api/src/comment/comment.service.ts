@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common'
+import { VoteType } from 'generated/prisma/enums'
 import { BlockService } from 'src/block/block.service'
+import { computeVoteScoreDelta } from 'src/common/vote-score'
 import { EventBus } from 'src/event/event-bus'
-import { NestMemberRepository } from 'src/nest/member/nest-member.repository'
 import { TransactionManager } from 'src/prisma/transaction-manager'
 import { ThreadAccess } from 'src/thread/thread.access'
 import { ThreadService } from 'src/thread/thread.service'
 import { CommentPolicy } from './comment.policy'
 import { CommentPresenter } from './comment.presenter'
 import { CommentRepository } from './comment.repository'
+import { CommentVoteRepository } from './comment-vote.repository'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
 import { CommentCreatedEvent } from './events/comment-created.event'
@@ -19,13 +21,13 @@ import { CommentBlockFlags, CommentTreeOptions } from './types/comment'
 export class CommentService {
   constructor(
     private readonly repo: CommentRepository,
+    private readonly commentVotesRepo: CommentVoteRepository,
     private readonly threads: ThreadService,
     private readonly threadAccess: ThreadAccess,
     private readonly commentPolicy: CommentPolicy,
     private readonly commentPresenter: CommentPresenter,
     private readonly transactionManager: TransactionManager,
     private readonly blocks: BlockService,
-    private readonly memberRepo: NestMemberRepository,
     private readonly eventBus: EventBus
   ) { }
 
@@ -103,10 +105,8 @@ export class CommentService {
 
     this.commentPolicy.assertCanReadThreadComment(threadCtx)
 
-    // nestId isn't known until the thread lookup above, so the role can't be joined
-    // in on the initial fetch — resolve it with one small indexed lookup instead.
-    const roles = await this.memberRepo.findRolesByUserIds(thread.nestId, [comment.author.id])
-    const commentWithRole = { ...comment, author: { ...comment.author, nestMembership: roles.has(comment.author.id) ? [{ role: roles.get(comment.author.id)! }] : [] } }
+    // nestId/viewerId aren't known until the thread lookup above, so re-fetch with the full viewer select.
+    const commentWithRole = await this.repo.getByIdForViewer(commentId, thread.nestId, viewerId ?? undefined)
 
     return this.commentPresenter.toView(commentWithRole, await this.getBlockFlags(viewerId, comment.author.id), threadCtx.canModerateContent)
   }
@@ -122,7 +122,7 @@ export class CommentService {
 
     this.commentPolicy.assertCanUpdateComment(comment, userId, threadCtx)
 
-    const updated = await this.repo.updateById(comment.id, thread.nestId, dto)
+    const updated = await this.repo.updateById(comment.id, thread.nestId, dto, userId)
     void this.eventBus.publish(new CommentUpdatedEvent({ commentId: comment.id, threadId: comment.threadId, authorId: comment.author.id }))
     return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
   }
@@ -145,6 +145,40 @@ export class CommentService {
     })
 
     void this.eventBus.publish(new CommentDeletedEvent({ commentId: comment.id, threadId: comment.threadId, deletedById: userId }))
+  }
+
+  async voteOnComment(commentId: string, userId: string, type: VoteType) {
+    const comment = await this.repo.getById(commentId)
+    const thread = await this.threads.getById(comment.threadId)
+    const threadCtx = await this.threadAccess.getContext(thread, userId)
+
+    this.commentPolicy.assertCanVoteOnComment(comment, threadCtx)
+
+    const updated = await this.transactionManager.run(async (tx) => {
+      const current = await this.commentVotesRepo.find(commentId, userId, tx)
+      const delta = computeVoteScoreDelta(current?.type ?? null, type)
+      await this.commentVotesRepo.upsert(commentId, userId, type, tx)
+      return this.repo.adjustScore(commentId, delta, thread.nestId, userId, tx)
+    })
+
+    return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
+  }
+
+  async removeCommentVote(commentId: string, userId: string) {
+    const comment = await this.repo.getById(commentId)
+    const thread = await this.threads.getById(comment.threadId)
+    const threadCtx = await this.threadAccess.getContext(thread, userId)
+
+    this.commentPolicy.assertCanVoteOnComment(comment, threadCtx)
+
+    const updated = await this.transactionManager.run(async (tx) => {
+      const current = await this.commentVotesRepo.find(commentId, userId, tx)
+      const delta = computeVoteScoreDelta(current?.type ?? null, null)
+      await this.commentVotesRepo.delete(commentId, userId, tx)
+      return this.repo.adjustScore(commentId, delta, thread.nestId, userId, tx)
+    })
+
+    return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
   }
 
   private async getBlockFlags(viewerId: string | null, authorId: string): Promise<CommentBlockFlags> {

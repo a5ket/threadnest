@@ -14,6 +14,12 @@ export class NestSettingsResponseDto {
   @ApiProperty({ description: 'Minimum level required to comment' })
   minCommentCreationLevel!: number
 
+  @ApiProperty({ description: 'Minimum level required to vote on threads' })
+  minThreadVoteLevel!: number
+
+  @ApiProperty({ description: 'Minimum level required to vote on comments' })
+  minCommentVoteLevel!: number
+
   @ApiProperty({ description: 'Minimum level required to edit the nest' })
   minNestEditLevel!: number
 

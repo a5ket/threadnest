@@ -1,10 +1,12 @@
-import type { NestMemberRole } from 'generated/prisma/enums'
+import type { NestMemberRole, VoteType } from 'generated/prisma/enums'
 import type { Prisma } from 'generated/prisma/client'
 import type { COMMENT_SELECT } from '../selects/comment.select'
-import type { commentRoleSelect } from '../selects/comment.role.select'
+import type { commentViewerSelect } from '../selects/comment.viewer.select'
 
 export type Comment = Prisma.CommentGetPayload<{ select: typeof COMMENT_SELECT }>
-export type CommentWithRole = Prisma.CommentGetPayload<{ select: ReturnType<typeof commentRoleSelect> }>
+
+export type CommentViewerSelectResult = Prisma.CommentGetPayload<{ select: ReturnType<typeof commentViewerSelect> }>
+export type CommentWithRole = Omit<CommentViewerSelectResult, 'commentVotes'> & { viewerVote: VoteType | null }
 
 export type CommentSortBy = 'createdAt' | 'updatedAt'
 
@@ -33,6 +35,8 @@ export type CommentNode = {
     parentId: string | null
     content: string
     replyCount: number
+    score: number
+    viewerVote: VoteType | null
     createdAt: Date
     updatedAt: Date
     editedAt: Date | null

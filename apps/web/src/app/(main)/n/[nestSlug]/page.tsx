@@ -1,9 +1,8 @@
-import { RoleBadge } from '@/common/components/role-badge'
-import { UserLink } from '@/common/components/user-link'
 import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import { LeaveNestButton } from '@/features/nest/components/leave-nest-button'
 import { getNestServer } from '@/features/nest/nest.server'
 import { NestPreferenceToggle } from '@/features/nest-preference/components/nest-preference-toggle'
+import { ThreadListItem } from '@/features/thread/components/thread-list-item'
 import { getThreadsServer } from '@/features/thread/thread.server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -94,33 +93,7 @@ export default async function NestPage({
 
       <ul className='flex flex-col gap-3'>
         {threads.map((thread) => (
-          <li key={thread.id} className='rounded-md border border-border p-3'>
-            <div className='flex items-center gap-2'>
-              {thread.pinnedAt && (
-                <span className='rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground'>
-                  Pinned
-                </span>
-              )}
-              {thread.lockedAt && (
-                <span className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-                  Locked
-                </span>
-              )}
-              <Link href={`/n/${nestSlug}/t/${thread.slug}`} className='font-medium hover:underline'>
-                {thread.title}
-              </Link>
-            </div>
-
-            <p className='flex items-center gap-2 text-sm text-muted-foreground'>
-              <UserLink user={thread.author} />
-              <RoleBadge role={thread.author.role} />
-              <span>
-                {' · '}
-                {thread.commentCount}
-                {' comments'}
-              </span>
-            </p>
-          </li>
+          <ThreadListItem key={thread.id} nestSlug={nestSlug} thread={thread} />
         ))}
 
         {threads.length === 0 && (

@@ -13,12 +13,14 @@ describe('CommentPresenter', () => {
     content: 'hello',
     depth: 0,
     replyCount: 0,
+    score: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     editedAt: null,
     deletedAt: null,
     deletedById: null,
     author: { id: 'author-1', profile: null, nestMembership: [] },
+    viewerVote: null,
     ...overrides,
   })
 

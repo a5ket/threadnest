@@ -15,6 +15,9 @@ export interface NestAccessContext {
   canCreateThread: boolean
   canCreateComment: boolean
 
+  canVoteThread: boolean
+  canVoteComment: boolean
+
   canEditNest: boolean
 
   canManageThreadLock: boolean

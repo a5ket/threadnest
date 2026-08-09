@@ -21,6 +21,16 @@ export interface NestSettingsUpdateDto {
      */
   minCommentCreationLevel?: number
   /**
+     * @minimum 0
+     * @maximum 30
+     */
+  minThreadVoteLevel?: number
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  minCommentVoteLevel?: number
+  /**
      * @minimum 10
      * @maximum 30
      */

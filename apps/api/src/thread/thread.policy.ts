@@ -107,4 +107,16 @@ export class ThreadPolicy {
 
     await this.assertOutranksAuthor(thread, actorUserId, ctx.role)
   }
+
+  async assertCanVoteThread(thread: ThreadPolicySubject, actorUserId: string) {
+    const ctx = await this.threadAccess.getContext(thread, actorUserId)
+
+    if (!ctx.canViewThread) {
+      throw new ThreadNotFoundException()
+    }
+
+    if (!ctx.canVoteThread) {
+      throw new InsufficientPermissionsException()
+    }
+  }
 }

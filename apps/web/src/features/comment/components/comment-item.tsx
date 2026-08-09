@@ -3,10 +3,11 @@
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
 import { UserLink } from '@/common/components/user-link'
+import { VoteButtons } from '@/common/components/vote-buttons'
 import { formatDateTime } from '@/common/format-date'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore } from '@/features/thread/components/thread-store-provider'
-import { useDeleteComment } from '@/features/comment/comment.hooks'
+import { useDeleteComment, useRemoveCommentVote, useVoteComment } from '@/features/comment/comment.hooks'
 import type { CommentNode } from '@/features/comment/comment.types'
 import { useUser } from '@/features/me/me.hooks'
 import Link from 'next/link'
@@ -28,8 +29,17 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
   const router = useRouter()
   const user = useUser()
   const canModerateContent = useThreadStore((state) => state.thread.access.canModerateContent)
+  const canVoteComment = useThreadStore((state) => state.thread.access.canVoteComment)
 
   const deleteComment = useDeleteComment({
+    onSuccess: () => router.refresh()
+  })
+
+  const voteComment = useVoteComment({
+    onSuccess: () => router.refresh()
+  })
+
+  const removeCommentVote = useRemoveCommentVote({
     onSuccess: () => router.refresh()
   })
 
@@ -39,6 +49,7 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
   const canReply = !isDeleted
   const canEdit = !isDeleted && isAuthor
   const canDelete = !isDeleted && (isAuthor || canModerateContent)
+  const canVote = !isDeleted && canVoteComment
 
   if (editing) {
     return (
@@ -71,6 +82,17 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
           )}
 
       <div className='flex items-center gap-3 text-xs'>
+        {canVote && (
+          <VoteButtons
+            score={comment.score}
+            viewerVote={comment.viewerVote}
+            disabled={voteComment.isPending || removeCommentVote.isPending}
+            onUpvote={() => voteComment.mutate({ commentId: comment.id, type: 'UPVOTE' })}
+            onDownvote={() => voteComment.mutate({ commentId: comment.id, type: 'DOWNVOTE' })}
+            onRemove={() => removeCommentVote.mutate({ commentId: comment.id })}
+          />
+        )}
+
         {canReply && !replying && (
           <button type='button' onClick={() => setReplying(true)} className='text-muted-foreground hover:underline'>
             Reply

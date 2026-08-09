@@ -20,12 +20,22 @@ import type {
   CommentListReplies400,
   CommentListReplies404,
   CommentListRepliesParams,
+  CommentRemoveVote200,
+  CommentRemoveVote401,
+  CommentRemoveVote403,
+  CommentRemoveVote404,
   CommentUpdate200,
   CommentUpdate400,
   CommentUpdate401,
   CommentUpdate403,
   CommentUpdate404,
   CommentUpdateDto,
+  CommentVote200,
+  CommentVote400,
+  CommentVote401,
+  CommentVote403,
+  CommentVote404,
+  CommentVoteDto,
   NestThreadCommentCreate201,
   NestThreadCommentCreate400,
   NestThreadCommentCreate401,
@@ -276,6 +286,105 @@ export const commentCreateReply = async (commentId: string,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...options?.headers },
       body: JSON.stringify(commentCreateDto)
+    }
+  )
+}
+
+export type commentVoteResponse200 = {
+  data: CommentVote200
+  status: 200
+}
+
+export type commentVoteResponse400 = {
+  data: CommentVote400
+  status: 400
+}
+
+export type commentVoteResponse401 = {
+  data: CommentVote401
+  status: 401
+}
+
+export type commentVoteResponse403 = {
+  data: CommentVote403
+  status: 403
+}
+
+export type commentVoteResponse404 = {
+  data: CommentVote404
+  status: 404
+}
+
+export type commentVoteResponseSuccess = (commentVoteResponse200) & {
+  headers: Headers
+}
+export type commentVoteResponseError = (commentVoteResponse400 | commentVoteResponse401 | commentVoteResponse403 | commentVoteResponse404) & {
+  headers: Headers
+}
+
+export type commentVoteResponse = (commentVoteResponseSuccess | commentVoteResponseError)
+
+export const getCommentVoteUrl = (commentId: string) => {
+  return `/comments/${commentId}/vote`
+}
+
+/**
+ * @summary Cast or change a vote on a comment
+ */
+export const commentVote = async (commentId: string,
+  commentVoteDto: CommentVoteDto, options?: RequestInit): Promise<commentVoteResponse> => {
+  return apiFetch<commentVoteResponse>(getCommentVoteUrl(commentId),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(commentVoteDto)
+    }
+  )
+}
+
+export type commentRemoveVoteResponse200 = {
+  data: CommentRemoveVote200
+  status: 200
+}
+
+export type commentRemoveVoteResponse401 = {
+  data: CommentRemoveVote401
+  status: 401
+}
+
+export type commentRemoveVoteResponse403 = {
+  data: CommentRemoveVote403
+  status: 403
+}
+
+export type commentRemoveVoteResponse404 = {
+  data: CommentRemoveVote404
+  status: 404
+}
+
+export type commentRemoveVoteResponseSuccess = (commentRemoveVoteResponse200) & {
+  headers: Headers
+}
+export type commentRemoveVoteResponseError = (commentRemoveVoteResponse401 | commentRemoveVoteResponse403 | commentRemoveVoteResponse404) & {
+  headers: Headers
+}
+
+export type commentRemoveVoteResponse = (commentRemoveVoteResponseSuccess | commentRemoveVoteResponseError)
+
+export const getCommentRemoveVoteUrl = (commentId: string) => {
+  return `/comments/${commentId}/vote`
+}
+
+/**
+ * @summary Remove the current user's vote on a comment
+ */
+export const commentRemoveVote = async (commentId: string, options?: RequestInit): Promise<commentRemoveVoteResponse> => {
+  return apiFetch<commentRemoveVoteResponse>(getCommentRemoveVoteUrl(commentId),
+    {
+      ...options,
+      method: 'DELETE'
+
     }
   )
 }

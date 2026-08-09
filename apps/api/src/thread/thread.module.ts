@@ -9,6 +9,7 @@ import { ThreadPolicy } from './thread.policy'
 import { ThreadPresenter } from './thread.presenter'
 import { ThreadRepository } from './thread.repository'
 import { ThreadService } from './thread.service'
+import { ThreadVoteRepository } from './thread-vote.repository'
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ThreadService } from './thread.service'
   ],
   providers: [
     ThreadRepository,
+    ThreadVoteRepository,
     ThreadAccess,
     ThreadPolicy,
     ThreadPresenter,
@@ -27,6 +29,6 @@ import { ThreadService } from './thread.service'
   controllers: [
     NestThreadController
   ],
-  exports: [ThreadRepository, ThreadService, ThreadAccess, ThreadPolicy, ThreadPresenter]
+  exports: [ThreadRepository, ThreadVoteRepository, ThreadService, ThreadAccess, ThreadPolicy, ThreadPresenter]
 })
 export class ThreadModule { }

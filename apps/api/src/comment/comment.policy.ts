@@ -65,4 +65,10 @@ export class CommentPolicy {
       throw new InsufficientPermissionsException()
     }
   }
+
+  assertCanVoteOnComment(comment: CommentPolicySubject, threadCtx: ThreadAccessContext) {
+    if (comment.deletedAt || !threadCtx.canVoteComment) {
+      throw new InsufficientPermissionsException()
+    }
+  }
 }

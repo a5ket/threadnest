@@ -28,6 +28,10 @@ import type {
   NestThreadPin401,
   NestThreadPin403,
   NestThreadPin404,
+  NestThreadRemoveVote200,
+  NestThreadRemoveVote401,
+  NestThreadRemoveVote403,
+  NestThreadRemoveVote404,
   NestThreadUnlock200,
   NestThreadUnlock401,
   NestThreadUnlock403,
@@ -41,8 +45,14 @@ import type {
   NestThreadUpdate401,
   NestThreadUpdate403,
   NestThreadUpdate404,
+  NestThreadVote200,
+  NestThreadVote400,
+  NestThreadVote401,
+  NestThreadVote403,
+  NestThreadVote404,
   ThreadCreateDto,
-  ThreadUpdateDto
+  ThreadUpdateDto,
+  ThreadVoteDto
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
@@ -483,6 +493,109 @@ export const getNestThreadUnpinUrl = (nestSlug: string,
 export const nestThreadUnpin = async (nestSlug: string,
   threadSlug: string, options?: RequestInit): Promise<nestThreadUnpinResponse> => {
   return apiFetch<nestThreadUnpinResponse>(getNestThreadUnpinUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'DELETE'
+
+    }
+  )
+}
+
+export type nestThreadVoteResponse200 = {
+  data: NestThreadVote200
+  status: 200
+}
+
+export type nestThreadVoteResponse400 = {
+  data: NestThreadVote400
+  status: 400
+}
+
+export type nestThreadVoteResponse401 = {
+  data: NestThreadVote401
+  status: 401
+}
+
+export type nestThreadVoteResponse403 = {
+  data: NestThreadVote403
+  status: 403
+}
+
+export type nestThreadVoteResponse404 = {
+  data: NestThreadVote404
+  status: 404
+}
+
+export type nestThreadVoteResponseSuccess = (nestThreadVoteResponse200) & {
+  headers: Headers
+}
+export type nestThreadVoteResponseError = (nestThreadVoteResponse400 | nestThreadVoteResponse401 | nestThreadVoteResponse403 | nestThreadVoteResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadVoteResponse = (nestThreadVoteResponseSuccess | nestThreadVoteResponseError)
+
+export const getNestThreadVoteUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/vote`
+}
+
+/**
+ * @summary Cast or change a vote on a thread
+ */
+export const nestThreadVote = async (nestSlug: string,
+  threadSlug: string,
+  threadVoteDto: ThreadVoteDto, options?: RequestInit): Promise<nestThreadVoteResponse> => {
+  return apiFetch<nestThreadVoteResponse>(getNestThreadVoteUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(threadVoteDto)
+    }
+  )
+}
+
+export type nestThreadRemoveVoteResponse200 = {
+  data: NestThreadRemoveVote200
+  status: 200
+}
+
+export type nestThreadRemoveVoteResponse401 = {
+  data: NestThreadRemoveVote401
+  status: 401
+}
+
+export type nestThreadRemoveVoteResponse403 = {
+  data: NestThreadRemoveVote403
+  status: 403
+}
+
+export type nestThreadRemoveVoteResponse404 = {
+  data: NestThreadRemoveVote404
+  status: 404
+}
+
+export type nestThreadRemoveVoteResponseSuccess = (nestThreadRemoveVoteResponse200) & {
+  headers: Headers
+}
+export type nestThreadRemoveVoteResponseError = (nestThreadRemoveVoteResponse401 | nestThreadRemoveVoteResponse403 | nestThreadRemoveVoteResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadRemoveVoteResponse = (nestThreadRemoveVoteResponseSuccess | nestThreadRemoveVoteResponseError)
+
+export const getNestThreadRemoveVoteUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/vote`
+}
+
+/**
+ * @summary Remove the current user's vote on a thread
+ */
+export const nestThreadRemoveVote = async (nestSlug: string,
+  threadSlug: string, options?: RequestInit): Promise<nestThreadRemoveVoteResponse> => {
+  return apiFetch<nestThreadRemoveVoteResponse>(getNestThreadRemoveVoteUrl(nestSlug, threadSlug),
     {
       ...options,
       method: 'DELETE'

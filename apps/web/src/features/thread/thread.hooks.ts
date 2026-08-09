@@ -1,8 +1,8 @@
 'use client'
 
 import { createMutationHook } from '@/common/api-mutation'
-import { ThreadCreateDto, ThreadUpdateDto } from '@/generated/api/models'
-import { nestThreadCreate, nestThreadDelete, nestThreadLock, nestThreadPin, nestThreadUnlock, nestThreadUnpin, nestThreadUpdate } from './thread.api'
+import { ThreadCreateDto, ThreadUpdateDto, ThreadVoteDtoType } from '@/generated/api/models'
+import { nestThreadCreate, nestThreadDelete, nestThreadLock, nestThreadPin, nestThreadRemoveVote, nestThreadUnlock, nestThreadUnpin, nestThreadUpdate, nestThreadVote } from './thread.api'
 
 export const useCreateThread = createMutationHook(
   ({ nestSlug, ...dto }: { nestSlug: string } & ThreadCreateDto) => nestThreadCreate(nestSlug, dto),
@@ -42,5 +42,17 @@ export const usePinThread = createMutationHook(
 export const useUnpinThread = createMutationHook(
   ({ nestSlug, threadSlug }: { nestSlug: string, threadSlug: string }) =>
     nestThreadUnpin(nestSlug, threadSlug),
+  200
+)
+
+export const useVoteThread = createMutationHook(
+  ({ nestSlug, threadSlug, type }: { nestSlug: string, threadSlug: string, type: ThreadVoteDtoType }) =>
+    nestThreadVote(nestSlug, threadSlug, { type }),
+  200
+)
+
+export const useRemoveThreadVote = createMutationHook(
+  ({ nestSlug, threadSlug }: { nestSlug: string, threadSlug: string }) =>
+    nestThreadRemoveVote(nestSlug, threadSlug),
   200
 )

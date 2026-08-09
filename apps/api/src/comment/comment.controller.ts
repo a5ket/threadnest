@@ -16,6 +16,7 @@ import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.
 import { CommentService } from './comment.service'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
+import { CommentVoteDto } from './dto/comment.vote.dto'
 import { CommentQueryDto } from './dto/comment.query.dto'
 import { CommentResponseDto } from './dto/comment-response.dto'
 import { CommentNodeResponseDto, CommentTreeMetaDto } from './dto/comment-node-response.dto'
@@ -91,5 +92,30 @@ export class CommentController {
     @CurrentUser() user: AuthUser
   ) {
     await this.comments.removeComment(commentId, user.id)
+  }
+
+  @AuthenticatedAndVerified()
+  @Patch(':commentId/vote')
+  @ApiOperation({ operationId: 'commentVote', summary: 'Cast or change a vote on a comment' })
+  @ApiDataResponse({ status: 200, description: 'Comment voted', type: CommentResponseDto })
+  @ApiExceptionResponses(ValidationException, CommentNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  async vote(
+    @Param('commentId') commentId: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CommentVoteDto
+  ) {
+    return this.comments.voteOnComment(commentId, user.id, dto.type)
+  }
+
+  @AuthenticatedAndVerified()
+  @Delete(':commentId/vote')
+  @ApiOperation({ operationId: 'commentRemoveVote', summary: 'Remove the current user\'s vote on a comment' })
+  @ApiDataResponse({ status: 200, description: 'Vote removed', type: CommentResponseDto })
+  @ApiExceptionResponses(CommentNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  async removeVote(
+    @Param('commentId') commentId: string,
+    @CurrentUser() user: AuthUser
+  ) {
+    return this.comments.removeCommentVote(commentId, user.id)
   }
 }

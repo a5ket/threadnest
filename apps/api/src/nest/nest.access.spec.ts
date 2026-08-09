@@ -98,6 +98,8 @@ describe('NestAccess', () => {
     const LEVEL_GATED_FLAGS: [keyof NestAccessContext, keyof NestSettingsRecord][] = [
       ['canCreateThread', 'minThreadCreationLevel'],
       ['canCreateComment', 'minCommentCreationLevel'],
+      ['canVoteThread', 'minThreadVoteLevel'],
+      ['canVoteComment', 'minCommentVoteLevel'],
       ['canEditNest', 'minNestEditLevel'],
       ['canManageThreadLock', 'minThreadLockManageLevel'],
       ['canManageThreadPin', 'minThreadPinManageLevel'],

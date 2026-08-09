@@ -29,6 +29,9 @@ export class NestSettingsRepository {
         minThreadCreationLevel: NEST_ACCESS_LEVEL.MEMBER,
         minCommentCreationLevel: NEST_ACCESS_LEVEL.MEMBER,
 
+        minThreadVoteLevel: NEST_ACCESS_LEVEL.MEMBER,
+        minCommentVoteLevel: NEST_ACCESS_LEVEL.MEMBER,
+
         minMemberViewLevel: NEST_ACCESS_LEVEL.MODERATOR,
 
         minNestEditLevel: NEST_ACCESS_LEVEL.MODERATOR,
@@ -71,6 +74,9 @@ export class NestSettingsRepository {
 
           minThreadCreationLevel: dto.minThreadCreationLevel,
           minCommentCreationLevel: dto.minCommentCreationLevel,
+
+          minThreadVoteLevel: dto.minThreadVoteLevel,
+          minCommentVoteLevel: dto.minCommentVoteLevel,
 
           minNestEditLevel: dto.minNestEditLevel,
 

@@ -68,4 +68,59 @@ describe('ThreadAccess', () => {
 
     expect(ctx.canReadContent).toBe(false)
   })
+
+  it('allows voting on a viewable, non-deleted thread', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true }))
+    const thread = createThreadPolicySubject({ deletedAt: null })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canVoteThread).toBe(true)
+  })
+
+  it('blocks voting on a deleted thread', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true }))
+    const thread = createThreadPolicySubject({ deletedAt: new Date() })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canVoteThread).toBe(false)
+  })
+
+  it('allows voting on a locked thread — locking blocks new comments, not votes', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true, canCreateComment: true }))
+    const thread = createThreadPolicySubject({ deletedAt: null, lockedAt: new Date() })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canCommentThread).toBe(false)
+    expect(ctx.canVoteThread).toBe(true)
+  })
+
+  it('blocks voting on the thread when the nest\'s minThreadVoteLevel isn\'t met', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true, canVoteThread: false }))
+    const thread = createThreadPolicySubject({ deletedAt: null })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canVoteThread).toBe(false)
+  })
+
+  it('blocks voting on comments when the nest\'s minCommentVoteLevel isn\'t met', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true, canVoteComment: false }))
+    const thread = createThreadPolicySubject({ deletedAt: null })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canVoteComment).toBe(false)
+  })
+
+  it('blocks voting on comments when the thread is deleted, even if the nest allows it', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true, canVoteComment: true }))
+    const thread = createThreadPolicySubject({ deletedAt: new Date() })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canVoteComment).toBe(false)
+  })
 })

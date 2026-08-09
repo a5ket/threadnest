@@ -10,11 +10,12 @@ import { CommentPolicy } from './comment.policy'
 import { CommentPresenter } from './comment.presenter'
 import { CommentRepository } from './comment.repository'
 import { CommentService } from './comment.service'
+import { CommentVoteRepository } from './comment-vote.repository'
 import { ThreadCommentController } from './thread-comment.controller'
 
 @Module({
   imports: [PrismaModule, EventModule, SecurityModule, ThreadModule, NestModule, BlockModule],
   controllers: [CommentController, ThreadCommentController],
-  providers: [CommentRepository, CommentService, CommentPolicy, CommentPresenter]
+  providers: [CommentRepository, CommentVoteRepository, CommentService, CommentPolicy, CommentPresenter]
 })
 export class CommentModule { }

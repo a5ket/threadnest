@@ -226,4 +226,42 @@ describe('CommentPolicy', () => {
       ).toThrow(InsufficientPermissionsException)
     })
   })
+
+  describe('assertCanVoteOnComment', () => {
+    it('allows when comment is not deleted and canVoteComment is true', () => {
+      expect(() =>
+        policy.assertCanVoteOnComment(
+          createCommentPolicySubject({ deletedAt: null }),
+          createThreadAccessContext({ canVoteComment: true }),
+        ),
+      ).not.toThrow()
+    })
+
+    it('throws InsufficientPermissionsException when comment is deleted', () => {
+      expect(() =>
+        policy.assertCanVoteOnComment(
+          createCommentPolicySubject({ deletedAt: new Date() }),
+          createThreadAccessContext({ canVoteComment: true }),
+        ),
+      ).toThrow(InsufficientPermissionsException)
+    })
+
+    it('throws InsufficientPermissionsException when canVoteComment is false (thread not visible, or below the nest\'s minCommentVoteLevel)', () => {
+      expect(() =>
+        policy.assertCanVoteOnComment(
+          createCommentPolicySubject({ deletedAt: null }),
+          createThreadAccessContext({ canVoteComment: false }),
+        ),
+      ).toThrow(InsufficientPermissionsException)
+    })
+
+    it('does not require canCommentThread — voting is allowed on a locked thread', () => {
+      expect(() =>
+        policy.assertCanVoteOnComment(
+          createCommentPolicySubject({ deletedAt: null }),
+          createThreadAccessContext({ canVoteComment: true, canCommentThread: false }),
+        ),
+      ).not.toThrow()
+    })
+  })
 })

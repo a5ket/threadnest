@@ -5,6 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ThreadAccessContextDto } from './threadAccessContextDto'
+import type { ThreadDetailResponseDtoViewerVote } from './threadDetailResponseDtoViewerVote'
 import type { UserReferenceDto } from './userReferenceDto'
 
 export interface ThreadDetailResponseDto {
@@ -30,6 +31,13 @@ export interface ThreadDetailResponseDto {
   lastCommentAt: string | null
   /** Number of comments on this thread */
   commentCount: number
+  /** Net vote score (upvotes minus downvotes) */
+  score: number
+  /**
+     * The current user's vote on this thread, if any
+     * @nullable
+     */
+  viewerVote: ThreadDetailResponseDtoViewerVote
   /**
      * Deletion timestamp. Only present when the current user can delete the thread
      * @nullable

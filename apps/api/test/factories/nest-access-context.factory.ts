@@ -23,6 +23,9 @@ export const createNestAccessContext = (
   canCreateThread: true,
   canCreateComment: true,
 
+  canVoteThread: true,
+  canVoteComment: true,
+
   canEditNest: false,
 
   canManageThreadLock: false,

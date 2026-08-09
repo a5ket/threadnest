@@ -28,6 +28,12 @@ export class ThreadAccessContextDto {
   @ApiProperty({ description: 'Whether the current user can comment on the thread' })
   canCommentThread!: boolean
 
+  @ApiProperty({ description: 'Whether the current user can vote on the thread' })
+  canVoteThread!: boolean
+
+  @ApiProperty({ description: 'Whether the current user can vote on comments in this thread' })
+  canVoteComment!: boolean
+
   @ApiProperty({ description: 'Whether the current user can moderate content on the thread' })
   canModerateContent!: boolean
 

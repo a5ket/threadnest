@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common'
+import { VoteType } from 'generated/prisma/enums'
 import { EventBus } from 'src/event/event-bus'
 import { NestRepository } from 'src/nest/nest.repository'
 import { Database } from 'src/prisma/types/database'
 import { TransactionManager } from 'src/prisma/transaction-manager'
+import { computeVoteScoreDelta } from 'src/common/vote-score'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
@@ -17,11 +19,13 @@ import { ThreadAccess } from './thread.access'
 import { ThreadPolicy } from './thread.policy'
 import { ThreadPresenter } from './thread.presenter'
 import { ThreadRepository } from './thread.repository'
+import { ThreadVoteRepository } from './thread-vote.repository'
 
 @Injectable()
 export class ThreadService {
   constructor(
     private readonly threadsRepo: ThreadRepository,
+    private readonly threadVotesRepo: ThreadVoteRepository,
     private readonly nestsRepo: NestRepository,
     private readonly threadsPolicy: ThreadPolicy,
     private readonly transactionManager: TransactionManager,
@@ -57,7 +61,7 @@ export class ThreadService {
   }
 
   async getThread(nestSlug: string, threadSlug: string, actorUserId?: string) {
-    const thread = await this.getByNestSlug(nestSlug, threadSlug)
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
     const threadCtx = await this.threadAccess.getContext(thread, actorUserId)
 
     await this.threadsPolicy.assertCanReadThread(threadCtx)
@@ -69,9 +73,9 @@ export class ThreadService {
     return this.threadsRepo.getById(threadId)
   }
 
-  async getByNestSlug(nestSlug: string, threadSlug: string) {
+  async getByNestSlug(nestSlug: string, threadSlug: string, actorUserId?: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
-    return this.threadsRepo.getBySlug(nest.id, threadSlug)
+    return this.threadsRepo.getBySlug(nest.id, threadSlug, actorUserId)
   }
 
   async listByNest(nestSlug: string, query: ThreadQueryDto, actorUserId?: string) {
@@ -79,17 +83,17 @@ export class ThreadService {
 
     await this.threadsPolicy.assertCanReadThreads(nest.id, actorUserId)
 
-    const page = await this.threadsRepo.listByNest(nest.id, query)
+    const page = await this.threadsRepo.listByNest(nest.id, query, actorUserId)
 
     return { items: page.items.map((t) => this.threadPresenter.toSummaryView(t)), meta: page.meta }
   }
 
   async updateThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ThreadUpdateDto) {
-    const thread = await this.getByNestSlug(nestSlug, threadSlug)
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
     await this.threadsPolicy.assertCanUpdateThread(thread, actorUserId)
 
-    const updated = await this.threadsRepo.updateById(thread.id, thread.nestId, dto)
+    const updated = await this.threadsRepo.updateById(thread.id, thread.nestId, dto, actorUserId)
 
     void this.eventBus.publish(new ThreadUpdatedEvent({
       threadId: updated.id,
@@ -104,7 +108,7 @@ export class ThreadService {
   }
 
   async deleteThread(nestSlug: string, threadSlug: string, actorUserId: string) {
-    const thread = await this.getByNestSlug(nestSlug, threadSlug)
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
     await this.threadsPolicy.assertCanDeleteThread(thread, actorUserId)
 
@@ -121,11 +125,11 @@ export class ThreadService {
   }
 
   async lockThread(nestSlug: string, threadSlug: string, actorUserId: string) {
-    const thread = await this.getByNestSlug(nestSlug, threadSlug)
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
     await this.threadsPolicy.assertCanManageThreadLock(thread, actorUserId)
 
-    const updated = await this.threadsRepo.lock(thread.id, thread.nestId)
+    const updated = await this.threadsRepo.lock(thread.id, thread.nestId, actorUserId)
 
     void this.eventBus.publish(new ThreadLockedEvent({
       threadId: updated.id,
@@ -139,11 +143,11 @@ export class ThreadService {
   }
 
   async unlockThread(nestSlug: string, threadSlug: string, actorUserId: string) {
-    const thread = await this.getByNestSlug(nestSlug, threadSlug)
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
     await this.threadsPolicy.assertCanManageThreadLock(thread, actorUserId)
 
-    const updated = await this.threadsRepo.unlock(thread.id, thread.nestId)
+    const updated = await this.threadsRepo.unlock(thread.id, thread.nestId, actorUserId)
 
     void this.eventBus.publish(new ThreadUnlockedEvent({
       threadId: updated.id,
@@ -157,11 +161,11 @@ export class ThreadService {
   }
 
   async pinThread(nestSlug: string, threadSlug: string, actorUserId: string) {
-    const thread = await this.getByNestSlug(nestSlug, threadSlug)
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
     await this.threadsPolicy.assertCanManageThreadPin(thread, actorUserId)
 
-    const updated = await this.threadsRepo.pin(thread.id, thread.nestId)
+    const updated = await this.threadsRepo.pin(thread.id, thread.nestId, actorUserId)
 
     void this.eventBus.publish(new ThreadPinnedEvent({
       threadId: updated.id,
@@ -175,17 +179,51 @@ export class ThreadService {
   }
 
   async unpinThread(nestSlug: string, threadSlug: string, actorUserId: string) {
-    const thread = await this.getByNestSlug(nestSlug, threadSlug)
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
     await this.threadsPolicy.assertCanManageThreadPin(thread, actorUserId)
 
-    const updated = await this.threadsRepo.unpin(thread.id, thread.nestId)
+    const updated = await this.threadsRepo.unpin(thread.id, thread.nestId, actorUserId)
 
     void this.eventBus.publish(new ThreadUnpinnedEvent({
       threadId: updated.id,
       nestId: updated.nestId,
       userId: actorUserId,
     }))
+
+    const threadCtx = await this.threadAccess.getContext(updated, actorUserId)
+
+    return this.threadPresenter.toDetailView(updated, threadCtx)
+  }
+
+  async voteOnThread(nestSlug: string, threadSlug: string, actorUserId: string, type: VoteType) {
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
+
+    await this.threadsPolicy.assertCanVoteThread(thread, actorUserId)
+
+    const updated = await this.transactionManager.run(async (tx) => {
+      const current = await this.threadVotesRepo.find(thread.id, actorUserId, tx)
+      const delta = computeVoteScoreDelta(current?.type ?? null, type)
+      await this.threadVotesRepo.upsert(thread.id, actorUserId, type, tx)
+      return this.threadsRepo.adjustScore(thread.id, delta, thread.nestId, actorUserId, tx)
+    })
+
+    const threadCtx = await this.threadAccess.getContext(updated, actorUserId)
+
+    return this.threadPresenter.toDetailView(updated, threadCtx)
+  }
+
+  async removeThreadVote(nestSlug: string, threadSlug: string, actorUserId: string) {
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
+
+    await this.threadsPolicy.assertCanVoteThread(thread, actorUserId)
+
+    const updated = await this.transactionManager.run(async (tx) => {
+      const current = await this.threadVotesRepo.find(thread.id, actorUserId, tx)
+      const delta = computeVoteScoreDelta(current?.type ?? null, null)
+      await this.threadVotesRepo.delete(thread.id, actorUserId, tx)
+      return this.threadsRepo.adjustScore(thread.id, delta, thread.nestId, actorUserId, tx)
+    })
 
     const threadCtx = await this.threadAccess.getContext(updated, actorUserId)
 

@@ -12,6 +12,8 @@ export interface ThreadAccessContext {
   canEditThread: boolean
   canDeleteThread: boolean
   canCommentThread: boolean
+  canVoteThread: boolean
+  canVoteComment: boolean
   canModerateContent: boolean
   canManageThreadLock: boolean
   canManageThreadPin: boolean

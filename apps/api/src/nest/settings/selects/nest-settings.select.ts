@@ -7,6 +7,9 @@ export const NEST_SETTINGS_SELECT = {
   minThreadCreationLevel: true,
   minCommentCreationLevel: true,
 
+  minThreadVoteLevel: true,
+  minCommentVoteLevel: true,
+
   minNestEditLevel: true,
 
   minThreadLockManageLevel: true,
