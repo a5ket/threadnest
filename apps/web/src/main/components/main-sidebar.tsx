@@ -1,5 +1,6 @@
 import { useIsSignedIn, useMeNests } from '@/features/me/me.hooks'
 import { NestReferenceItem } from '@/features/nest/components/nest-reference-item'
+import Link from 'next/link'
 import { CreateNestButton } from './create-nest-button'
 
 export function MainSidebar() {
@@ -10,6 +11,9 @@ export function MainSidebar() {
     <div className='bg-green-500 flex flex-col h-full'>
       <div>
         {isSignedIn ? 'Signed In' : 'Unsigned In'}
+      </div>
+      <div>
+        <Link href='/discover'>Discover</Link>
       </div>
       <div>
         Nests

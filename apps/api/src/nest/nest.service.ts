@@ -5,6 +5,7 @@ import { TransactionManager } from 'src/prisma/transaction-manager'
 import { RESERVED_NEST_SLUGS } from './constants/reserved-nest-slugs'
 import { NestSlugReservedException } from './exceptions/nest-slug-reserved.exception'
 import { NestCreateDto } from './dto/nest.create.dto'
+import { NestQueryDto } from './dto/nest.query.dto'
 import { NestTransferOwnershipDto } from './dto/nest.transfer-ownership.dto'
 import { NestUpdateDto } from './dto/nest.update.dto'
 import { NestCreatedEvent } from './events/nest-created.event'
@@ -64,6 +65,12 @@ export class NestService {
     const access = await this.nestAccess.getContext(nest.id, actorUserId)
 
     return this.presenter.toDetailView(nest, access)
+  }
+
+  async listDiscoverable(query: NestQueryDto, actorUserId?: string) {
+    const page = await this.nestsRepo.listDiscoverable(query, actorUserId)
+
+    return { items: page.items.map((n) => this.presenter.toDiscoveryView(n)), meta: page.meta }
   }
 
   async checkSlugAvailability(nestSlug: string) {

@@ -7,6 +7,44 @@
 import * as zod from 'zod'
 
 /**
+ * @summary Discover public nests (and private nests the current user is a member of)
+ */
+export const nestListQueryLimitMax = 100
+
+export const nestListQuerySearchMax = 100
+
+export const NestListQueryParams = zod.object({
+  limit: zod.number().min(1).max(nestListQueryLimitMax),
+  cursor: zod.string().optional(),
+  sortBy: zod.enum(['createdAt', 'memberCount']),
+  sortAscending: zod.boolean(),
+  search: zod.string().max(nestListQuerySearchMax).optional()
+})
+
+export const NestListResponse = zod.object({
+  data: zod.object({
+    items: zod.array(zod.object({
+      id: zod.string().describe('Nest ID'),
+      name: zod.string().describe('Nest display name'),
+      slug: zod.string().describe('Unique nest slug'),
+      description: zod.string().nullable().describe('Nest description'),
+      memberCount: zod.number().describe('Number of members'),
+      threadCount: zod.number().describe('Number of threads'),
+      createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+      updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+      visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Who can view the nest'),
+      joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('How users can join the nest'),
+      isMember: zod.boolean().describe('Whether the current user is already a member'),
+      hasPendingJoinRequest: zod.boolean().describe('Whether the current user has a pending join request')
+    })),
+    meta: zod.object({
+      nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
+      hasMore: zod.boolean().describe('Whether more results are available')
+    })
+  })
+})
+
+/**
  * @summary Create a nest
  */
 export const nestCreateBodyNameMin = 3

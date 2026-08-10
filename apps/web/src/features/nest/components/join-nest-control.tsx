@@ -3,6 +3,7 @@
 import { useCreateJoinRequest } from '@/features/join-request/join-request.hooks'
 import { useAddNest, useIsSignedIn } from '@/features/me/me.hooks'
 import { useJoinNest } from '@/features/nest-member/nest-member.hooks'
+import { useInvalidateNestList } from '@/features/nest/nest.hooks'
 import { NestAccessContextDtoJoinPolicy } from '@/generated/api/models'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -17,16 +18,19 @@ export function JoinNestControl({ nestSlug, nestName, joinPolicy }: JoinNestCont
   const router = useRouter()
   const addNest = useAddNest()
   const isSignedIn = useIsSignedIn()
+  const invalidateNestList = useInvalidateNestList()
   const [message, setMessage] = useState<string | null>(null)
 
   const joinNest = useJoinNest({
     onSuccess: () => {
       addNest({ name: nestName, slug: nestSlug })
+      invalidateNestList()
       router.refresh()
     },
     onError: (error) => {
       switch (error.errorCode) {
         case 'ALREADY_A_MEMBER':
+          invalidateNestList()
           router.refresh()
           break
 
@@ -49,7 +53,10 @@ export function JoinNestControl({ nestSlug, nestName, joinPolicy }: JoinNestCont
   })
 
   const createJoinRequest = useCreateJoinRequest({
-    onSuccess: () => setMessage('Request sent. A moderator will review it.'),
+    onSuccess: () => {
+      setMessage('Request sent. A moderator will review it.')
+      invalidateNestList()
+    },
     onError: (error) => {
       switch (error.errorCode) {
         case 'ALREADY_HAS_PENDING_JOIN_REQUEST':
@@ -57,6 +64,7 @@ export function JoinNestControl({ nestSlug, nestName, joinPolicy }: JoinNestCont
           break
 
         case 'ALREADY_A_MEMBER':
+          invalidateNestList()
           router.refresh()
           break
 

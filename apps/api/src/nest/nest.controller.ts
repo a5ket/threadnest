@@ -8,15 +8,18 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
+import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
 import { ValidationException } from 'src/common/exceptions/validation.exception'
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
 import { ApiDataResponse } from 'src/common/swagger/api-data-response.decorator'
 import { ApiExceptionResponses } from 'src/common/swagger/api-exception-responses.decorator'
+import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response.decorator'
 import type { AuthUser } from 'src/common/types/auth.user'
 import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
@@ -24,6 +27,8 @@ import { OptionalCurrentUser } from 'src/security/decorators/optional-current-us
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
 import { NestCreateDto } from './dto/nest.create.dto'
 import { NestDetailResponseDto } from './dto/nest.detail-response.dto'
+import { NestDiscoveryResponseDto } from './dto/nest-discovery-response.dto'
+import { NestQueryDto } from './dto/nest.query.dto'
 import { NestTransferOwnershipDto } from './dto/nest.transfer-ownership.dto'
 import { NestUpdateDto } from './dto/nest.update.dto'
 import { CannotTransferOwnershipToSelfException } from './exceptions/cannot-transfer-ownership-to-self.exception'
@@ -41,6 +46,18 @@ export class NestController {
   constructor(
     private readonly nests: NestService,
   ) { }
+
+  @Get()
+  @UseGuards(OptionalAuthGuard)
+  @ApiOperation({ operationId: 'nestList', summary: 'Discover public nests (and private nests the current user is a member of)' })
+  @ApiPaginatedResponse({ status: 200, description: 'Nests', type: NestDiscoveryResponseDto })
+  @ApiExceptionResponses(ValidationException, InvalidCursorException)
+  list(
+    @Query() query: NestQueryDto,
+    @OptionalCurrentUser() user: AuthUser | null,
+  ) {
+    return this.nests.listDiscoverable(query, user?.id)
+  }
 
   @Post()
   @ApiOperation({ operationId: 'nestCreate', summary: 'Create a nest' })

@@ -17,6 +17,9 @@ import type {
   NestDelete404,
   NestGetBySlug200,
   NestGetBySlug404,
+  NestList200,
+  NestList400,
+  NestListParams,
   NestSlugCheckAvailability200,
   NestSlugCheckAvailability401,
   NestTransferOwnership400,
@@ -34,6 +37,52 @@ import type {
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
+
+export type nestListResponse200 = {
+  data: NestList200
+  status: 200
+}
+
+export type nestListResponse400 = {
+  data: NestList400
+  status: 400
+}
+
+export type nestListResponseSuccess = (nestListResponse200) & {
+  headers: Headers
+}
+export type nestListResponseError = (nestListResponse400) & {
+  headers: Headers
+}
+
+export type nestListResponse = (nestListResponseSuccess | nestListResponseError)
+
+export const getNestListUrl = (params: NestListParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/nests?${stringifiedParams}` : `/nests`
+}
+
+/**
+ * @summary Discover public nests (and private nests the current user is a member of)
+ */
+export const nestList = async (params: NestListParams, options?: RequestInit): Promise<nestListResponse> => {
+  return apiFetch<nestListResponse>(getNestListUrl(params),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
 
 export type nestCreateResponse201 = {
   data: NestCreate201
