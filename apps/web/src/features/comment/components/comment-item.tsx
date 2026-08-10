@@ -7,7 +7,7 @@ import { VoteButtons } from '@/common/components/vote-buttons'
 import { formatDateTime } from '@/common/format-date'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore } from '@/features/thread/components/thread-store-provider'
-import { useDeleteComment, useRemoveCommentVote, useVoteComment } from '@/features/comment/comment.hooks'
+import { useDeleteComment, useInvalidateCommentTree, useRemoveCommentVote, useVoteComment } from '@/features/comment/comment.hooks'
 import type { CommentNode } from '@/features/comment/comment.types'
 import { useUser } from '@/features/me/me.hooks'
 import Link from 'next/link'
@@ -30,17 +30,21 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
   const user = useUser()
   const canModerateContent = useThreadStore((state) => state.thread.access.canModerateContent)
   const canVoteComment = useThreadStore((state) => state.thread.access.canVoteComment)
+  const invalidate = useInvalidateCommentTree(nestSlug, threadSlug)
 
   const deleteComment = useDeleteComment({
-    onSuccess: () => router.refresh()
+    onSuccess: () => {
+      invalidate()
+      router.refresh()
+    }
   })
 
   const voteComment = useVoteComment({
-    onSuccess: () => router.refresh()
+    onSuccess: () => invalidate()
   })
 
   const removeCommentVote = useRemoveCommentVote({
-    onSuccess: () => router.refresh()
+    onSuccess: () => invalidate()
   })
 
   const hiddenReplyCount = comment.replyCount - childrenCount
@@ -59,6 +63,7 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
         onCancel={() => setEditing(false)}
         onSaved={() => {
           setEditing(false)
+          invalidate()
           router.refresh()
         }}
       />
@@ -135,6 +140,7 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
           onCancel={() => setReplying(false)}
           onCreated={() => {
             setReplying(false)
+            invalidate()
             router.refresh()
           }}
         />

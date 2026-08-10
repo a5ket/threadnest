@@ -2,7 +2,7 @@ import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import { LeaveNestButton } from '@/features/nest/components/leave-nest-button'
 import { getNestServer } from '@/features/nest/nest.server'
 import { NestPreferenceToggle } from '@/features/nest-preference/components/nest-preference-toggle'
-import { ThreadListItem } from '@/features/thread/components/thread-list-item'
+import { ThreadList } from '@/features/thread/components/thread-list'
 import { getThreadsServer } from '@/features/thread/thread.server'
 import { NestThreadListSortBy } from '@/generated/api/models'
 import Link from 'next/link'
@@ -19,7 +19,7 @@ export default async function NestPage({
   const { sort } = await searchParams
   const sortBy = sort === 'top' ? NestThreadListSortBy.score : NestThreadListSortBy.createdAt
 
-  const [nest, threads] = await Promise.all([
+  const [nest, threadPage] = await Promise.all([
     getNestServer(nestSlug),
     getThreadsServer(nestSlug, sortBy)
   ])
@@ -111,15 +111,7 @@ export default async function NestPage({
         </Link>
       </div>
 
-      <ul className='flex flex-col gap-3'>
-        {threads.map((thread) => (
-          <ThreadListItem key={thread.id} nestSlug={nestSlug} thread={thread} />
-        ))}
-
-        {threads.length === 0 && (
-          <p className='text-sm text-muted-foreground'>No threads yet.</p>
-        )}
-      </ul>
+      <ThreadList nestSlug={nestSlug} sortBy={sortBy} initialPage={threadPage} />
     </div>
   )
 }

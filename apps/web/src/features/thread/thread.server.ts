@@ -17,7 +17,12 @@ export async function getThreadServer(nestSlug: string, threadSlug: string): Pro
   }
 }
 
-export async function getThreadsServer(nestSlug: string, sortBy: NestThreadListSortBy = NestThreadListSortBy.createdAt): Promise<ThreadSummary[]> {
+export interface ThreadListPage {
+  items: ThreadSummary[]
+  nextCursor: string | null
+}
+
+export async function getThreadsServer(nestSlug: string, sortBy: NestThreadListSortBy = NestThreadListSortBy.createdAt): Promise<ThreadListPage> {
   try {
     const page = await apiClientServer<NestThreadList200Data>(getNestThreadListUrl(nestSlug, {
       limit: 20,
@@ -25,11 +30,11 @@ export async function getThreadsServer(nestSlug: string, sortBy: NestThreadListS
       sortAscending: false
     }))
 
-    return page.items
+    return { items: page.items, nextCursor: page.meta.nextCursor }
   }
   catch (error) {
     if (error instanceof ApiError && error.statusCode === 404) {
-      return []
+      return { items: [], nextCursor: null }
     }
 
     throw error

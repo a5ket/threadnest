@@ -1,8 +1,11 @@
 'use client'
 
+import { ApiError, ApiErrorResponse } from '@/common/api-error'
 import { createMutationHook } from '@/common/api-mutation'
-import { ThreadCreateDto, ThreadUpdateDto, ThreadVoteDtoType } from '@/generated/api/models'
-import { nestThreadCreate, nestThreadDelete, nestThreadLock, nestThreadPin, nestThreadRemoveVote, nestThreadUnlock, nestThreadUnpin, nestThreadUpdate, nestThreadVote } from './thread.api'
+import { NestThreadListSortBy, ThreadCreateDto, ThreadUpdateDto, ThreadVoteDtoType } from '@/generated/api/models'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { nestThreadCreate, nestThreadDelete, nestThreadList, nestThreadLock, nestThreadPin, nestThreadRemoveVote, nestThreadUnlock, nestThreadUnpin, nestThreadUpdate, nestThreadVote } from './thread.api'
+import type { ThreadListPage } from './thread.server'
 
 export const useCreateThread = createMutationHook(
   ({ nestSlug, ...dto }: { nestSlug: string } & ThreadCreateDto) => nestThreadCreate(nestSlug, dto),
@@ -56,3 +59,21 @@ export const useRemoveThreadVote = createMutationHook(
     nestThreadRemoveVote(nestSlug, threadSlug),
   200
 )
+
+export function threadListQueryKey(nestSlug: string, sortBy: NestThreadListSortBy) {
+  return ['nests', nestSlug, 'threads', sortBy]
+}
+
+export function useThreadList(nestSlug: string, sortBy: NestThreadListSortBy, initialPage: ThreadListPage) {
+  return useInfiniteQuery({
+    queryKey: threadListQueryKey(nestSlug, sortBy),
+    queryFn: async ({ pageParam }): Promise<ThreadListPage> => {
+      const result = await nestThreadList(nestSlug, { limit: 20, sortBy, sortAscending: false, cursor: pageParam ?? undefined })
+      if (result.status !== 200) throw ApiError.fromComposite(result as { status: number, data: ApiErrorResponse })
+      return { items: result.data.data.items, nextCursor: result.data.data.meta.nextCursor }
+    },
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: { pages: [initialPage], pageParams: [null] }
+  })
+}

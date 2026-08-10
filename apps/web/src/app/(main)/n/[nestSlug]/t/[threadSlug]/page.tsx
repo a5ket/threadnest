@@ -18,7 +18,7 @@ export default async function ThreadPage({
   return (
     <div className='flex flex-col gap-8 p-6'>
       <ThreadDetail nestSlug={nestSlug} />
-      <CommentSection nestSlug={nestSlug} threadSlug={threadSlug} comments={commentPage.items} sort={sort === 'top' ? 'top' : 'new'} />
+      <CommentSection nestSlug={nestSlug} threadSlug={threadSlug} sortBy={sortBy} initialPage={commentPage} />
     </div>
   )
 }
