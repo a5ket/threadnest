@@ -60,15 +60,15 @@ export const useRemoveThreadVote = createMutationHook(
   200
 )
 
-export function threadListQueryKey(nestSlug: string, sortBy: NestThreadListSortBy) {
-  return ['nests', nestSlug, 'threads', sortBy]
+export function threadListQueryKey(nestSlug: string, sortBy: NestThreadListSortBy, search: string | undefined) {
+  return ['nests', nestSlug, 'threads', sortBy, search ?? '']
 }
 
-export function useThreadList(nestSlug: string, sortBy: NestThreadListSortBy, initialPage: ThreadListPage) {
+export function useThreadList(nestSlug: string, sortBy: NestThreadListSortBy, search: string | undefined, initialPage: ThreadListPage) {
   return useInfiniteQuery({
-    queryKey: threadListQueryKey(nestSlug, sortBy),
+    queryKey: threadListQueryKey(nestSlug, sortBy, search),
     queryFn: async ({ pageParam }): Promise<ThreadListPage> => {
-      const result = await nestThreadList(nestSlug, { limit: 20, sortBy, sortAscending: false, cursor: pageParam ?? undefined })
+      const result = await nestThreadList(nestSlug, { limit: 20, sortBy, sortAscending: false, search, cursor: pageParam ?? undefined })
       if (result.status !== 200) throw ApiError.fromComposite(result as { status: number, data: ApiErrorResponse })
       return { items: result.data.data.items, nextCursor: result.data.data.meta.nextCursor }
     },

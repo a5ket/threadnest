@@ -19,7 +19,8 @@ export const NestThreadListQueryParams = zod.object({
   limit: zod.number().min(1).max(nestThreadListQueryLimitMax),
   cursor: zod.string().optional(),
   sortBy: zod.enum(['createdAt', 'updatedAt', 'lastCommentAt', 'score']),
-  sortAscending: zod.boolean()
+  sortAscending: zod.boolean(),
+  search: zod.string().optional()
 })
 
 export const NestThreadListResponse = zod.object({

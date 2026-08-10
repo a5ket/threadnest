@@ -13,15 +13,16 @@ export default async function NestPage({
   searchParams
 }: {
   params: Promise<{ nestSlug: string }>
-  searchParams: Promise<{ sort?: string }>
+  searchParams: Promise<{ sort?: string, q?: string }>
 }) {
   const { nestSlug } = await params
-  const { sort } = await searchParams
+  const { sort, q } = await searchParams
   const sortBy = sort === 'top' ? NestThreadListSortBy.score : NestThreadListSortBy.createdAt
+  const search = q?.trim() || undefined
 
   const [nest, threadPage] = await Promise.all([
     getNestServer(nestSlug),
-    getThreadsServer(nestSlug, sortBy)
+    getThreadsServer(nestSlug, sortBy, search)
   ])
 
   if (!nest) {
@@ -96,22 +97,36 @@ export default async function NestPage({
         </div>
       </div>
 
+      <form className='flex items-center gap-2'>
+        {sort && <input type='hidden' name='sort' value={sort} />}
+        <input
+          type='search'
+          name='q'
+          defaultValue={q}
+          placeholder='Search threads...'
+          className='flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm'
+        />
+        <button type='submit' className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover'>
+          Search
+        </button>
+      </form>
+
       <div className='flex items-center gap-3 text-sm'>
         <Link
-          href={`/n/${nestSlug}`}
+          href={q ? `/n/${nestSlug}?q=${encodeURIComponent(q)}` : `/n/${nestSlug}`}
           className={sort === 'top' ? 'text-muted-foreground hover:underline' : 'font-medium text-foreground'}
         >
           New
         </Link>
         <Link
-          href={`/n/${nestSlug}?sort=top`}
+          href={`/n/${nestSlug}?sort=top${q ? `&q=${encodeURIComponent(q)}` : ''}`}
           className={sort === 'top' ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
         >
           Top
         </Link>
       </div>
 
-      <ThreadList nestSlug={nestSlug} sortBy={sortBy} initialPage={threadPage} />
+      <ThreadList nestSlug={nestSlug} sortBy={sortBy} search={search} initialPage={threadPage} />
     </div>
   )
 }

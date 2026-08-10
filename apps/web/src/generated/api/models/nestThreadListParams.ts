@@ -15,4 +15,5 @@ export type NestThreadListParams = {
   cursor?: string
   sortBy: NestThreadListSortBy
   sortAscending: boolean
+  search?: string
 }

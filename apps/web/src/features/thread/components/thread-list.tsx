@@ -9,11 +9,12 @@ import { ThreadListItem } from './thread-list-item'
 interface ThreadListProps {
   nestSlug: string
   sortBy: NestThreadListSortBy
+  search?: string
   initialPage: ThreadListPage
 }
 
-export function ThreadList({ nestSlug, sortBy, initialPage }: ThreadListProps) {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useThreadList(nestSlug, sortBy, initialPage)
+export function ThreadList({ nestSlug, sortBy, search, initialPage }: ThreadListProps) {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useThreadList(nestSlug, sortBy, search, initialPage)
   const threads = data.pages.flatMap((page) => page.items)
 
   return (
@@ -23,7 +24,7 @@ export function ThreadList({ nestSlug, sortBy, initialPage }: ThreadListProps) {
       ))}
 
       {threads.length === 0 && (
-        <p className='text-sm text-muted-foreground'>No threads yet.</p>
+        <p className='text-sm text-muted-foreground'>{search ? 'No threads found.' : 'No threads yet.'}</p>
       )}
 
       {hasNextPage && <InfiniteScrollSentinel onVisible={fetchNextPage} disabled={isFetchingNextPage} />}

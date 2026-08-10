@@ -29,4 +29,8 @@ export class ThreadQueryDto {
   @Transform(({ value }) => value === undefined ? false : value === 'true' || value === true)
   @IsOptional()
   sortAscending!: boolean
+
+  @IsOptional()
+  @IsString()
+  search?: string
 }

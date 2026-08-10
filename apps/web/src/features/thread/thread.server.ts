@@ -22,12 +22,13 @@ export interface ThreadListPage {
   nextCursor: string | null
 }
 
-export async function getThreadsServer(nestSlug: string, sortBy: NestThreadListSortBy = NestThreadListSortBy.createdAt): Promise<ThreadListPage> {
+export async function getThreadsServer(nestSlug: string, sortBy: NestThreadListSortBy = NestThreadListSortBy.createdAt, search?: string): Promise<ThreadListPage> {
   try {
     const page = await apiClientServer<NestThreadList200Data>(getNestThreadListUrl(nestSlug, {
       limit: 20,
       sortBy,
-      sortAscending: false
+      sortAscending: false,
+      search
     }))
 
     return { items: page.items, nextCursor: page.meta.nextCursor }

@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
-import { VoteType } from 'generated/prisma/enums'
+import { Prisma } from 'generated/prisma/client'
+import { NestMemberRole, VoteType } from 'generated/prisma/enums'
 import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
 import { customAlphabet } from 'nanoid'
 import { PrismaService } from 'src/prisma/prisma.service'
@@ -12,6 +13,27 @@ import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto, ThreadSortBy } from './dto/thread.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
 import { ThreadNotFoundException } from './exceptions/thread-not-found.exception'
+import type { ThreadSummary } from './types/thread.summary'
+
+type ThreadSearchRow = {
+  id: string
+  title: string
+  slug: string
+  createdAt: Date
+  updatedAt: Date
+  lastCommentAt: Date | null
+  commentCount: number
+  score: number
+  lockedAt: Date | null
+  pinnedAt: Date | null
+  authorId: string
+  rank: number
+  authorUsername: string | null
+  authorDisplayName: string | null
+  authorAvatarUrl: string | null
+  authorRole: NestMemberRole | null
+  viewerVote: VoteType | null
+}
 
 @Injectable()
 export class ThreadRepository {
@@ -89,7 +111,88 @@ export class ThreadRepository {
     return this.toThreadWithVote(thread)
   }
 
+  private toThreadSearchResult(row: ThreadSearchRow): ThreadSummary {
+    return {
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      lastCommentAt: row.lastCommentAt,
+      commentCount: row.commentCount,
+      score: row.score,
+      lockedAt: row.lockedAt,
+      pinnedAt: row.pinnedAt,
+      author: {
+        id: row.authorId,
+        profile: row.authorUsername
+          ? { username: row.authorUsername, displayName: row.authorDisplayName, avatarUrl: row.authorAvatarUrl }
+          : null,
+        nestMembership: row.authorRole ? [{ role: row.authorRole }] : [],
+      },
+      viewerVote: row.viewerVote,
+    }
+  }
+
+  // No stored tsvector/GIN index yet - fine at nest scale, revisit if search gets slow.
+  private async searchByNest(nestId: string, limit: number, cursor: string | undefined, term: string, viewerId?: string) {
+    let cursorSql = Prisma.sql`TRUE`
+
+    if (cursor) {
+      try {
+        const { value, id } = decodeNumericCursor(cursor)
+        cursorSql = Prisma.sql`(r.rank < ${value}) OR (r.rank = ${value} AND r.id < ${id})`
+      } catch {
+        throw new InvalidCursorException()
+      }
+    }
+
+    const rows = await this.prisma.$queryRaw<ThreadSearchRow[]>(Prisma.sql`
+      WITH ranked AS (
+        SELECT
+          t.id, t.title, t.slug, t."createdAt", t."updatedAt", t."lastCommentAt",
+          t."commentCount", t.score, t."lockedAt", t."pinnedAt", t."authorId",
+          ts_rank(
+            to_tsvector('english', t.title || ' ' || coalesce(t.content, '')),
+            plainto_tsquery('english', ${term})
+          ) AS rank
+        FROM "Thread" t
+        WHERE t."nestId" = ${nestId}
+          AND t."deletedAt" IS NULL
+          AND to_tsvector('english', t.title || ' ' || coalesce(t.content, '')) @@ plainto_tsquery('english', ${term})
+      )
+      SELECT
+        r.*,
+        up.username AS "authorUsername",
+        up."displayName" AS "authorDisplayName",
+        up."avatarUrl" AS "authorAvatarUrl",
+        nm.role AS "authorRole",
+        tv.type AS "viewerVote"
+      FROM ranked r
+      LEFT JOIN "UserProfile" up ON up."userId" = r."authorId"
+      LEFT JOIN "NestMember" nm ON nm."userId" = r."authorId" AND nm."nestId" = ${nestId}
+      LEFT JOIN "ThreadVote" tv ON tv."threadId" = r.id AND tv."userId" = ${viewerId ?? ''}
+      WHERE ${cursorSql}
+      ORDER BY r.rank DESC, r.id DESC
+      LIMIT ${limit + 1}
+    `)
+
+    const hasMore = rows.length > limit
+    const page = hasMore ? rows.slice(0, limit) : rows
+    const items = page.map((row) => this.toThreadSearchResult(row))
+    const last = page.at(-1)
+
+    const nextCursor = last && hasMore ? encodeNumericCursor(last.rank, last.id) : null
+
+    return { items, meta: { nextCursor, hasMore } }
+  }
+
   async listByNest(nestId: string, query: ThreadQueryDto, viewerId?: string) {
+    const search = query.search?.trim()
+    if (search) {
+      return this.searchByNest(nestId, query.limit, query.cursor, search, viewerId)
+    }
+
     const { limit, cursor, sortBy, sortAscending } = query
     const order = sortAscending ? 'asc' : 'desc'
     const isScoreSort = sortBy === ThreadSortBy.SCORE
