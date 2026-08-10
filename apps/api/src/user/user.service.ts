@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
 import { UpdateProfileDto } from './dto/update-profile.dto'
+import { UserQueryDto } from './dto/user.query.dto'
 import { UsernameTakenException } from './exceptions/username-taken.exception'
 import { UserNotFoundException } from './exceptions/user-not-found.exception'
 import { UserProfileRepository } from './user-profile.repository'
@@ -59,6 +60,10 @@ export class UserService {
 
   async getProfileByUsername(username: string) {
     return this.profileRepo.getByUsername(username)
+  }
+
+  async search(query: UserQueryDto) {
+    return this.profileRepo.search(query)
   }
 
   async getProfileWithUser(userId: string) {

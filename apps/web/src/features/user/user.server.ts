@@ -1,7 +1,8 @@
 import { ApiError } from '@/common/api-error'
 import { apiClientServer } from '@/common/server-api-client'
-import { getUserGetByUsernameUrl } from '@/generated/api/users/users'
-import { UserProfileResponseDto } from '@/generated/api/models'
+import { getUserGetByUsernameUrl, getUserListUrl } from '@/generated/api/users/users'
+import { UserList200Data, UserProfileResponseDto } from '@/generated/api/models'
+import { UserSearchResult } from './user.types'
 
 export async function getUserProfileServer(username: string): Promise<UserProfileResponseDto | null> {
   try {
@@ -14,4 +15,9 @@ export async function getUserProfileServer(username: string): Promise<UserProfil
 
     throw error
   }
+}
+
+export async function searchUsersServer(search: string, limit = 10): Promise<UserSearchResult[]> {
+  const page = await apiClientServer<UserList200Data>(getUserListUrl({ limit, search }))
+  return page.items
 }

@@ -1,6 +1,7 @@
 import { useAuthOverlayStore } from '@/features/auth/auth-overlay.store'
 import { useAuthSignOutHandler, useLogout } from '@/features/auth/auth.hooks'
 import { useIsSignedIn, useUser } from '@/features/me/me.hooks'
+import { SearchBar } from '@/features/search/components/search-bar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -21,6 +22,7 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
     <header className='bg-red-500 min-h-15'>
       <button onClick={onToggleSidebar} className='xl:hidden bg-yellow-400 p-2'>toggle</button>
       header
+      <SearchBar />
       {
         isSignedIn
           ? (

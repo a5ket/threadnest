@@ -9,12 +9,13 @@ import * as zod from 'zod'
 /**
  * @summary Discover public nests (and private nests the current user is a member of)
  */
+export const nestListQueryLimitDefault = 20
 export const nestListQueryLimitMax = 100
 
 export const nestListQuerySearchMax = 100
 
 export const NestListQueryParams = zod.object({
-  limit: zod.number().min(1).max(nestListQueryLimitMax),
+  limit: zod.number().min(1).max(nestListQueryLimitMax).default(nestListQueryLimitDefault),
   cursor: zod.string().optional(),
   sortBy: zod.enum(['createdAt', 'memberCount']),
   sortAscending: zod.boolean(),

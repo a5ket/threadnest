@@ -4,6 +4,7 @@ import { NestModule } from 'src/nest/nest.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
 import { NestThreadController } from './nest-thread.controller'
+import { ThreadController } from './thread.controller'
 import { ThreadAccess } from './thread.access'
 import { ThreadPolicy } from './thread.policy'
 import { ThreadPresenter } from './thread.presenter'
@@ -27,7 +28,8 @@ import { ThreadVoteRepository } from './thread-vote.repository'
     ThreadService
   ],
   controllers: [
-    NestThreadController
+    NestThreadController,
+    ThreadController
   ],
   exports: [ThreadRepository, ThreadVoteRepository, ThreadService, ThreadAccess, ThreadPolicy, ThreadPresenter]
 })

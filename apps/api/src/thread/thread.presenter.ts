@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ThreadDetails } from './types/thread.details'
 import { ThreadSummary } from './types/thread.summary'
 import { ThreadAccessContext } from './types/thread.access-context'
+import { ThreadSearchResult } from './thread.repository'
 
 type AuthorWithMembership = (ThreadSummary | ThreadDetails)['author']
 
@@ -29,6 +30,13 @@ export class ThreadPresenter {
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,
       author: this.toAuthorView(thread.author),
+    }
+  }
+
+  toSearchResultView(thread: ThreadSearchResult) {
+    return {
+      ...this.toSummaryView(thread),
+      nest: thread.nest,
     }
   }
 

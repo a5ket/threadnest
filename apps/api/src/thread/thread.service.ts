@@ -7,6 +7,7 @@ import { TransactionManager } from 'src/prisma/transaction-manager'
 import { computeVoteScoreDelta } from 'src/common/vote-score'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
+import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
 import { ThreadCreatedEvent } from './events/thread-created.event'
 import { ThreadDeletedEvent } from './events/thread-deleted.event'
@@ -86,6 +87,12 @@ export class ThreadService {
     const page = await this.threadsRepo.listByNest(nest.id, query, actorUserId)
 
     return { items: page.items.map((t) => this.threadPresenter.toSummaryView(t)), meta: page.meta }
+  }
+
+  async searchThreads(query: ThreadSearchQueryDto, actorUserId?: string) {
+    const page = await this.threadsRepo.searchGlobal(query.search, query.limit, query.cursor, actorUserId)
+
+    return { items: page.items.map((t) => this.threadPresenter.toSearchResultView(t)), meta: page.meta }
   }
 
   async updateThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ThreadUpdateDto) {

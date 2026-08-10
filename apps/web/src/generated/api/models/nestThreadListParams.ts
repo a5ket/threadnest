@@ -11,7 +11,7 @@ export type NestThreadListParams = {
  * @minimum 1
  * @maximum 100
  */
-  limit: number
+  limit?: number
   cursor?: string
   sortBy: NestThreadListSortBy
   sortAscending: boolean

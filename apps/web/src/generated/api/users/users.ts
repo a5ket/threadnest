@@ -6,10 +6,59 @@
  */
 import type {
   UserGetByUsername200,
-  UserGetByUsername404
+  UserGetByUsername404,
+  UserList200,
+  UserList400,
+  UserListParams
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
+
+export type userListResponse200 = {
+  data: UserList200
+  status: 200
+}
+
+export type userListResponse400 = {
+  data: UserList400
+  status: 400
+}
+
+export type userListResponseSuccess = (userListResponse200) & {
+  headers: Headers
+}
+export type userListResponseError = (userListResponse400) & {
+  headers: Headers
+}
+
+export type userListResponse = (userListResponseSuccess | userListResponseError)
+
+export const getUserListUrl = (params: UserListParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/users?${stringifiedParams}` : `/users`
+}
+
+/**
+ * @summary Search users by username or display name
+ */
+export const userList = async (params: UserListParams, options?: RequestInit): Promise<userListResponse> => {
+  return apiFetch<userListResponse>(getUserListUrl(params),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
 
 export type userGetByUsernameResponse200 = {
   data: UserGetByUsername200

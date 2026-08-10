@@ -7,6 +7,35 @@
 import * as zod from 'zod'
 
 /**
+ * @summary Search users by username or display name
+ */
+export const userListQueryLimitDefault = 20
+export const userListQueryLimitMax = 100
+
+export const userListQuerySearchMax = 100
+
+export const UserListQueryParams = zod.object({
+  limit: zod.number().min(1).max(userListQueryLimitMax).default(userListQueryLimitDefault),
+  cursor: zod.string().optional(),
+  search: zod.string().max(userListQuerySearchMax).optional()
+})
+
+export const UserListResponse = zod.object({
+  data: zod.object({
+    items: zod.array(zod.object({
+      id: zod.string().describe('User ID'),
+      username: zod.string().nullable().describe('Username. Null if the user has no profile'),
+      displayName: zod.string().nullable().describe('Display name. Null if the user has no profile or none is set'),
+      avatarUrl: zod.string().nullable().describe('Avatar URL. Null if the user has no profile or none is set')
+    })),
+    meta: zod.object({
+      nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
+      hasMore: zod.boolean().describe('Whether more results are available')
+    })
+  })
+})
+
+/**
  * @summary Get a user's profile by username
  */
 export const UserGetByUsernameParams = zod.object({

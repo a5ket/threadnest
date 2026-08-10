@@ -12,7 +12,7 @@ export class NestQueryDto {
   @Max(100)
   @Transform(({ value }) => parseInt(String(value ?? '20'), 10))
   @IsOptional()
-  limit!: number
+  limit: number = 20
 
   @IsOptional()
   @IsString()

@@ -51,6 +51,9 @@ import type {
   NestThreadVote403,
   NestThreadVote404,
   ThreadCreateDto,
+  ThreadSearch200,
+  ThreadSearch400,
+  ThreadSearchParams,
   ThreadUpdateDto,
   ThreadVoteDto
 } from '../models'
@@ -599,6 +602,52 @@ export const nestThreadRemoveVote = async (nestSlug: string,
     {
       ...options,
       method: 'DELETE'
+
+    }
+  )
+}
+
+export type threadSearchResponse200 = {
+  data: ThreadSearch200
+  status: 200
+}
+
+export type threadSearchResponse400 = {
+  data: ThreadSearch400
+  status: 400
+}
+
+export type threadSearchResponseSuccess = (threadSearchResponse200) & {
+  headers: Headers
+}
+export type threadSearchResponseError = (threadSearchResponse400) & {
+  headers: Headers
+}
+
+export type threadSearchResponse = (threadSearchResponseSuccess | threadSearchResponseError)
+
+export const getThreadSearchUrl = (params: ThreadSearchParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/threads/search?${stringifiedParams}` : `/threads/search`
+}
+
+/**
+ * @summary Search threads by title/content across nests visible to the current user
+ */
+export const threadSearch = async (params: ThreadSearchParams, options?: RequestInit): Promise<threadSearchResponse> => {
+  return apiFetch<threadSearchResponse>(getThreadSearchUrl(params),
+    {
+      ...options,
+      method: 'GET'
 
     }
   )

@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
+import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
+import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
 import { USER_PROFILE_SELECT } from './selects/user-profile.select'
 import { UpdateProfileDto } from './dto/update-profile.dto'
+import { UserQueryDto } from './dto/user.query.dto'
 import { UserNotFoundException } from './exceptions/user-not-found.exception'
 
 @Injectable()
@@ -60,6 +63,45 @@ export class UserProfileRepository {
       data: dto,
       select: { userId: true, ...USER_PROFILE_SELECT }
     })
+  }
+
+  async search(query: UserQueryDto) {
+    const { limit, cursor, search } = query
+    let cursorWhere = {}
+
+    if (cursor) {
+      try {
+        const { date, id } = decodeCursor(cursor)
+        cursorWhere = { OR: [{ createdAt: { lt: date } }, { createdAt: date, userId: { lt: id } }] }
+      } catch {
+        throw new InvalidCursorException()
+      }
+    }
+
+    const profiles = await this.prisma.userProfile.findMany({
+      where: {
+        ...(search
+          ? { OR: [{ username: { contains: search, mode: 'insensitive' as const } }, { displayName: { contains: search, mode: 'insensitive' as const } }] }
+          : {}),
+        ...cursorWhere
+      },
+      select: { userId: true, username: true, displayName: true, avatarUrl: true, createdAt: true },
+      orderBy: [{ createdAt: 'desc' }, { userId: 'desc' }],
+      take: limit + 1
+    })
+
+    const hasMore = profiles.length > limit
+    const items = (hasMore ? profiles.slice(0, limit) : profiles).map((p) => ({
+      id: p.userId,
+      username: p.username,
+      displayName: p.displayName,
+      avatarUrl: p.avatarUrl,
+    }))
+    const last = (hasMore ? profiles.slice(0, limit) : profiles).at(-1)
+
+    const nextCursor = last && hasMore ? encodeCursor(last.createdAt, last.userId) : null
+
+    return { items, meta: { nextCursor, hasMore } }
   }
 
   async getWithUser(userId: string) {

@@ -13,10 +13,11 @@ export const NestThreadListParams = zod.object({
   nestSlug: zod.string()
 })
 
+export const nestThreadListQueryLimitDefault = 20
 export const nestThreadListQueryLimitMax = 100
 
 export const NestThreadListQueryParams = zod.object({
-  limit: zod.number().min(1).max(nestThreadListQueryLimitMax),
+  limit: zod.number().min(1).max(nestThreadListQueryLimitMax).default(nestThreadListQueryLimitDefault),
   cursor: zod.string().optional(),
   sortBy: zod.enum(['createdAt', 'updatedAt', 'lastCommentAt', 'score']),
   sortAscending: zod.boolean(),
@@ -552,5 +553,54 @@ export const NestThreadRemoveVoteResponse = zod.object({
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
     }).describe('The current user\'s access and permissions for this thread')
+  })
+})
+
+/**
+ * @summary Search threads by title/content across nests visible to the current user
+ */
+export const threadSearchQueryLimitDefault = 20
+export const threadSearchQueryLimitMax = 100
+
+export const threadSearchQuerySearchMax = 100
+
+export const ThreadSearchQueryParams = zod.object({
+  limit: zod.number().min(1).max(threadSearchQueryLimitMax).default(threadSearchQueryLimitDefault),
+  cursor: zod.string().optional(),
+  search: zod.string().max(threadSearchQuerySearchMax)
+})
+
+export const ThreadSearchResponse = zod.object({
+  data: zod.object({
+    items: zod.array(zod.object({
+      id: zod.string().describe('Thread ID'),
+      slug: zod.string().describe('Unique thread slug (within its nest)'),
+      title: zod.string().describe('Thread title'),
+      createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+      updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+      lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
+      commentCount: zod.number().describe('Number of comments on this thread'),
+      score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+      viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
+      lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
+      pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
+      author: zod.object({
+        id: zod.string().describe('User ID'),
+        profile: zod.object({
+          username: zod.string().describe('Unique username'),
+          displayName: zod.string().nullable().describe('Display name'),
+          avatarUrl: zod.string().nullable().describe('Avatar URL')
+        }).nullable().describe('Null if the user has no profile'),
+        role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+      }).describe('Thread author'),
+      nest: zod.object({
+        name: zod.string().describe('Nest display name'),
+        slug: zod.string().describe('Unique nest slug')
+      }).describe('The nest this thread belongs to')
+    })),
+    meta: zod.object({
+      nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
+      hasMore: zod.boolean().describe('Whether more results are available')
+    })
   })
 })

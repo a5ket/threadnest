@@ -13,10 +13,11 @@ export const NestMemberListParams = zod.object({
   nestSlug: zod.string()
 })
 
+export const nestMemberListQueryLimitDefault = 20
 export const nestMemberListQueryLimitMax = 100
 
 export const NestMemberListQueryParams = zod.object({
-  limit: zod.number().min(1).max(nestMemberListQueryLimitMax),
+  limit: zod.number().min(1).max(nestMemberListQueryLimitMax).default(nestMemberListQueryLimitDefault),
   cursor: zod.string().optional()
 })
 

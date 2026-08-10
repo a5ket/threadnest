@@ -35,6 +35,14 @@ type ThreadSearchRow = {
   viewerVote: VoteType | null
 }
 
+type ThreadSearchGlobalRow = ThreadSearchRow & {
+  nestId: string
+  nestName: string
+  nestSlug: string
+}
+
+export type ThreadSearchResult = ThreadSummary & { nest: { name: string, slug: string } }
+
 @Injectable()
 export class ThreadRepository {
   private readonly generateSlug = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
@@ -180,6 +188,74 @@ export class ThreadRepository {
     const hasMore = rows.length > limit
     const page = hasMore ? rows.slice(0, limit) : rows
     const items = page.map((row) => this.toThreadSearchResult(row))
+    const last = page.at(-1)
+
+    const nextCursor = last && hasMore ? encodeNumericCursor(last.rank, last.id) : null
+
+    return { items, meta: { nextCursor, hasMore } }
+  }
+
+  private toGlobalThreadSearchResult(row: ThreadSearchGlobalRow): ThreadSearchResult {
+    return {
+      ...this.toThreadSearchResult(row),
+      nest: { name: row.nestName, slug: row.nestSlug },
+    }
+  }
+
+  // Cross-nest, so results are gated by the same visibility-or-membership rule as nest discovery (see nest.access.ts).
+  async searchGlobal(term: string, limit: number, cursor: string | undefined, viewerId?: string) {
+    let cursorSql = Prisma.sql`TRUE`
+
+    if (cursor) {
+      try {
+        const { value, id } = decodeNumericCursor(cursor)
+        cursorSql = Prisma.sql`(r.rank < ${value}) OR (r.rank = ${value} AND r.id < ${id})`
+      } catch {
+        throw new InvalidCursorException()
+      }
+    }
+
+    const visibilitySql = viewerId
+      ? Prisma.sql`(ns.visibility = 'PUBLIC' OR EXISTS (SELECT 1 FROM "NestMember" vm WHERE vm."nestId" = t."nestId" AND vm."userId" = ${viewerId}))`
+      : Prisma.sql`ns.visibility = 'PUBLIC'`
+
+    const rows = await this.prisma.$queryRaw<ThreadSearchGlobalRow[]>(Prisma.sql`
+      WITH ranked AS (
+        SELECT
+          t.id, t.title, t.slug, t."createdAt", t."updatedAt", t."lastCommentAt",
+          t."commentCount", t.score, t."lockedAt", t."pinnedAt", t."authorId", t."nestId",
+          ts_rank(
+            to_tsvector('english', t.title || ' ' || coalesce(t.content, '')),
+            plainto_tsquery('english', ${term})
+          ) AS rank
+        FROM "Thread" t
+        JOIN "NestSettings" ns ON ns."nestId" = t."nestId"
+        WHERE t."deletedAt" IS NULL
+          AND to_tsvector('english', t.title || ' ' || coalesce(t.content, '')) @@ plainto_tsquery('english', ${term})
+          AND ${visibilitySql}
+      )
+      SELECT
+        r.*,
+        n.name AS "nestName",
+        n.slug AS "nestSlug",
+        up.username AS "authorUsername",
+        up."displayName" AS "authorDisplayName",
+        up."avatarUrl" AS "authorAvatarUrl",
+        nm.role AS "authorRole",
+        tv.type AS "viewerVote"
+      FROM ranked r
+      JOIN "Nest" n ON n.id = r."nestId"
+      LEFT JOIN "UserProfile" up ON up."userId" = r."authorId"
+      LEFT JOIN "NestMember" nm ON nm."userId" = r."authorId" AND nm."nestId" = r."nestId"
+      LEFT JOIN "ThreadVote" tv ON tv."threadId" = r.id AND tv."userId" = ${viewerId ?? ''}
+      WHERE ${cursorSql}
+      ORDER BY r.rank DESC, r.id DESC
+      LIMIT ${limit + 1}
+    `)
+
+    const hasMore = rows.length > limit
+    const page = hasMore ? rows.slice(0, limit) : rows
+    const items = page.map((row) => this.toGlobalThreadSearchResult(row))
     const last = page.at(-1)
 
     const nextCursor = last && hasMore ? encodeNumericCursor(last.rank, last.id) : null

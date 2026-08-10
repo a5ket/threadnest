@@ -11,7 +11,7 @@ export type CommentListRepliesParams = {
  * @minimum 1
  * @maximum 100
  */
-  limit: number
+  limit?: number
   /**
  * @minimum 1
  * @maximum 20

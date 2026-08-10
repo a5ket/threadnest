@@ -1,8 +1,8 @@
 import { ApiError } from '@/common/api-error'
 import { apiClientServer } from '@/common/server-api-client'
-import { getNestThreadGetBySlugUrl, getNestThreadListUrl } from '@/generated/api/threads/threads'
-import { NestThreadList200Data, NestThreadListSortBy } from '@/generated/api/models'
-import { ThreadDetail, ThreadSummary } from './thread.types'
+import { getNestThreadGetBySlugUrl, getNestThreadListUrl, getThreadSearchUrl } from '@/generated/api/threads/threads'
+import { NestThreadList200Data, NestThreadListSortBy, ThreadSearch200Data } from '@/generated/api/models'
+import { ThreadDetail, ThreadSearchResult, ThreadSummary } from './thread.types'
 
 export async function getThreadServer(nestSlug: string, threadSlug: string): Promise<ThreadDetail | null> {
   try {
@@ -40,4 +40,9 @@ export async function getThreadsServer(nestSlug: string, sortBy: NestThreadListS
 
     throw error
   }
+}
+
+export async function searchThreadsServer(search: string, limit = 10): Promise<ThreadSearchResult[]> {
+  const page = await apiClientServer<ThreadSearch200Data>(getThreadSearchUrl({ limit, search }))
+  return page.items
 }
