@@ -8,7 +8,7 @@ export type Comment = Prisma.CommentGetPayload<{ select: typeof COMMENT_SELECT }
 export type CommentViewerSelectResult = Prisma.CommentGetPayload<{ select: ReturnType<typeof commentViewerSelect> }>
 export type CommentWithRole = Omit<CommentViewerSelectResult, 'commentVotes'> & { viewerVote: VoteType | null }
 
-export type CommentSortBy = 'createdAt' | 'updatedAt'
+export type CommentSortBy = 'createdAt' | 'updatedAt' | 'score'
 
 export type CommentTreeOptions = {
     maxDepth: number

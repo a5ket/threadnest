@@ -9,5 +9,6 @@ export type CommentListRepliesSortBy = typeof CommentListRepliesSortBy[keyof typ
 
 export const CommentListRepliesSortBy = {
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  score: 'score'
 } as const

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from 'generated/prisma/client'
 import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
-import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
+import { decodeCursor, decodeNumericCursor, encodeCursor, encodeNumericCursor } from 'src/common/pagination/cursor'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
 import { COMMENT_SELECT } from './selects/comment.select'
@@ -14,6 +14,7 @@ import type { Comment, CommentNode, CommentPage, CommentSortBy, CommentTreeOptio
 const SORTABLE_COLUMNS = {
   createdAt: Prisma.sql`"createdAt"`,
   updatedAt: Prisma.sql`"updatedAt"`,
+  score: Prisma.sql`"score"`,
 } as const
 
 @Injectable()
@@ -72,8 +73,25 @@ export class CommentRepository {
     `
   }
 
+  private decodeCommentCursor(cursor: string | null | undefined, sortBy: CommentSortBy): { value: Date | number; id: string } | null {
+    if (!cursor) {
+      return null
+    }
+
+    try {
+      if (sortBy === 'score') {
+        return decodeNumericCursor(cursor)
+      }
+
+      const { date, id } = decodeCursor(cursor)
+      return { value: date, id }
+    } catch {
+      throw new InvalidCursorException()
+    }
+  }
+
   private buildCursorWhere(
-    decoded: { date: Date; id: string } | null,
+    decoded: { value: Date | number; id: string } | null,
     sortBy: CommentSortBy,
     sortAscending: boolean,
   ) {
@@ -83,8 +101,8 @@ export class CommentRepository {
 
     return {
       OR: [
-        { [sortBy]: sortAscending ? { gt: decoded.date } : { lt: decoded.date } },
-        { [sortBy]: decoded.date, id: sortAscending ? { gt: decoded.id } : { lt: decoded.id } }
+        { [sortBy]: sortAscending ? { gt: decoded.value } : { lt: decoded.value } },
+        { [sortBy]: decoded.value, id: sortAscending ? { gt: decoded.id } : { lt: decoded.id } }
       ]
     }
   }
@@ -100,7 +118,7 @@ export class CommentRepository {
     const [page, total] = await Promise.all([
       this.prisma.comment.findMany({
         where,
-        select: { id: true, createdAt: true, updatedAt: true },
+        select: { id: true, createdAt: true, updatedAt: true, score: true },
         orderBy: [{ [sortBy]: dir }, { id: dir }],
         take: limit + 1
       }),
@@ -110,8 +128,8 @@ export class CommentRepository {
     const items = hasNextPage ? page.slice(0, limit) : page
     const last = items[items.length - 1]
     const cursorValue = last?.[sortBy]
-    const nextCursor = hasNextPage && cursorValue && last
-      ? encodeCursor(cursorValue, last.id)
+    const nextCursor = hasNextPage && last && cursorValue !== undefined
+      ? (sortBy === 'score' ? encodeNumericCursor(cursorValue as number, last.id) : encodeCursor(cursorValue as Date, last.id))
       : null
 
     return { items, total, hasNextPage, nextCursor }
@@ -137,15 +155,7 @@ export class CommentRepository {
     const column = SORTABLE_COLUMNS[sortBy]
     const order = sortAscending ? Prisma.sql`ASC` : Prisma.sql`DESC`
 
-    let decoded: { date: Date; id: string } | null = null
-    if (cursor) {
-      try {
-        decoded = decodeCursor(cursor)
-      } catch {
-        throw new InvalidCursorException()
-      }
-    }
-
+    const decoded = this.decodeCommentCursor(cursor, sortBy)
     const cursorWhere = this.buildCursorWhere(decoded, sortBy, sortAscending)
 
     const { items: roots, total, hasNextPage, nextCursor } = await this.paginateRoots(
@@ -176,15 +186,7 @@ export class CommentRepository {
     const column = SORTABLE_COLUMNS[sortBy]
     const order = sortAscending ? Prisma.sql`ASC` : Prisma.sql`DESC`
 
-    let decoded: { date: Date; id: string } | null = null
-    if (cursor) {
-      try {
-        decoded = decodeCursor(cursor)
-      } catch {
-        throw new InvalidCursorException()
-      }
-    }
-
+    const decoded = this.decodeCommentCursor(cursor, sortBy)
     const cursorWhere = this.buildCursorWhere(decoded, sortBy, sortAscending)
 
     const { items: replies, total, hasNextPage, nextCursor } = await this.paginateRoots(

@@ -10,5 +10,6 @@ export type NestThreadListSortBy = typeof NestThreadListSortBy[keyof typeof Nest
 export const NestThreadListSortBy = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  lastCommentAt: 'lastCommentAt'
+  lastCommentAt: 'lastCommentAt',
+  score: 'score'
 } as const

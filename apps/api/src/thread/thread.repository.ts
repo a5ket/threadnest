@@ -4,7 +4,7 @@ import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exc
 import { customAlphabet } from 'nanoid'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
-import { decodeCursor, encodeCursor } from 'src/common/pagination/cursor'
+import { decodeCursor, decodeNumericCursor, encodeCursor, encodeNumericCursor } from 'src/common/pagination/cursor'
 import { threadSummarySelect } from './selects/thread.summary.select'
 import { threadDetailsSelect } from './selects/thread.details.select'
 import { THREAD_POLICY_SUBJECT_SELECT } from './selects/thread.policy-subject.select'
@@ -63,8 +63,6 @@ export class ThreadRepository {
     throw new InternalServerErrorException('Error creating thread')
   }
 
-  // Internal-only lookup (access-context checks) — nestId isn't known ahead of this
-  // call, and the result is never rendered, so it deliberately carries no author/role.
   async getById(threadId: string) {
     const thread = await this.prisma.thread.findUnique({
       where: { id: threadId },
@@ -94,26 +92,36 @@ export class ThreadRepository {
   async listByNest(nestId: string, query: ThreadQueryDto, viewerId?: string) {
     const { limit, cursor, sortBy, sortAscending } = query
     const order = sortAscending ? 'asc' : 'desc'
+    const isScoreSort = sortBy === ThreadSortBy.SCORE
 
     let cursorWhere = {}
 
     if (cursor) {
       try {
-        const { date, id } = decodeCursor(cursor)
-        const dateField = sortBy === ThreadSortBy.LAST_COMMENT_AT ? 'lastCommentAt' : sortBy
-        cursorWhere = sortAscending
-          ? { OR: [{ [dateField]: { gt: date } }, { [dateField]: date, id: { gt: id } }] }
-          : { OR: [{ [dateField]: { lt: date } }, { [dateField]: date, id: { lt: id } }] }
+        if (isScoreSort) {
+          const { value, id } = decodeNumericCursor(cursor)
+          cursorWhere = sortAscending
+            ? { OR: [{ score: { gt: value } }, { score: value, id: { gt: id } }] }
+            : { OR: [{ score: { lt: value } }, { score: value, id: { lt: id } }] }
+        } else {
+          const { date, id } = decodeCursor(cursor)
+          const dateField = sortBy === ThreadSortBy.LAST_COMMENT_AT ? 'lastCommentAt' : sortBy
+          cursorWhere = sortAscending
+            ? { OR: [{ [dateField]: { gt: date } }, { [dateField]: date, id: { gt: id } }] }
+            : { OR: [{ [dateField]: { lt: date } }, { [dateField]: date, id: { lt: id } }] }
+        }
       } catch {
         throw new InvalidCursorException()
       }
     }
 
-    const orderBy: { [key: string]: 'asc' | 'desc' }[] = sortBy === ThreadSortBy.LAST_COMMENT_AT
-      ? [{ lastCommentAt: order }, { id: order }]
-      : sortBy === ThreadSortBy.UPDATED_AT
-        ? [{ updatedAt: order }, { id: order }]
-        : [{ createdAt: order }, { id: order }]
+    const orderBy: { [key: string]: 'asc' | 'desc' }[] = isScoreSort
+      ? [{ score: order }, { id: order }]
+      : sortBy === ThreadSortBy.LAST_COMMENT_AT
+        ? [{ lastCommentAt: order }, { id: order }]
+        : sortBy === ThreadSortBy.UPDATED_AT
+          ? [{ updatedAt: order }, { id: order }]
+          : [{ createdAt: order }, { id: order }]
 
     const threads = await this.prisma.thread.findMany({
       where: { nestId, deletedAt: null, ...cursorWhere },
@@ -125,8 +133,16 @@ export class ThreadRepository {
     const hasMore = threads.length > limit
     const items = (hasMore ? threads.slice(0, limit) : threads).map((t) => this.toThreadWithVote(t))
     const last = items.at(-1)
-    const sortField = sortBy === ThreadSortBy.LAST_COMMENT_AT ? last?.lastCommentAt : sortBy === ThreadSortBy.UPDATED_AT ? last?.updatedAt : last?.createdAt
-    const nextCursor = last && hasMore ? encodeCursor(sortField ?? last.createdAt, last.id) : null
+
+    let nextCursor: string | null = null
+    if (last && hasMore) {
+      if (isScoreSort) {
+        nextCursor = encodeNumericCursor(last.score, last.id)
+      } else {
+        const sortField = sortBy === ThreadSortBy.LAST_COMMENT_AT ? last.lastCommentAt : sortBy === ThreadSortBy.UPDATED_AT ? last.updatedAt : last.createdAt
+        nextCursor = encodeCursor(sortField ?? last.createdAt, last.id)
+      }
+    }
 
     return { items, meta: { nextCursor, hasMore } }
   }

@@ -4,19 +4,24 @@ import { getNestServer } from '@/features/nest/nest.server'
 import { NestPreferenceToggle } from '@/features/nest-preference/components/nest-preference-toggle'
 import { ThreadListItem } from '@/features/thread/components/thread-list-item'
 import { getThreadsServer } from '@/features/thread/thread.server'
+import { NestThreadListSortBy } from '@/generated/api/models'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export default async function NestPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ nestSlug: string }>
+  searchParams: Promise<{ sort?: string }>
 }) {
   const { nestSlug } = await params
+  const { sort } = await searchParams
+  const sortBy = sort === 'top' ? NestThreadListSortBy.score : NestThreadListSortBy.createdAt
 
   const [nest, threads] = await Promise.all([
     getNestServer(nestSlug),
-    getThreadsServer(nestSlug)
+    getThreadsServer(nestSlug, sortBy)
   ])
 
   if (!nest) {
@@ -89,6 +94,21 @@ export default async function NestPage({
             New thread
           </Link>
         </div>
+      </div>
+
+      <div className='flex items-center gap-3 text-sm'>
+        <Link
+          href={`/n/${nestSlug}`}
+          className={sort === 'top' ? 'text-muted-foreground hover:underline' : 'font-medium text-foreground'}
+        >
+          New
+        </Link>
+        <Link
+          href={`/n/${nestSlug}?sort=top`}
+          className={sort === 'top' ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
+        >
+          Top
+        </Link>
       </div>
 
       <ul className='flex flex-col gap-3'>

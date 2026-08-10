@@ -9,5 +9,6 @@ export type NestThreadCommentListSortBy = typeof NestThreadCommentListSortBy[key
 
 export const NestThreadCommentListSortBy = {
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  score: 'score'
 } as const

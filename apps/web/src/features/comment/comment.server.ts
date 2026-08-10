@@ -13,11 +13,16 @@ const TREE_PARAMS = {
 
 const EMPTY_PAGE: CommentTreePage = { items: [], meta: { total: 0, limit: TREE_PARAMS.limit, hasMore: false, nextCursor: null } }
 
-export async function getCommentTreeServer(nestSlug: string, threadSlug: string): Promise<CommentTreePage> {
+export async function getCommentTreeServer(
+  nestSlug: string,
+  threadSlug: string,
+  sortBy: NestThreadCommentListSortBy = NestThreadCommentListSortBy.createdAt
+): Promise<CommentTreePage> {
   try {
     return await apiClientServer<NestThreadCommentList200Data>(getNestThreadCommentListUrl(nestSlug, threadSlug, {
       ...TREE_PARAMS,
-      sortBy: NestThreadCommentListSortBy.createdAt
+      sortBy,
+      sortAscending: sortBy === NestThreadCommentListSortBy.score ? false : TREE_PARAMS.sortAscending
     }))
   }
   catch (error) {

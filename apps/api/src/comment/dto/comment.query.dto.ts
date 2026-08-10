@@ -53,7 +53,7 @@ export class CommentQueryDto {
   @IsOptional()
   maxDepth!: number
 
-  @IsIn(['createdAt', 'updatedAt'] as const)
+  @IsIn(['createdAt', 'updatedAt', 'score'] as const)
   @Transform(({ value }) => (value ?? 'createdAt') as CommentSortBy)
   @IsOptional()
   sortBy!: CommentSortBy

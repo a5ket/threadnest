@@ -4,7 +4,8 @@ import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-
 export enum ThreadSortBy {
   CREATED_AT = 'createdAt',
   UPDATED_AT = 'updatedAt',
-  LAST_COMMENT_AT = 'lastCommentAt'
+  LAST_COMMENT_AT = 'lastCommentAt',
+  SCORE = 'score'
 }
 
 export class ThreadQueryDto {

@@ -17,11 +17,11 @@ export async function getThreadServer(nestSlug: string, threadSlug: string): Pro
   }
 }
 
-export async function getThreadsServer(nestSlug: string): Promise<ThreadSummary[]> {
+export async function getThreadsServer(nestSlug: string, sortBy: NestThreadListSortBy = NestThreadListSortBy.createdAt): Promise<ThreadSummary[]> {
   try {
     const page = await apiClientServer<NestThreadList200Data>(getNestThreadListUrl(nestSlug, {
       limit: 20,
-      sortBy: NestThreadListSortBy.createdAt,
+      sortBy,
       sortAscending: false
     }))
 

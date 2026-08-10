@@ -108,7 +108,7 @@ export const CommentListRepliesQueryParams = zod.object({
   limit: zod.number().min(1).max(commentListRepliesQueryLimitMax),
   replyLimit: zod.number().min(1).max(commentListRepliesQueryReplyLimitMax),
   maxDepth: zod.number().min(1).max(commentListRepliesQueryMaxDepthMax),
-  sortBy: zod.enum(['createdAt', 'updatedAt']),
+  sortBy: zod.enum(['createdAt', 'updatedAt', 'score']),
   sortAscending: zod.boolean(),
   cursor: zod.string().optional()
 })
@@ -283,7 +283,7 @@ export const NestThreadCommentListQueryParams = zod.object({
   limit: zod.number().min(1).max(nestThreadCommentListQueryLimitMax),
   replyLimit: zod.number().min(1).max(nestThreadCommentListQueryReplyLimitMax),
   maxDepth: zod.number().min(1).max(nestThreadCommentListQueryMaxDepthMax),
-  sortBy: zod.enum(['createdAt', 'updatedAt']),
+  sortBy: zod.enum(['createdAt', 'updatedAt', 'score']),
   sortAscending: zod.boolean(),
   cursor: zod.string().optional()
 })
