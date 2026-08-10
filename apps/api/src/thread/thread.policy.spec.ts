@@ -49,12 +49,12 @@ describe('ThreadPolicy', () => {
     })
   })
 
-  describe('assertCanReadThread', () => {
+  describe('assertCanReadThreadContext', () => {
     it('allows when canViewThread is true', async () => {
       const ctx = createThreadAccessContext({ canViewThread: true })
 
       await expect(
-        policy.assertCanReadThread(ctx),
+        policy.assertCanReadThreadContext(ctx),
       ).resolves.toBeUndefined()
     })
 
@@ -62,7 +62,26 @@ describe('ThreadPolicy', () => {
       const ctx = createThreadAccessContext({ canViewThread: false })
 
       await expect(
-        policy.assertCanReadThread(ctx),
+        policy.assertCanReadThreadContext(ctx),
+      ).rejects.toThrow(ThreadNotFoundException)
+    })
+  })
+
+  describe('assertCanReadThread', () => {
+    it('builds the context itself and resolves with it when canViewThread is true', async () => {
+      const ctx = createThreadAccessContext({ canViewThread: true })
+      givenThreadContext({ canViewThread: true })
+
+      await expect(
+        policy.assertCanReadThread(thread, 'user-1'),
+      ).resolves.toEqual(ctx)
+    })
+
+    it('throws ThreadNotFoundException when canViewThread is false', async () => {
+      givenThreadContext({ canViewThread: false })
+
+      await expect(
+        policy.assertCanReadThread(thread, 'user-1'),
       ).rejects.toThrow(ThreadNotFoundException)
     })
   })

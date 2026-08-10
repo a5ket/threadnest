@@ -10,6 +10,7 @@ import { useThreadStore } from '@/features/thread/components/thread-store-provid
 import { useDeleteComment, useInvalidateCommentTree, useRemoveCommentVote, useVoteComment } from '@/features/comment/comment.hooks'
 import type { CommentNode } from '@/features/comment/comment.types'
 import { useUser } from '@/features/me/me.hooks'
+import { ReportButton } from '@/features/report/components/report-button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -120,6 +121,10 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
         )}
 
         {comment.author && <BlockButton userId={comment.author.id} />}
+
+        {!isDeleted && user && comment.author && user.id !== comment.author.id && (
+          <ReportButton target={{ type: 'comment', commentId: comment.id }} />
+        )}
 
         {hiddenReplyCount > 0 && (
           <Link href={`/n/${nestSlug}/t/${threadSlug}/c/${comment.id}`} className='text-primary hover:underline'>

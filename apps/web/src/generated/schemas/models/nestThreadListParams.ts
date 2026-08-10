@@ -13,7 +13,7 @@ export type NestThreadListParams = {
  */
   limit?: number
   cursor?: string
-  sortBy: NestThreadListSortBy
+  sortBy?: NestThreadListSortBy
   sortAscending: boolean
   search?: string
 }

@@ -39,11 +39,21 @@ export class ThreadPolicy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async assertCanReadThread(threadAccessContext: ThreadAccessContext) {
+   
+  async assertCanReadThreadContext(threadAccessContext: ThreadAccessContext) {
     if (!threadAccessContext.canViewThread) {
       throw new ThreadNotFoundException()
     }
+  }
+
+  // Self-contained variant for callers that don't already have a context on hand (e.g. other modules reusing this check) —
+  // returns the context so callers who need it afterward (like a presenter) don't have to fetch it twice.
+  async assertCanReadThread(thread: ThreadPolicySubject, actorUserId?: string) {
+    const ctx = await this.threadAccess.getContext(thread, actorUserId)
+
+    await this.assertCanReadThreadContext(ctx)
+
+    return ctx
   }
 
   async assertCanReadThreads(nestId: string, actorUserId?: string) {

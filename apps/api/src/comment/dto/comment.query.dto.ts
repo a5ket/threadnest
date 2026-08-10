@@ -44,19 +44,19 @@ export class CommentQueryDto {
   @Transform(({ value }) => parseInt(String(value ?? '5'), 10))
   @Validate(BoundedFanOutConstraint)
   @IsOptional()
-  replyLimit!: number
+  replyLimit: number = 5
 
   @IsInt()
   @Min(1)
   @Max(6)
   @Transform(({ value }) => parseInt(String(value ?? '3'), 10))
   @IsOptional()
-  maxDepth!: number
+  maxDepth: number = 3
 
   @IsIn(['createdAt', 'updatedAt', 'score'] as const)
   @Transform(({ value }) => (value ?? 'createdAt') as CommentSortBy)
   @IsOptional()
-  sortBy!: CommentSortBy
+  sortBy: CommentSortBy = 'createdAt'
 
   @IsBoolean()
   @Transform(({ value }) => value === undefined ? false : value === 'true' || value === true)

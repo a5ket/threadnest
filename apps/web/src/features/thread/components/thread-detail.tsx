@@ -6,6 +6,8 @@ import { UserLink } from '@/common/components/user-link'
 import { VoteButtons } from '@/common/components/vote-buttons'
 import { formatDateTime } from '@/common/format-date'
 import { BlockButton } from '@/features/block/components/block-button'
+import { useUser } from '@/features/me/me.hooks'
+import { ReportButton } from '@/features/report/components/report-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
 import { useDeleteThread, useLockThread, usePinThread, useRemoveThreadVote, useUnlockThread, useUnpinThread, useVoteThread } from '@/features/thread/thread.hooks'
 import Link from 'next/link'
@@ -21,6 +23,7 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
   const thread = useThreadStore((state) => state.thread)
   const threadStore = useThreadStoreApi()
   const router = useRouter()
+  const user = useUser()
   const [isEditing, setIsEditing] = useState(false)
 
   const deleteThread = useDeleteThread({
@@ -173,6 +176,10 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
             isPending={deleteThread.isPending}
             onConfirm={() => deleteThread.mutate({ nestSlug, threadSlug: thread.slug })}
           />
+        )}
+
+        {user && user.id !== thread.author.id && (
+          <ReportButton target={{ type: 'thread', nestSlug, threadSlug: thread.slug }} />
         )}
       </div>
     </div>

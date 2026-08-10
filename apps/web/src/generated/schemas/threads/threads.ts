@@ -16,10 +16,12 @@ export const NestThreadListParams = zod.object({
 export const nestThreadListQueryLimitDefault = 20
 export const nestThreadListQueryLimitMax = 100
 
+export const nestThreadListQuerySortByDefault = `createdAt`
+
 export const NestThreadListQueryParams = zod.object({
   limit: zod.number().min(1).max(nestThreadListQueryLimitMax).default(nestThreadListQueryLimitDefault),
   cursor: zod.string().optional(),
-  sortBy: zod.enum(['createdAt', 'updatedAt', 'lastCommentAt', 'score']),
+  sortBy: zod.enum(['createdAt', 'updatedAt', 'lastCommentAt', 'score']).default(nestThreadListQuerySortByDefault),
   sortAscending: zod.boolean(),
   search: zod.string().optional()
 })

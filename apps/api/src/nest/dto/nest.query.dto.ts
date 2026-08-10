@@ -21,7 +21,7 @@ export class NestQueryDto {
   @IsEnum(NestSortBy)
   @Transform(({ value }) => (value ?? NestSortBy.CREATED_AT) as NestSortBy)
   @IsOptional()
-  sortBy!: NestSortBy
+  sortBy: NestSortBy = NestSortBy.CREATED_AT
 
   @IsBoolean()
   @Transform(({ value }) => value === undefined ? false : value === 'true' || value === true)

@@ -101,15 +101,19 @@ export const CommentListRepliesParams = zod.object({
 export const commentListRepliesQueryLimitDefault = 20
 export const commentListRepliesQueryLimitMax = 100
 
+export const commentListRepliesQueryReplyLimitDefault = 5
 export const commentListRepliesQueryReplyLimitMax = 20
 
+export const commentListRepliesQueryMaxDepthDefault = 3
 export const commentListRepliesQueryMaxDepthMax = 6
+
+export const commentListRepliesQuerySortByDefault = `createdAt`
 
 export const CommentListRepliesQueryParams = zod.object({
   limit: zod.number().min(1).max(commentListRepliesQueryLimitMax).default(commentListRepliesQueryLimitDefault),
-  replyLimit: zod.number().min(1).max(commentListRepliesQueryReplyLimitMax),
-  maxDepth: zod.number().min(1).max(commentListRepliesQueryMaxDepthMax),
-  sortBy: zod.enum(['createdAt', 'updatedAt', 'score']),
+  replyLimit: zod.number().min(1).max(commentListRepliesQueryReplyLimitMax).default(commentListRepliesQueryReplyLimitDefault),
+  maxDepth: zod.number().min(1).max(commentListRepliesQueryMaxDepthMax).default(commentListRepliesQueryMaxDepthDefault),
+  sortBy: zod.enum(['createdAt', 'updatedAt', 'score']).default(commentListRepliesQuerySortByDefault),
   sortAscending: zod.boolean(),
   cursor: zod.string().optional()
 })
@@ -277,15 +281,19 @@ export const NestThreadCommentListParams = zod.object({
 export const nestThreadCommentListQueryLimitDefault = 20
 export const nestThreadCommentListQueryLimitMax = 100
 
+export const nestThreadCommentListQueryReplyLimitDefault = 5
 export const nestThreadCommentListQueryReplyLimitMax = 20
 
+export const nestThreadCommentListQueryMaxDepthDefault = 3
 export const nestThreadCommentListQueryMaxDepthMax = 6
+
+export const nestThreadCommentListQuerySortByDefault = `createdAt`
 
 export const NestThreadCommentListQueryParams = zod.object({
   limit: zod.number().min(1).max(nestThreadCommentListQueryLimitMax).default(nestThreadCommentListQueryLimitDefault),
-  replyLimit: zod.number().min(1).max(nestThreadCommentListQueryReplyLimitMax),
-  maxDepth: zod.number().min(1).max(nestThreadCommentListQueryMaxDepthMax),
-  sortBy: zod.enum(['createdAt', 'updatedAt', 'score']),
+  replyLimit: zod.number().min(1).max(nestThreadCommentListQueryReplyLimitMax).default(nestThreadCommentListQueryReplyLimitDefault),
+  maxDepth: zod.number().min(1).max(nestThreadCommentListQueryMaxDepthMax).default(nestThreadCommentListQueryMaxDepthDefault),
+  sortBy: zod.enum(['createdAt', 'updatedAt', 'score']).default(nestThreadCommentListQuerySortByDefault),
   sortAscending: zod.boolean(),
   cursor: zod.string().optional()
 })

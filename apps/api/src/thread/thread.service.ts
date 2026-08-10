@@ -63,9 +63,7 @@ export class ThreadService {
 
   async getThread(nestSlug: string, threadSlug: string, actorUserId?: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
-    const threadCtx = await this.threadAccess.getContext(thread, actorUserId)
-
-    await this.threadsPolicy.assertCanReadThread(threadCtx)
+    const threadCtx = await this.threadsPolicy.assertCanReadThread(thread, actorUserId)
 
     return this.threadPresenter.toDetailView(thread, threadCtx)
   }

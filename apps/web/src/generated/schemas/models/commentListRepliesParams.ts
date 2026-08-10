@@ -16,13 +16,13 @@ export type CommentListRepliesParams = {
  * @minimum 1
  * @maximum 20
  */
-  replyLimit: number
+  replyLimit?: number
   /**
  * @minimum 1
  * @maximum 6
  */
-  maxDepth: number
-  sortBy: CommentListRepliesSortBy
+  maxDepth?: number
+  sortBy?: CommentListRepliesSortBy
   sortAscending: boolean
   cursor?: string
 }

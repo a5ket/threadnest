@@ -9,6 +9,7 @@ import { EventModule } from './event/event.module'
 import { MeModule } from './me/me.module'
 import { NestModule } from './nest/nest.module'
 import { PrismaModule } from './prisma/prisma.module'
+import { ReportModule } from './report/report.module'
 import { SecurityModule } from './security/security.module'
 import { ThreadModule } from './thread/thread.module'
 import { UserModule } from './user/user.module'
@@ -37,7 +38,8 @@ import { AppController } from './app.controller'
     CommentModule,
     BlockModule,
     QueueModule,
-    EmailModule
+    EmailModule,
+    ReportModule
   ]
 })
 export class AppModule { }

@@ -16,13 +16,13 @@ export type NestThreadCommentListParams = {
  * @minimum 1
  * @maximum 20
  */
-  replyLimit: number
+  replyLimit?: number
   /**
  * @minimum 1
  * @maximum 6
  */
-  maxDepth: number
-  sortBy: NestThreadCommentListSortBy
+  maxDepth?: number
+  sortBy?: NestThreadCommentListSortBy
   sortAscending: boolean
   cursor?: string
 }

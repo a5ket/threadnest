@@ -23,7 +23,7 @@ export class ThreadQueryDto {
   @IsEnum(ThreadSortBy)
   @Transform(({ value }) => (value ?? ThreadSortBy.CREATED_AT) as ThreadSortBy)
   @IsOptional()
-  sortBy!: ThreadSortBy
+  sortBy: ThreadSortBy = ThreadSortBy.CREATED_AT
 
   @IsBoolean()
   @Transform(({ value }) => value === undefined ? false : value === 'true' || value === true)

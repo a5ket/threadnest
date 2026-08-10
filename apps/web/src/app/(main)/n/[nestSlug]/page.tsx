@@ -71,6 +71,12 @@ export default async function NestPage({
           )}
 
           {nest.access.canModerateContent && (
+            <Link href={`/n/${nestSlug}/reports`} className='text-sm text-muted-foreground hover:underline'>
+              Reports
+            </Link>
+          )}
+
+          {nest.access.canModerateContent && (
             <Link href={`/n/${nestSlug}/settings`} className='text-sm text-muted-foreground hover:underline'>
               Settings
             </Link>

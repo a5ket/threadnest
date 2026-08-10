@@ -1,44 +1,45 @@
 model Thread {
-    id        String    @id @default(uuid(7))
-    nestId    String
-    authorId  String
-    title     String
-    slug      String
-    content   String?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    editedAt  DateTime?
+  id        String    @id @default(uuid(7))
+  nestId    String
+  authorId  String
+  title     String
+  slug      String
+  content   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  editedAt  DateTime?
 
-    lockedAt DateTime?
-    pinnedAt DateTime?
+  lockedAt DateTime?
+  pinnedAt DateTime?
 
-    deletedAt   DateTime?
-    deletedById String?
+  deletedAt   DateTime?
+  deletedById String?
 
-    commentCount  Int       @default(0)
-    lastCommentAt DateTime?
-    score         Int       @default(0)
+  commentCount  Int       @default(0)
+  lastCommentAt DateTime?
+  score         Int       @default(0)
 
-    nest        Nest         @relation(fields: [nestId], references: [id], onDelete: Cascade)
-    author      User         @relation(fields: [authorId], references: [id])
-    comments    Comment[]
-    deletedBy   User?        @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
-    threadVotes ThreadVote[]
+  nest        Nest            @relation(fields: [nestId], references: [id], onDelete: Cascade)
+  author      User            @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  deletedBy   User?           @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+  threadVotes ThreadVote[]
+  reports     ContentReport[]
 
-    @@unique([nestId, slug])
-    @@index([nestId, createdAt])
-    @@index([nestId, pinnedAt])
-    @@index([nestId, lastCommentAt])
-    @@index([authorId, createdAt])
+  @@unique([nestId, slug])
+  @@index([nestId, createdAt])
+  @@index([nestId, pinnedAt])
+  @@index([nestId, lastCommentAt])
+  @@index([authorId, createdAt])
 }
 
 model ThreadVote {
-    threadId String
-    userId   String
-    type     VoteType
+  threadId String
+  userId   String
+  type     VoteType
 
-    thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@id([threadId, userId])
+  @@id([threadId, userId])
 }

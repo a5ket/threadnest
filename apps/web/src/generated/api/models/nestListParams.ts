@@ -13,7 +13,7 @@ export type NestListParams = {
  */
   limit?: number
   cursor?: string
-  sortBy: NestListSortBy
+  sortBy?: NestListSortBy
   sortAscending: boolean
   /**
  * @maxLength 100

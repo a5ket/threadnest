@@ -1,0 +1,49 @@
+model ContentReport {
+  id         String           @id @default(uuid(7))
+  nestId     String
+  reporterId String
+  targetType ReportTargetType
+
+  threadId  String?
+  commentId String?
+
+  reason  ReportReason
+  details String?
+
+  status ReportStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+
+  resolvedAt   DateTime?
+  resolvedById String?
+
+  nest       Nest     @relation(fields: [nestId], references: [id], onDelete: Cascade)
+  reporter   User     @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  thread     Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  comment    Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  resolvedBy User?    @relation("ReportsResolved", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([nestId, status, createdAt])
+  @@index([threadId, reporterId, status])
+  @@index([commentId, reporterId, status])
+  @@index([reporterId])
+}
+
+enum ReportTargetType {
+  THREAD
+  COMMENT
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  MISINFORMATION
+  RULE_VIOLATION
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}

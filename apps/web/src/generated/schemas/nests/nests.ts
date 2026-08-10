@@ -12,12 +12,13 @@ import * as zod from 'zod'
 export const nestListQueryLimitDefault = 20
 export const nestListQueryLimitMax = 100
 
+export const nestListQuerySortByDefault = `createdAt`
 export const nestListQuerySearchMax = 100
 
 export const NestListQueryParams = zod.object({
   limit: zod.number().min(1).max(nestListQueryLimitMax).default(nestListQueryLimitDefault),
   cursor: zod.string().optional(),
-  sortBy: zod.enum(['createdAt', 'memberCount']),
+  sortBy: zod.enum(['createdAt', 'memberCount']).default(nestListQuerySortByDefault),
   sortAscending: zod.boolean(),
   search: zod.string().max(nestListQuerySearchMax).optional()
 })
