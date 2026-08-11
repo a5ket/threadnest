@@ -1,25 +1,12 @@
 import { ReportReason, ReportStatus, ReportTargetType } from 'generated/prisma/enums'
+import { createReportSummary } from 'test/factories/report-summary.factory'
 import { UserPresenter } from 'src/user/user.presenter'
 import { ReportPresenter } from './report.presenter'
-import { ReportSummary } from './types/report.summary'
 
 describe('ReportPresenter', () => {
   const presenter = new ReportPresenter(new UserPresenter())
 
-  const baseReport = (overrides: Partial<ReportSummary> = {}): ReportSummary => ({
-    id: 'report-1',
-    targetType: ReportTargetType.THREAD,
-    reason: ReportReason.SPAM,
-    details: null,
-    status: ReportStatus.PENDING,
-    createdAt: new Date('2024-01-01T00:00:00.000Z'),
-    resolvedAt: null,
-    reporter: { id: 'reporter-1', profile: { username: 'reporter', displayName: null, avatarUrl: null } },
-    resolvedBy: null,
-    thread: { id: 'thread-1', slug: 'thread-slug', title: 'Thread title' },
-    comment: null,
-    ...overrides,
-  })
+  const baseReport = createReportSummary
 
   it('maps reporter through the user presenter', () => {
     const view = presenter.toSummaryView(baseReport())
