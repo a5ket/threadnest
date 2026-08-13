@@ -18,6 +18,7 @@ model Nest {
   nestInvites         NestInvite[]
   userNestPreferences UserNestPreference[]
   reports             ContentReport[]
+  notifications       Notification[]
 }
 
 model NestSettings {

@@ -16,6 +16,7 @@ import { UserModule } from './user/user.module'
 import { QueueModule } from './queue/queue.module'
 import { EmailModule } from './email/email.module'
 import { AppController } from './app.controller'
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   controllers: [
@@ -39,7 +40,8 @@ import { AppController } from './app.controller'
     BlockModule,
     QueueModule,
     EmailModule,
-    ReportModule
+    ReportModule,
+    NotificationModule
   ]
 })
 export class AppModule { }

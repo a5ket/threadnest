@@ -2,6 +2,7 @@ import { Avatar } from '@/common/components/avatar'
 import { useAuthOverlayStore } from '@/features/auth/auth-overlay.store'
 import { useAuthSignOutHandler, useLogout } from '@/features/auth/auth.hooks'
 import { useIsSignedIn, useUser } from '@/features/me/me.hooks'
+import { NotificationBell } from '@/features/notification/components/notification-bell'
 import { SearchBar } from '@/features/search/components/search-bar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -42,6 +43,8 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
         {isSignedIn
           ? (
               <>
+                <NotificationBell />
+
                 {user && (
                   <Link href={`/users/${user.username}`} className='flex items-center gap-2 hover:opacity-80'>
                     <Avatar avatarUrl={user.avatarUrl} label={user.username} size={28} />

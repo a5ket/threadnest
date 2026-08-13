@@ -1,0 +1,33 @@
+enum NotificationType {
+  THREAD_REPLY
+  COMMENT_REPLY
+  JOIN_REQUEST_APPROVED
+  JOIN_REQUEST_REJECTED
+  NEST_INVITE_RECEIVED
+  BANNED_FROM_NEST
+  OWNERSHIP_TRANSFERRED
+  REPORT_RESOLVED
+  CONTENT_REMOVED
+}
+
+model Notification {
+  id          String           @id @default(uuid(7))
+  userId      String
+  actorUserId String?
+  nestId      String?
+  type        NotificationType
+  data        Json
+
+  seenAt    DateTime?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user  User  @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("ActorNotifications", fields: [actorUserId], references: [id], onDelete: SetNull)
+  nest  Nest? @relation(fields: [nestId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([userId, seenAt])
+  @@index([nestId])
+}

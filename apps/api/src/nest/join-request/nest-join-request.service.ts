@@ -131,6 +131,8 @@ export class NestJoinRequestService {
     void this.eventBus.publish(new NestJoinRequestApprovedEvent({
       requestId: request.id,
       nestId: request.nest.id,
+      nestSlug: request.nest.slug,
+      nestName: request.nest.name,
       userId: request.user.id,
       approvedById: actorUserId,
     }))
@@ -161,6 +163,8 @@ export class NestJoinRequestService {
     void this.eventBus.publish(new NestJoinRequestRejectedEvent({
       requestId: request.id,
       nestId: request.nest.id,
+      nestSlug: request.nest.slug,
+      nestName: request.nest.name,
       userId: request.user.id,
       rejectedById: actorUserId,
     }))

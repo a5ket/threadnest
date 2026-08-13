@@ -30,6 +30,8 @@ export function threadDetailsSelect(nestId: string, viewerId?: string) {
       }
     },
 
+    nest: { select: { name: true, slug: true } },
+
     threadVotes: { where: { userId: viewerId ?? '' }, select: { type: true }, take: 1 }
   } satisfies Prisma.ThreadSelect
 }

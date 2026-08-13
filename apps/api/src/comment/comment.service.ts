@@ -72,7 +72,19 @@ export class CommentService {
       return created
     })
 
-    void this.eventBus.publish(new CommentCreatedEvent({ commentId: comment.id, threadId: thread.id, authorId: userId, parentCommentId: null }))
+    void this.eventBus.publish(new CommentCreatedEvent({
+      commentId: comment.id,
+      content: dto.content,
+      authorId: userId,
+      parentCommentId: null,
+      recipientId: thread.authorId === userId ? null : thread.authorId,
+      threadId: thread.id,
+      threadSlug: thread.slug,
+      threadTitle: thread.title,
+      nestId: thread.nestId,
+      nestSlug: thread.nest.slug,
+      nestName: thread.nest.name,
+    }))
     return this.commentPresenter.toView(comment, await this.getBlockFlags(userId, comment.author.id), threadCtx.canModerateContent)
   }
 
@@ -94,7 +106,19 @@ export class CommentService {
       return created
     })
 
-    void this.eventBus.publish(new CommentCreatedEvent({ commentId: reply.id, threadId: comment.threadId, authorId: userId, parentCommentId: comment.id }))
+    void this.eventBus.publish(new CommentCreatedEvent({
+      commentId: reply.id,
+      content: dto.content,
+      authorId: userId,
+      parentCommentId: comment.id,
+      recipientId: comment.author.id === userId ? null : comment.author.id,
+      threadId: thread.id,
+      threadSlug: thread.slug,
+      threadTitle: thread.title,
+      nestId: thread.nestId,
+      nestSlug: thread.nest.slug,
+      nestName: thread.nest.name,
+    }))
     return this.commentPresenter.toView(reply, await this.getBlockFlags(userId, reply.author.id), threadCtx.canModerateContent)
   }
 
@@ -144,7 +168,19 @@ export class CommentService {
       await this.threads.updateLastCommentAt(thread.id, latest?.createdAt ?? thread.createdAt, tx)
     })
 
-    void this.eventBus.publish(new CommentDeletedEvent({ commentId: comment.id, threadId: comment.threadId, deletedById: userId }))
+    void this.eventBus.publish(new CommentDeletedEvent({
+      commentId: comment.id,
+      content: comment.content,
+      authorId: comment.author.id,
+      deletedById: userId,
+      recipientId: comment.author.id === userId ? null : comment.author.id,
+      threadId: thread.id,
+      threadSlug: thread.slug,
+      threadTitle: thread.title,
+      nestId: thread.nestId,
+      nestSlug: thread.nest.slug,
+      nestName: thread.nest.name,
+    }))
   }
 
   async voteOnComment(commentId: string, userId: string, type: VoteType) {

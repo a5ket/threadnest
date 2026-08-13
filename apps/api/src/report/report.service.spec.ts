@@ -1,7 +1,8 @@
-import { ReportReason, ReportStatus } from 'generated/prisma/enums'
+import { ReportReason, ReportStatus, ReportTargetType } from 'generated/prisma/enums'
 import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.exception'
 import { createComment } from 'test/factories/comment.factory'
 import { createMockCommentRepository } from 'test/factories/comment-repository.mock-factory'
+import { createMockEventBus } from 'test/factories/event-bus.mock-factory'
 import { createNestSummary } from 'test/factories/nest-summary.factory'
 import { createMockNestRepository } from 'test/factories/nest-repository.mock-factory'
 import { createMockReportPolicy } from 'test/factories/report-policy.mock-factory'
@@ -12,6 +13,7 @@ import { createThreadDetails } from 'test/factories/thread-details.factory'
 import { createMockThreadPolicy } from 'test/factories/thread-policy.mock-factory'
 import { createMockThreadService } from 'test/factories/thread-service.mock-factory'
 import { AlreadyReportedException } from './exceptions/already-reported.exception'
+import { ReportResolvedEvent } from './events/report-resolved.event'
 import { ReportService } from './report.service'
 
 describe('ReportService', () => {
@@ -22,6 +24,7 @@ describe('ReportService', () => {
   const commentsRepo = createMockCommentRepository()
   const policy = createMockReportPolicy()
   const presenter = createMockReportPresenter()
+  const eventBus = createMockEventBus()
 
   const service = new ReportService(
     reportsRepo as any,
@@ -31,6 +34,7 @@ describe('ReportService', () => {
     commentsRepo as any,
     policy as any,
     presenter as any,
+    eventBus,
   )
 
   const dto = { reason: ReportReason.SPAM, details: 'looks like spam' }
@@ -190,9 +194,49 @@ describe('ReportService', () => {
       expect(reportsRepo.get).toHaveBeenCalledWith('report-1', 'nest-1')
       expect(policy.assertCanReview).toHaveBeenCalledWith(report, 'nest-1', 'actor-1')
       expect(reportsRepo.updateStatus).toHaveBeenCalledWith('report-1', ReportStatus.RESOLVED, 'actor-1')
+
+      const published = eventBus.publish.mock.calls[0][0] as ReportResolvedEvent
+      expect(published.props).toEqual({
+        reportId: 'report-1',
+        nestId: 'nest-1',
+        nestSlug: 'nest-slug',
+        nestName: 'Nest',
+        reporterId: 'reporter-1',
+        resolvedById: 'actor-1',
+        status: ReportStatus.RESOLVED,
+        targetType: ReportTargetType.THREAD,
+        threadSlug: 'thread-slug',
+        threadTitle: 'Thread title',
+        commentId: null,
+      })
     })
 
-    it('propagates the review check failure and never updates the report', async () => {
+    it('publishes comment context when the report targets a comment', async () => {
+      const nest = createNestSummary({ id: 'nest-1' })
+      const report = createReportSummary({
+        id: 'report-1',
+        status: ReportStatus.PENDING,
+        targetType: ReportTargetType.COMMENT,
+        thread: null,
+        comment: { id: 'comment-1', content: 'hello', thread: { slug: 'thread-slug', title: 'Thread title' } },
+      })
+
+      nestsRepo.getBySlug.mockResolvedValue(nest)
+      reportsRepo.get.mockResolvedValue(report)
+      policy.assertCanReview.mockResolvedValue(undefined)
+
+      await service.resolve('nest-slug', 'report-1', 'actor-1')
+
+      const published = eventBus.publish.mock.calls[0][0] as ReportResolvedEvent
+      expect(published.props).toMatchObject({
+        targetType: ReportTargetType.COMMENT,
+        threadSlug: 'thread-slug',
+        threadTitle: 'Thread title',
+        commentId: 'comment-1',
+      })
+    })
+
+    it('propagates the review check failure and never updates the report or publishes', async () => {
       const nest = createNestSummary()
       const report = createReportSummary({ status: ReportStatus.RESOLVED })
 
@@ -205,6 +249,7 @@ describe('ReportService', () => {
       ).rejects.toThrow('already resolved')
 
       expect(reportsRepo.updateStatus).not.toHaveBeenCalled()
+      expect(eventBus.publish).not.toHaveBeenCalled()
     })
   })
 
@@ -220,9 +265,12 @@ describe('ReportService', () => {
       await service.dismiss('nest-slug', 'report-1', 'actor-1')
 
       expect(reportsRepo.updateStatus).toHaveBeenCalledWith('report-1', ReportStatus.DISMISSED, 'actor-1')
+
+      const published = eventBus.publish.mock.calls[0][0] as ReportResolvedEvent
+      expect(published.props.status).toBe(ReportStatus.DISMISSED)
     })
 
-    it('propagates the review check failure and never updates the report', async () => {
+    it('propagates the review check failure and never updates the report or publishes', async () => {
       const nest = createNestSummary()
       const report = createReportSummary({ status: ReportStatus.DISMISSED })
 
@@ -235,6 +283,7 @@ describe('ReportService', () => {
       ).rejects.toThrow('already resolved')
 
       expect(reportsRepo.updateStatus).not.toHaveBeenCalled()
+      expect(eventBus.publish).not.toHaveBeenCalled()
     })
   })
 })

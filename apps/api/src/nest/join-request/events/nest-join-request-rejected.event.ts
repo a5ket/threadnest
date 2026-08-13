@@ -5,6 +5,8 @@ export class NestJoinRequestRejectedEvent extends BaseEvent {
     public readonly props: {
       requestId: string
       nestId: string
+      nestSlug: string
+      nestName: string
       userId: string
       rejectedById: string
     }

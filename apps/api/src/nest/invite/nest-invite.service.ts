@@ -34,8 +34,11 @@ export class NestInviteService {
     void this.eventBus.publish(new InviteSentEvent({
       inviteId: invite.id,
       nestId: nest.id,
+      nestSlug: nest.slug,
+      nestName: nest.name,
       userId: targetUserId,
-      invitedById: actorUserId
+      invitedById: actorUserId,
+      message: invite.message,
     }))
 
     return this.presenter.toNestView(invite)

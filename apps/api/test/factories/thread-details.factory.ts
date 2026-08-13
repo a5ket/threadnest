@@ -19,6 +19,7 @@ export const createThreadDetails = (
   lastCommentAt: null,
   score: 0,
   author: { id: 'author-1', profile: null, nestMembership: [] },
+  nest: { name: 'Nest', slug: 'nest-slug' },
   viewerVote: null,
   ...overrides,
 })

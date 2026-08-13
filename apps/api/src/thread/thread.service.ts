@@ -124,8 +124,14 @@ export class ThreadService {
 
     void this.eventBus.publish(new ThreadDeletedEvent({
       threadId: thread.id,
+      title: thread.title,
+      slug: thread.slug,
       nestId: thread.nestId,
-      userId: actorUserId,
+      nestSlug: thread.nest.slug,
+      nestName: thread.nest.name,
+      authorId: thread.authorId,
+      deletedById: actorUserId,
+      recipientId: thread.authorId === actorUserId ? null : thread.authorId,
     }))
   }
 

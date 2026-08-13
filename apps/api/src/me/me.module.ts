@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { AuthModule } from 'src/auth/auth.module'
 import { BlockModule } from 'src/block/block.module'
 import { NestModule } from 'src/nest/nest.module'
+import { NotificationModule } from 'src/notification/notification.module'
 import { SecurityModule } from 'src/security/security.module'
 import { UserModule } from 'src/user/user.module'
 import { MeAuthController } from './me-auth.controller'
@@ -10,6 +11,7 @@ import { MeNestInviteController } from './me-nest-invite.controller'
 import { MeNestJoinRequestController } from './me-nest-join-request.controller'
 import { MeNestPreferenceController } from './me-nest-preference.controller'
 import { MeNestController } from './me-nest.controller'
+import { MeNotificationController } from './me-notification.controller'
 import { MeController } from './me.controller'
 import { MeProfileController } from './me-profile.controller'
 import { MeService } from './me.service'
@@ -20,7 +22,8 @@ import { MeService } from './me.service'
     AuthModule,
     SecurityModule,
     UserModule,
-    BlockModule
+    BlockModule,
+    NotificationModule
   ],
   providers: [
     MeService
@@ -33,7 +36,8 @@ import { MeService } from './me.service'
     MeNestInviteController,
     MeNestJoinRequestController,
     MeProfileController,
-    MeBlockController
+    MeBlockController,
+    MeNotificationController
   ]
 })
 export class MeModule { }

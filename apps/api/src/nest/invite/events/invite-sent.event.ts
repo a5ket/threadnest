@@ -5,8 +5,11 @@ export class InviteSentEvent extends BaseEvent {
     public readonly props: {
       inviteId: string
       nestId: string
+      nestSlug: string
+      nestName: string
       userId: string
       invitedById: string
+      message: string | null
     }
   ) { super() }
 }

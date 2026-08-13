@@ -38,6 +38,9 @@ model User {
 
   reportsFiled    ContentReport[] @relation("ReportsFiled")
   reportsResolved ContentReport[] @relation("ReportsResolved")
+
+  notifications      Notification[] @relation("UserNotifications")
+  actorNotifications Notification[] @relation("ActorNotifications")
 }
 
 model UserProfile {

@@ -11,6 +11,7 @@ import { NestUpdateDto } from './dto/nest.update.dto'
 import { NestCreatedEvent } from './events/nest-created.event'
 import { NestDeletedEvent } from './events/nest-deleted.event'
 import { NestUpdatedEvent } from './events/nest-updated.event'
+import { OwnershipTransferredEvent } from './events/ownership-transferred.event'
 import { NestMemberRepository } from './member/nest-member.repository'
 import { NestAccess } from './nest.access'
 import { NestPresenter } from './nest.presenter'
@@ -105,6 +106,14 @@ export class NestService {
       await this.membersRepo.updateRole(nest.id, actorUserId, NestMemberRole.MODERATOR, tx)
       await this.membersRepo.updateRole(nest.id, dto.userId, NestMemberRole.OWNER, tx)
     })
+
+    void this.eventBus.publish(new OwnershipTransferredEvent({
+      nestId: nest.id,
+      nestSlug: nest.slug,
+      nestName: nest.name,
+      previousOwnerId: actorUserId,
+      newOwnerId: dto.userId,
+    }))
   }
 
   async delete(nestSlug: string, actorUserId: string) {

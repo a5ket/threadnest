@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { ReportStatus } from 'generated/prisma/enums'
+import { ReportStatus, ReportTargetType } from 'generated/prisma/enums'
 import { CommentRepository } from 'src/comment/comment.repository'
+import { EventBus } from 'src/event/event-bus'
 import { NestRepository } from 'src/nest/nest.repository'
 import { ThreadPolicy } from 'src/thread/thread.policy'
 import { ThreadService } from 'src/thread/thread.service'
 import { AlreadyReportedException } from './exceptions/already-reported.exception'
+import { ReportResolvedEvent } from './events/report-resolved.event'
 import { ReportCreateDto } from './dto/report-create.dto'
 import { ReportPolicy } from './report.policy'
 import { ReportPresenter } from './report.presenter'
@@ -20,6 +22,7 @@ export class ReportService {
     private readonly commentsRepo: CommentRepository,
     private readonly policy: ReportPolicy,
     private readonly presenter: ReportPresenter,
+    private readonly eventBus: EventBus,
   ) { }
 
   async reportThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ReportCreateDto) {
@@ -69,12 +72,29 @@ export class ReportService {
     await this.setStatus(nestSlug, reportId, actorUserId, ReportStatus.DISMISSED)
   }
 
-  private async setStatus(nestSlug: string, reportId: string, actorUserId: string, status: ReportStatus) {
+  private async setStatus(nestSlug: string, reportId: string, actorUserId: string, status: Exclude<ReportStatus, 'PENDING'>) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
     const report = await this.reportsRepo.get(reportId, nest.id)
 
     await this.policy.assertCanReview(report, nest.id, actorUserId)
 
     await this.reportsRepo.updateStatus(reportId, status, actorUserId)
+
+    // report.thread/report.comment are mutually exclusive based on targetType — see REPORT_SUMMARY_SELECT.
+    const isThreadTarget = report.targetType === ReportTargetType.THREAD
+
+    void this.eventBus.publish(new ReportResolvedEvent({
+      reportId: report.id,
+      nestId: nest.id,
+      nestSlug: nest.slug,
+      nestName: nest.name,
+      reporterId: report.reporter.id,
+      resolvedById: actorUserId,
+      status,
+      targetType: report.targetType,
+      threadSlug: isThreadTarget ? report.thread!.slug : report.comment!.thread.slug,
+      threadTitle: isThreadTarget ? report.thread!.title : report.comment!.thread.title,
+      commentId: isThreadTarget ? null : report.comment!.id,
+    }))
   }
 }

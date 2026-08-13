@@ -34,7 +34,14 @@ export class NestBanService {
       }
       return result
     })
-    void this.eventBus.publish(new UserBannedEvent({ nestId: nest.id, userId: targetUserId, bannedById: actorUserId }))
+    void this.eventBus.publish(new UserBannedEvent({
+      nestId: nest.id,
+      nestSlug: nest.slug,
+      nestName: nest.name,
+      userId: targetUserId,
+      bannedById: actorUserId,
+      reason: ban.reason,
+    }))
 
     return this.presenter.toSummaryView(ban)
   }

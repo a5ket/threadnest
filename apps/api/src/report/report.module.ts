@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { CommentModule } from 'src/comment/comment.module'
+import { EventModule } from 'src/event/event.module'
 import { NestModule } from 'src/nest/nest.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
@@ -20,7 +21,8 @@ import { ReportService } from './report.service'
     NestModule,
     ThreadModule,
     CommentModule,
-    UserModule
+    UserModule,
+    EventModule
   ],
   controllers: [
     NestReportController,
