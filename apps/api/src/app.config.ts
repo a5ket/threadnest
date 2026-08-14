@@ -1,6 +1,7 @@
 import { AuthConfig } from './auth/auth.config'
 import { CacheConfig } from './cache/cache.config'
 import { EmailConfig } from './email/email.config'
+import { EventConfig } from './event/event.config'
 import { QueueConfig } from './queue/queue.config'
 import { SecurityConfig } from './security/security.config'
 import { UrlConfig } from './url/url.config'
@@ -10,6 +11,7 @@ export type AppConfig =
   CacheConfig &
   SecurityConfig &
   QueueConfig &
+  EventConfig &
   UrlConfig &
   EmailConfig &
   {
@@ -40,6 +42,11 @@ export default (): AppConfig => {
     redisPort: parseInt(process.env.REDIS_PORT!)
   }
 
+  const event: EventConfig = {
+    redisHost: process.env.REDIS_HOST!,
+    redisPort: parseInt(process.env.REDIS_PORT!)
+  }
+
   const url: UrlConfig = {
     webAppUrl: process.env.WEB_APP_URL!
   }
@@ -59,6 +66,7 @@ export default (): AppConfig => {
     ...security,
     ...cache,
     ...queue,
+    ...event,
     ...url,
     ...email
   }
