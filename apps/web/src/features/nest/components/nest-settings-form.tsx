@@ -26,6 +26,7 @@ const LEVEL_LABELS: Record<number, string> = {
 }
 
 const MANAGEMENT_LEVELS = [10, 20, 30]
+const ACTION_LOG_LEVELS = [20, 30]
 
 type PermissionFieldName = Exclude<keyof UpdateNestSettingsFormValues, 'visibility' | 'joinPolicy'>
 type ParticipationFieldName = 'minThreadCreationLevel' | 'minCommentCreationLevel'
@@ -194,6 +195,7 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
         {PARTICIPATION_FIELDS.map(({ name, label }) =>
           renderLevelField(name, label, isPrivate ? MANAGEMENT_LEVELS : [NON_MEMBER_LEVEL, ...MANAGEMENT_LEVELS]))}
         {MANAGEMENT_FIELDS.map(({ name, label }) => renderLevelField(name, label, MANAGEMENT_LEVELS))}
+        {renderLevelField('minActionLogViewLevel', 'View action log', ACTION_LOG_LEVELS)}
       </div>
 
       {errors.root && (

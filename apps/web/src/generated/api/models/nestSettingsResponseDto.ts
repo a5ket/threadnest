@@ -40,4 +40,6 @@ export interface NestSettingsResponseDto {
   minJoinRequestManageLevel: number
   /** Minimum level required to manage bans */
   minBanManageLevel: number
+  /** Minimum level required to view the nest action log — never below moderator */
+  minActionLogViewLevel: number
 }

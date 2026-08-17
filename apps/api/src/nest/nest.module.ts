@@ -3,6 +3,22 @@ import { EventModule } from 'src/event/event.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
 import { UserModule } from 'src/user/user.module'
+import { NestActionLogController } from './action-log/nest-action-log.controller'
+import { NestActionLogPolicy } from './action-log/nest-action-log.policy'
+import { NestActionLogPresenter } from './action-log/nest-action-log.presenter'
+import { NestActionLogRepository } from './action-log/nest-action-log.repository'
+import { NestActionLogService } from './action-log/nest-action-log.service'
+import { CommentRemovedActionLogSubscriber } from './action-log/subscribers/comment-removed.subscriber'
+import { JoinRequestApprovedActionLogSubscriber } from './action-log/subscribers/join-request-approved.subscriber'
+import { JoinRequestRejectedActionLogSubscriber } from './action-log/subscribers/join-request-rejected.subscriber'
+import { MemberRemovedActionLogSubscriber } from './action-log/subscribers/member-removed.subscriber'
+import { MemberRoleChangedActionLogSubscriber } from './action-log/subscribers/member-role-changed.subscriber'
+import { OwnershipTransferredActionLogSubscriber } from './action-log/subscribers/ownership-transferred.subscriber'
+import { ReportResolvedActionLogSubscriber } from './action-log/subscribers/report-resolved.subscriber'
+import { SettingsUpdatedActionLogSubscriber } from './action-log/subscribers/settings-updated.subscriber'
+import { ThreadRemovedActionLogSubscriber } from './action-log/subscribers/thread-removed.subscriber'
+import { UserBannedActionLogSubscriber } from './action-log/subscribers/user-banned.subscriber'
+import { UserUnbannedActionLogSubscriber } from './action-log/subscribers/user-unbanned.subscriber'
 import { NestBanController } from './ban/nest-ban.controller'
 import { NestBanPolicy } from './ban/nest-ban.policy'
 import { NestBanPresenter } from './ban/nest-ban.presenter'
@@ -52,7 +68,8 @@ import { NestSettingsService } from './settings/nest-settings.service'
     NestBanController,
     NestInviteCollectionController,
     NestJoinRequestCollectionController,
-    NestSettingsController
+    NestSettingsController,
+    NestActionLogController
   ],
   providers: [
     NestRepository,
@@ -62,6 +79,7 @@ import { NestSettingsService } from './settings/nest-settings.service'
     NestJoinRequestRepository,
     NestSettingsRepository,
     UserNestPreferenceRepository,
+    NestActionLogRepository,
     NestService,
     UserNestPreferenceService,
     NestMemberService,
@@ -69,19 +87,33 @@ import { NestSettingsService } from './settings/nest-settings.service'
     NestInviteService,
     NestJoinRequestService,
     NestSettingsService,
+    NestActionLogService,
     NestMemberPolicy,
     NestBanPolicy,
     NestInvitePolicy,
     NestJoinRequestPolicy,
     NestSettingsPolicy,
+    NestActionLogPolicy,
     UserNestPreferencePolicy,
     NestInvitePresenter,
     NestJoinRequestPresenter,
     NestBanPresenter,
     NestMemberPresenter,
+    NestActionLogPresenter,
     NestAccess,
     NestPresenter,
-    NestPolicy
+    NestPolicy,
+    MemberRoleChangedActionLogSubscriber,
+    UserBannedActionLogSubscriber,
+    UserUnbannedActionLogSubscriber,
+    MemberRemovedActionLogSubscriber,
+    JoinRequestApprovedActionLogSubscriber,
+    JoinRequestRejectedActionLogSubscriber,
+    ThreadRemovedActionLogSubscriber,
+    CommentRemovedActionLogSubscriber,
+    ReportResolvedActionLogSubscriber,
+    OwnershipTransferredActionLogSubscriber,
+    SettingsUpdatedActionLogSubscriber
   ],
   exports: [
     NestRepository,

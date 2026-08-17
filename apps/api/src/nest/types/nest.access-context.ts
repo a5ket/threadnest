@@ -31,6 +31,7 @@ export interface NestAccessContext {
   canRemoveMembers: boolean
   canManageJoinRequests: boolean
   canManageBans: boolean
+  canViewActionLog: boolean
 
   canManageSettings: boolean,
   canDeleteNest: boolean,

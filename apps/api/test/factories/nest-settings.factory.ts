@@ -18,6 +18,7 @@ export type NestSettingsRecord = {
   minMemberRemoveLevel: number
   minJoinRequestManageLevel: number
   minBanManageLevel: number
+  minActionLogViewLevel: number
 }
 
 export const createNestSettings = (
@@ -39,5 +40,6 @@ export const createNestSettings = (
   minMemberRemoveLevel: NEST_ACCESS_LEVEL.MODERATOR,
   minJoinRequestManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
   minBanManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+  minActionLogViewLevel: NEST_ACCESS_LEVEL.MODERATOR,
   ...overrides,
 })

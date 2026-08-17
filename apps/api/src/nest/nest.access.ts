@@ -100,6 +100,7 @@ export class NestAccess {
       canRemoveMembers: hasAccess(settings.minMemberRemoveLevel),
       canManageJoinRequests: hasAccess(settings.minJoinRequestManageLevel),
       canManageBans: hasAccess(settings.minBanManageLevel),
+      canViewActionLog: hasAccess(settings.minActionLogViewLevel),
 
       canManageSettings: isOwner,
       canDeleteNest: isOwner,

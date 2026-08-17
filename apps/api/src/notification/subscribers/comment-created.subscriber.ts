@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { NotificationType } from 'generated/prisma/enums'
 import { CommentCreatedEvent } from 'src/comment/events/comment-created.event'
 import { NotificationEventSubscriber } from '../notification-event-subscriber'
-import { toExcerpt } from '../notification-excerpt'
+import { toExcerpt } from 'src/common/text-excerpt'
 import { NotificationService } from '../notification.service'
 
 @Injectable()

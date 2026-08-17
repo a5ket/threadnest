@@ -96,4 +96,11 @@ export class NestSettingsUpdateDto {
   @Max(NEST_ACCESS_LEVEL.OWNER)
   @IsOptional()
   minBanManageLevel?: number
+
+  // Action log access is never opened below moderator, even though other thresholds can be.
+  @IsInt()
+  @Min(NEST_ACCESS_LEVEL.MODERATOR)
+  @Max(NEST_ACCESS_LEVEL.OWNER)
+  @IsOptional()
+  minActionLogViewLevel?: number
 }

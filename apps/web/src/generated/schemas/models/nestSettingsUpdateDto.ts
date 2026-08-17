@@ -80,4 +80,9 @@ export interface NestSettingsUpdateDto {
      * @maximum 30
      */
   minBanManageLevel?: number
+  /**
+     * @minimum 20
+     * @maximum 30
+     */
+  minActionLogViewLevel?: number
 }

@@ -52,6 +52,8 @@ export interface NestAccessContextDto {
   canManageJoinRequests: boolean
   /** Whether the current user can manage bans */
   canManageBans: boolean
+  /** Whether the current user can view the nest action log */
+  canViewActionLog: boolean
   /** Whether the current user can manage nest settings */
   canManageSettings: boolean
   /** Whether the current user can delete the nest */

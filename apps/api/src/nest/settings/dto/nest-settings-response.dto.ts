@@ -49,4 +49,7 @@ export class NestSettingsResponseDto {
 
   @ApiProperty({ description: 'Minimum level required to manage bans' })
   minBanManageLevel!: number
+
+  @ApiProperty({ description: 'Minimum level required to view the nest action log — never below moderator' })
+  minActionLogViewLevel!: number
 }

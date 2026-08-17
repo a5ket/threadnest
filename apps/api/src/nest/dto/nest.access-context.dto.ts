@@ -62,6 +62,9 @@ export class NestAccessContextDto {
   @ApiProperty({ description: 'Whether the current user can manage bans' })
   canManageBans!: boolean
 
+  @ApiProperty({ description: 'Whether the current user can view the nest action log' })
+  canViewActionLog!: boolean
+
   @ApiProperty({ description: 'Whether the current user can manage nest settings' })
   canManageSettings!: boolean
 

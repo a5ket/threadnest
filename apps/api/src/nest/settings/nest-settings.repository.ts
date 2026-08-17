@@ -46,6 +46,7 @@ export class NestSettingsRepository {
         minMemberRemoveLevel: NEST_ACCESS_LEVEL.MODERATOR,
         minJoinRequestManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
         minBanManageLevel: NEST_ACCESS_LEVEL.MODERATOR,
+        minActionLogViewLevel: NEST_ACCESS_LEVEL.MODERATOR,
       },
       select: NEST_SETTINGS_SELECT,
     })
@@ -91,6 +92,7 @@ export class NestSettingsRepository {
           minMemberRemoveLevel: dto.minMemberRemoveLevel,
           minJoinRequestManageLevel: dto.minJoinRequestManageLevel,
           minBanManageLevel: dto.minBanManageLevel,
+          minActionLogViewLevel: dto.minActionLogViewLevel,
         },
         select: NEST_SETTINGS_SELECT,
       })

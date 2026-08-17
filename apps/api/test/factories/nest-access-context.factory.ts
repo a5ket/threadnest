@@ -39,6 +39,7 @@ export const createNestAccessContext = (
   canRemoveMembers: false,
   canManageJoinRequests: false,
   canManageBans: false,
+  canViewActionLog: false,
 
   canManageSettings: false,
   canDeleteNest: false,

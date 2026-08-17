@@ -76,6 +76,12 @@ export default async function NestPage({
             </Link>
           )}
 
+          {nest.access.canViewActionLog && (
+            <Link href={`/n/${nestSlug}/action-logs`} className='text-sm text-muted-foreground hover:underline'>
+              Action log
+            </Link>
+          )}
+
           {nest.access.canModerateContent && (
             <Link href={`/n/${nestSlug}/settings`} className='text-sm text-muted-foreground hover:underline'>
               Settings

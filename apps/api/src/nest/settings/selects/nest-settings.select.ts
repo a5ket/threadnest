@@ -22,5 +22,6 @@ export const NEST_SETTINGS_SELECT = {
   minInviteManageLevel: true,
   minMemberRemoveLevel: true,
   minJoinRequestManageLevel: true,
-  minBanManageLevel: true
+  minBanManageLevel: true,
+  minActionLogViewLevel: true
 } satisfies Prisma.NestSettingsSelect

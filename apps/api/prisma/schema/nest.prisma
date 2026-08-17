@@ -19,6 +19,7 @@ model Nest {
   userNestPreferences UserNestPreference[]
   reports             ContentReport[]
   notifications       Notification[]
+  actionLogs          NestActionLog[]
 }
 
 model NestSettings {
@@ -48,6 +49,7 @@ model NestSettings {
   minMemberRemoveLevel      Int
   minJoinRequestManageLevel Int
   minBanManageLevel         Int
+  minActionLogViewLevel     Int
 
   nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
 
@@ -171,4 +173,35 @@ enum NestInviteStatus {
   DECLINED
   REVOKED
   EXPIRED
+}
+
+model NestActionLog {
+  id           String         @id @default(uuid(7))
+  nestId       String
+  actorId      String
+  targetUserId String?
+  type         NestActionType
+  data         Json
+  createdAt    DateTime       @default(now())
+
+  nest   Nest  @relation(fields: [nestId], references: [id], onDelete: Cascade)
+  actor  User  @relation("NestActionLogActor", fields: [actorId], references: [id], onDelete: Cascade)
+  target User? @relation("NestActionLogTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  @@index([nestId, createdAt])
+  @@index([nestId, type])
+}
+
+enum NestActionType {
+  MEMBER_ROLE_CHANGED
+  MEMBER_BANNED
+  MEMBER_UNBANNED
+  MEMBER_REMOVED
+  JOIN_REQUEST_APPROVED
+  JOIN_REQUEST_REJECTED
+  THREAD_REMOVED
+  COMMENT_REMOVED
+  REPORT_RESOLVED
+  SETTINGS_UPDATED
+  OWNERSHIP_TRANSFERRED
 }

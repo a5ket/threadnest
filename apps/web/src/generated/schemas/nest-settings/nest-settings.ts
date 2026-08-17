@@ -30,7 +30,8 @@ export const NestSettingsGetResponse = zod.object({
     minInviteManageLevel: zod.number().describe('Minimum level required to manage invites'),
     minMemberRemoveLevel: zod.number().describe('Minimum level required to remove members'),
     minJoinRequestManageLevel: zod.number().describe('Minimum level required to manage join requests'),
-    minBanManageLevel: zod.number().describe('Minimum level required to manage bans')
+    minBanManageLevel: zod.number().describe('Minimum level required to manage bans'),
+    minActionLogViewLevel: zod.number().describe('Minimum level required to view the nest action log — never below moderator')
   })
 })
 
@@ -83,6 +84,9 @@ export const nestSettingsUpdateBodyMinJoinRequestManageLevelMax = 30
 export const nestSettingsUpdateBodyMinBanManageLevelMin = 10
 export const nestSettingsUpdateBodyMinBanManageLevelMax = 30
 
+export const nestSettingsUpdateBodyMinActionLogViewLevelMin = 20
+export const nestSettingsUpdateBodyMinActionLogViewLevelMax = 30
+
 export const NestSettingsUpdateBody = zod.object({
   visibility: zod.enum(['PUBLIC', 'PRIVATE']).optional(),
   joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).optional(),
@@ -99,7 +103,8 @@ export const NestSettingsUpdateBody = zod.object({
   minInviteManageLevel: zod.number().min(nestSettingsUpdateBodyMinInviteManageLevelMin).max(nestSettingsUpdateBodyMinInviteManageLevelMax).optional(),
   minMemberRemoveLevel: zod.number().min(nestSettingsUpdateBodyMinMemberRemoveLevelMin).max(nestSettingsUpdateBodyMinMemberRemoveLevelMax).optional(),
   minJoinRequestManageLevel: zod.number().min(nestSettingsUpdateBodyMinJoinRequestManageLevelMin).max(nestSettingsUpdateBodyMinJoinRequestManageLevelMax).optional(),
-  minBanManageLevel: zod.number().min(nestSettingsUpdateBodyMinBanManageLevelMin).max(nestSettingsUpdateBodyMinBanManageLevelMax).optional()
+  minBanManageLevel: zod.number().min(nestSettingsUpdateBodyMinBanManageLevelMin).max(nestSettingsUpdateBodyMinBanManageLevelMax).optional(),
+  minActionLogViewLevel: zod.number().min(nestSettingsUpdateBodyMinActionLogViewLevelMin).max(nestSettingsUpdateBodyMinActionLogViewLevelMax).optional()
 })
 
 export const NestSettingsUpdateResponse = zod.object({
@@ -119,6 +124,7 @@ export const NestSettingsUpdateResponse = zod.object({
     minInviteManageLevel: zod.number().describe('Minimum level required to manage invites'),
     minMemberRemoveLevel: zod.number().describe('Minimum level required to remove members'),
     minJoinRequestManageLevel: zod.number().describe('Minimum level required to manage join requests'),
-    minBanManageLevel: zod.number().describe('Minimum level required to manage bans')
+    minBanManageLevel: zod.number().describe('Minimum level required to manage bans'),
+    minActionLogViewLevel: zod.number().describe('Minimum level required to view the nest action log — never below moderator')
   })
 })
