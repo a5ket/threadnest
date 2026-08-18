@@ -38,10 +38,16 @@ describe('CommentPolicy', () => {
       ).not.toThrow()
     })
 
-    it('throws InsufficientPermissionsException when canCommentThread is false', () => {
+    it('throws InsufficientPermissionsException when canCommentThread is false but the thread is visible', () => {
       expect(() =>
-        policy.assertCanCreateThreadComment(createThreadAccessContext({ canCommentThread: false })),
+        policy.assertCanCreateThreadComment(createThreadAccessContext({ canViewThread: true, canCommentThread: false })),
       ).toThrow(InsufficientPermissionsException)
+    })
+
+    it('throws ThreadNotFoundException when the thread is not visible, even if canCommentThread is somehow true', () => {
+      expect(() =>
+        policy.assertCanCreateThreadComment(createThreadAccessContext({ canViewThread: false, canCommentThread: true })),
+      ).toThrow(ThreadNotFoundException)
     })
   })
 
@@ -84,7 +90,7 @@ describe('CommentPolicy', () => {
       ).toThrow(InsufficientPermissionsException)
     })
 
-    it('throws InsufficientPermissionsException when thread is not visible', () => {
+    it('throws ThreadNotFoundException when thread is not visible', () => {
       const comment = createCommentPolicySubject({ authorId: 'user-1' })
 
       expect(() =>
@@ -93,7 +99,7 @@ describe('CommentPolicy', () => {
           'user-1',
           createThreadAccessContext({ canViewThread: false }),
         ),
-      ).toThrow(InsufficientPermissionsException)
+      ).toThrow(ThreadNotFoundException)
     })
 
     it('throws InsufficientPermissionsException when user is not the author', () => {
@@ -173,7 +179,7 @@ describe('CommentPolicy', () => {
       ).rejects.toThrow(InsufficientPermissionsException)
     })
 
-    it('throws InsufficientPermissionsException when thread is not visible', async () => {
+    it('throws ThreadNotFoundException when thread is not visible', async () => {
       givenThread({})
       givenThreadContext({ canViewThread: false })
 
@@ -182,7 +188,7 @@ describe('CommentPolicy', () => {
           createCommentPolicySubject({ authorId: 'user-1' }),
           'user-1',
         ),
-      ).rejects.toThrow(InsufficientPermissionsException)
+      ).rejects.toThrow(ThreadNotFoundException)
     })
 
     it('throws InsufficientPermissionsException when user is not the author and cannot moderate', async () => {
@@ -208,13 +214,22 @@ describe('CommentPolicy', () => {
       ).not.toThrow()
     })
 
-    it('throws InsufficientPermissionsException when canCommentThread is false', () => {
+    it('throws InsufficientPermissionsException when canCommentThread is false but the thread is visible', () => {
       expect(() =>
         policy.assertCanReplyToComment(
           createCommentPolicySubject({ deletedAt: null }),
-          createThreadAccessContext({ canCommentThread: false }),
+          createThreadAccessContext({ canViewThread: true, canCommentThread: false }),
         ),
       ).toThrow(InsufficientPermissionsException)
+    })
+
+    it('throws ThreadNotFoundException when the thread is not visible', () => {
+      expect(() =>
+        policy.assertCanReplyToComment(
+          createCommentPolicySubject({ deletedAt: null }),
+          createThreadAccessContext({ canViewThread: false }),
+        ),
+      ).toThrow(ThreadNotFoundException)
     })
 
     it('throws InsufficientPermissionsException when comment is deleted', () => {
@@ -246,13 +261,22 @@ describe('CommentPolicy', () => {
       ).toThrow(InsufficientPermissionsException)
     })
 
-    it('throws InsufficientPermissionsException when canVoteComment is false (thread not visible, or below the nest\'s minCommentVoteLevel)', () => {
+    it('throws InsufficientPermissionsException when canVoteComment is false but the thread is visible', () => {
       expect(() =>
         policy.assertCanVoteOnComment(
           createCommentPolicySubject({ deletedAt: null }),
-          createThreadAccessContext({ canVoteComment: false }),
+          createThreadAccessContext({ canViewThread: true, canVoteComment: false }),
         ),
       ).toThrow(InsufficientPermissionsException)
+    })
+
+    it('throws ThreadNotFoundException when the thread is not visible', () => {
+      expect(() =>
+        policy.assertCanVoteOnComment(
+          createCommentPolicySubject({ deletedAt: null }),
+          createThreadAccessContext({ canViewThread: false }),
+        ),
+      ).toThrow(ThreadNotFoundException)
     })
 
     it('does not require canCommentThread — voting is allowed on a locked thread', () => {

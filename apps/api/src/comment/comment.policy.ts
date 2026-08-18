@@ -18,6 +18,10 @@ export class CommentPolicy {
   ) { }
 
   assertCanCreateThreadComment(threadCtx: ThreadAccessContext) {
+    if (!threadCtx.canViewThread) {
+      throw new ThreadNotFoundException()
+    }
+
     if (!threadCtx.canCommentThread) {
       throw new InsufficientPermissionsException()
     }
@@ -30,7 +34,11 @@ export class CommentPolicy {
   }
 
   assertCanUpdateComment(comment: CommentPolicySubject, userId: string, threadCtx: ThreadAccessContext) {
-    if (comment.deletedAt || !threadCtx.canViewThread || comment.authorId !== userId) {
+    if (!threadCtx.canViewThread) {
+      throw new ThreadNotFoundException()
+    }
+
+    if (comment.deletedAt || comment.authorId !== userId) {
       throw new InsufficientPermissionsException()
     }
   }
@@ -39,7 +47,11 @@ export class CommentPolicy {
     const thread = await this.threadsRepo.getById(comment.threadId)
     const threadCtx = await this.threadAccess.getContext(thread, userId)
 
-    if (comment.deletedAt || !threadCtx.canViewThread) {
+    if (!threadCtx.canViewThread) {
+      throw new ThreadNotFoundException()
+    }
+
+    if (comment.deletedAt) {
       throw new InsufficientPermissionsException()
     }
 
@@ -67,6 +79,10 @@ export class CommentPolicy {
   }
 
   assertCanVoteOnComment(comment: CommentPolicySubject, threadCtx: ThreadAccessContext) {
+    if (!threadCtx.canViewThread) {
+      throw new ThreadNotFoundException()
+    }
+
     if (comment.deletedAt || !threadCtx.canVoteComment) {
       throw new InsufficientPermissionsException()
     }
