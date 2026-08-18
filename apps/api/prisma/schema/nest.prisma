@@ -9,6 +9,9 @@ model Nest {
   memberCount Int @default(0)
   threadCount Int @default(0)
 
+  deletedAt   DateTime?
+  deletedById String?
+
   members NestMember[]
   threads Thread[]
   bans    NestBan[]
@@ -20,6 +23,8 @@ model Nest {
   reports             ContentReport[]
   notifications       Notification[]
   actionLogs          NestActionLog[]
+
+  deletedBy User? @relation(fields: [deletedById], references: [id], onDelete: SetNull)
 }
 
 model NestSettings {

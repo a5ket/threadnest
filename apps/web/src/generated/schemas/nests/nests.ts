@@ -98,6 +98,7 @@ export const NestCreateResponse = zod.object({
       canManageMemberRoles: zod.boolean().describe('Whether the current user can manage member roles'),
       canLeaveNest: zod.boolean().describe('Whether the current user can leave the nest')
     }).describe('The current user\'s access and permissions for this nest'),
+    isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
     description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
@@ -150,6 +151,7 @@ export const NestGetBySlugResponse = zod.object({
       canManageMemberRoles: zod.boolean().describe('Whether the current user can manage member roles'),
       canLeaveNest: zod.boolean().describe('Whether the current user can leave the nest')
     }).describe('The current user\'s access and permissions for this nest'),
+    isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
     description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
@@ -212,6 +214,7 @@ export const NestUpdateResponse = zod.object({
       canManageMemberRoles: zod.boolean().describe('Whether the current user can manage member roles'),
       canLeaveNest: zod.boolean().describe('Whether the current user can leave the nest')
     }).describe('The current user\'s access and permissions for this nest'),
+    isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
     description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),

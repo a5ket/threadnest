@@ -59,7 +59,7 @@ export function DeleteNestButton({ nestSlug, nestName }: DeleteNestButtonProps) 
       <ConfirmDialog
         open={confirming}
         title={`Delete ${nestName}?`}
-        description='This permanently deletes the nest, all its threads, comments, and membership data. This cannot be undone.'
+        description='This nest and all its content will become inaccessible to everyone. This cannot be undone.'
         confirmLabel='Delete nest'
         onCancel={() => setConfirming(false)}
         onConfirm={() => {

@@ -14,6 +14,8 @@ export interface NestDetailResponseDto {
   slug: string
   /** The current user's access and permissions for this nest */
   access: NestAccessContextDto
+  /** Whether the nest has been deleted */
+  isDeleted: boolean
   /** Nest description. Only present when the current user can view the nest */
   description?: string
   /** Number of members in the nest. Only present when the current user can view the nest */

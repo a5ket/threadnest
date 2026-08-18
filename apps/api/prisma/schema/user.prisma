@@ -44,6 +44,7 @@ model User {
 
   nestActionLogsActedBy  NestActionLog[] @relation("NestActionLogActor")
   nestActionLogsTargeted NestActionLog[] @relation("NestActionLogTarget")
+  deletedNests       Nest[]
 }
 
 model UserProfile {
