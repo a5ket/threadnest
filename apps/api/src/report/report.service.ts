@@ -3,7 +3,7 @@ import { ReportStatus, ReportTargetType } from 'generated/prisma/enums'
 import { CommentRepository } from 'src/comment/comment.repository'
 import { EventBus } from 'src/event/event-bus'
 import { NestRepository } from 'src/nest/nest.repository'
-import { ThreadPolicy } from 'src/thread/thread.policy'
+import { ThreadAccess } from 'src/thread/thread.access'
 import { ThreadService } from 'src/thread/thread.service'
 import { AlreadyReportedException } from './exceptions/already-reported.exception'
 import { ReportResolvedEvent } from './events/report-resolved.event'
@@ -18,7 +18,7 @@ export class ReportService {
     private readonly reportsRepo: ReportRepository,
     private readonly nestsRepo: NestRepository,
     private readonly threadsService: ThreadService,
-    private readonly threadsPolicy: ThreadPolicy,
+    private readonly threadAccess: ThreadAccess,
     private readonly commentsRepo: CommentRepository,
     private readonly policy: ReportPolicy,
     private readonly presenter: ReportPresenter,
@@ -27,8 +27,9 @@ export class ReportService {
 
   async reportThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ReportCreateDto) {
     const thread = await this.threadsService.getByNestSlug(nestSlug, threadSlug, actorUserId)
+    const threadCtx = await this.threadAccess.getContext(thread, actorUserId)
 
-    await this.threadsPolicy.assertCanReadThread(thread, actorUserId)
+    this.policy.assertCanReportThread(threadCtx)
 
     if (await this.reportsRepo.hasPendingReportForThread(thread.id, actorUserId)) {
       throw new AlreadyReportedException()
@@ -42,8 +43,9 @@ export class ReportService {
   async reportComment(commentId: string, actorUserId: string, dto: ReportCreateDto) {
     const comment = await this.commentsRepo.getById(commentId)
     const thread = await this.threadsService.getById(comment.threadId)
+    const threadCtx = await this.threadAccess.getContext(thread, actorUserId)
 
-    await this.threadsPolicy.assertCanReadThread(thread, actorUserId)
+    this.policy.assertCanReportThread(threadCtx)
 
     if (await this.reportsRepo.hasPendingReportForComment(commentId, actorUserId)) {
       throw new AlreadyReportedException()

@@ -1,8 +1,10 @@
 import { ReportStatus } from 'generated/prisma/enums'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
+import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.exception'
 import { createNestAccessContext } from 'test/factories/nest-access-context.factory'
 import { createMockNestAccess } from 'test/factories/nest-access.mock-factory'
 import { createReportPolicySubject } from 'test/factories/report-policy-subject.factory'
+import { createThreadAccessContext } from 'test/factories/thread-access-context.factory'
 import { ReportAlreadyResolvedException } from './exceptions/report-already-resolved.exception'
 import { ReportPolicy } from './report.policy'
 
@@ -15,6 +17,20 @@ describe('ReportPolicy', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  describe('assertCanReportThread', () => {
+    it('allows when canViewThread is true', () => {
+      expect(() =>
+        policy.assertCanReportThread(createThreadAccessContext({ canViewThread: true })),
+      ).not.toThrow()
+    })
+
+    it('throws ThreadNotFoundException when canViewThread is false', () => {
+      expect(() =>
+        policy.assertCanReportThread(createThreadAccessContext({ canViewThread: false })),
+      ).toThrow(ThreadNotFoundException)
+    })
   })
 
   describe('assertCanListQueue', () => {

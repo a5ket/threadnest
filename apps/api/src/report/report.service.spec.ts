@@ -9,8 +9,9 @@ import { createMockReportPolicy } from 'test/factories/report-policy.mock-factor
 import { createMockReportPresenter } from 'test/factories/report-presenter.mock-factory'
 import { createMockReportRepository } from 'test/factories/report-repository.mock-factory'
 import { createReportSummary } from 'test/factories/report-summary.factory'
+import { createThreadAccessContext } from 'test/factories/thread-access-context.factory'
+import { createMockThreadAccess } from 'test/factories/thread-access.mock-factory'
 import { createThreadDetails } from 'test/factories/thread-details.factory'
-import { createMockThreadPolicy } from 'test/factories/thread-policy.mock-factory'
 import { createMockThreadService } from 'test/factories/thread-service.mock-factory'
 import { AlreadyReportedException } from './exceptions/already-reported.exception'
 import { ReportResolvedEvent } from './events/report-resolved.event'
@@ -20,7 +21,7 @@ describe('ReportService', () => {
   const reportsRepo = createMockReportRepository()
   const nestsRepo = createMockNestRepository()
   const threadsService = createMockThreadService()
-  const threadsPolicy = createMockThreadPolicy()
+  const threadAccess = createMockThreadAccess()
   const commentsRepo = createMockCommentRepository()
   const policy = createMockReportPolicy()
   const presenter = createMockReportPresenter()
@@ -30,7 +31,7 @@ describe('ReportService', () => {
     reportsRepo as any,
     nestsRepo as any,
     threadsService as any,
-    threadsPolicy as any,
+    threadAccess as any,
     commentsRepo as any,
     policy as any,
     presenter as any,
@@ -49,8 +50,10 @@ describe('ReportService', () => {
       const report = createReportSummary()
       const view = { id: 'view-1' }
 
+      const threadCtx = createThreadAccessContext({ canViewThread: true })
+
       threadsService.getByNestSlug.mockResolvedValue(thread)
-      threadsPolicy.assertCanReadThread.mockResolvedValue({} as any)
+      threadAccess.getContext.mockResolvedValue(threadCtx)
       reportsRepo.hasPendingReportForThread.mockResolvedValue(false)
       reportsRepo.createForThread.mockResolvedValue(report)
       presenter.toSummaryView.mockReturnValue(view as any)
@@ -58,7 +61,8 @@ describe('ReportService', () => {
       const result = await service.reportThread('nest-slug', 'thread-slug', 'actor-1', dto)
 
       expect(threadsService.getByNestSlug).toHaveBeenCalledWith('nest-slug', 'thread-slug', 'actor-1')
-      expect(threadsPolicy.assertCanReadThread).toHaveBeenCalledWith(thread, 'actor-1')
+      expect(threadAccess.getContext).toHaveBeenCalledWith(thread, 'actor-1')
+      expect(policy.assertCanReportThread).toHaveBeenCalledWith(threadCtx)
       expect(reportsRepo.createForThread).toHaveBeenCalledWith('nest-1', 'thread-1', 'actor-1', dto.reason, dto.details)
       expect(result).toBe(view)
     })
@@ -67,7 +71,8 @@ describe('ReportService', () => {
       const thread = createThreadDetails()
 
       threadsService.getByNestSlug.mockResolvedValue(thread)
-      threadsPolicy.assertCanReadThread.mockRejectedValue(new ThreadNotFoundException())
+      threadAccess.getContext.mockResolvedValue(createThreadAccessContext({ canViewThread: false }))
+      policy.assertCanReportThread.mockImplementationOnce(() => { throw new ThreadNotFoundException() })
 
       await expect(
         service.reportThread('nest-slug', 'thread-slug', 'actor-1', dto),
@@ -81,7 +86,7 @@ describe('ReportService', () => {
       const thread = createThreadDetails()
 
       threadsService.getByNestSlug.mockResolvedValue(thread)
-      threadsPolicy.assertCanReadThread.mockResolvedValue({} as any)
+      threadAccess.getContext.mockResolvedValue(createThreadAccessContext({ canViewThread: true }))
       reportsRepo.hasPendingReportForThread.mockResolvedValue(true)
 
       await expect(
@@ -99,9 +104,11 @@ describe('ReportService', () => {
       const report = createReportSummary()
       const view = { id: 'view-1' }
 
+      const threadCtx = createThreadAccessContext({ canViewThread: true })
+
       commentsRepo.getById.mockResolvedValue(comment)
       threadsService.getById.mockResolvedValue(thread)
-      threadsPolicy.assertCanReadThread.mockResolvedValue({} as any)
+      threadAccess.getContext.mockResolvedValue(threadCtx)
       reportsRepo.hasPendingReportForComment.mockResolvedValue(false)
       reportsRepo.createForComment.mockResolvedValue(report)
       presenter.toSummaryView.mockReturnValue(view as any)
@@ -109,7 +116,8 @@ describe('ReportService', () => {
       const result = await service.reportComment('comment-1', 'actor-1', dto)
 
       expect(threadsService.getById).toHaveBeenCalledWith('thread-1')
-      expect(threadsPolicy.assertCanReadThread).toHaveBeenCalledWith(thread, 'actor-1')
+      expect(threadAccess.getContext).toHaveBeenCalledWith(thread, 'actor-1')
+      expect(policy.assertCanReportThread).toHaveBeenCalledWith(threadCtx)
       expect(reportsRepo.createForComment).toHaveBeenCalledWith('nest-1', 'comment-1', 'actor-1', dto.reason, dto.details)
       expect(result).toBe(view)
     })
@@ -120,7 +128,8 @@ describe('ReportService', () => {
 
       commentsRepo.getById.mockResolvedValue(comment)
       threadsService.getById.mockResolvedValue(thread)
-      threadsPolicy.assertCanReadThread.mockRejectedValue(new ThreadNotFoundException())
+      threadAccess.getContext.mockResolvedValue(createThreadAccessContext({ canViewThread: false }))
+      policy.assertCanReportThread.mockImplementationOnce(() => { throw new ThreadNotFoundException() })
 
       await expect(
         service.reportComment('comment-1', 'actor-1', dto),
@@ -136,7 +145,7 @@ describe('ReportService', () => {
 
       commentsRepo.getById.mockResolvedValue(comment)
       threadsService.getById.mockResolvedValue(thread)
-      threadsPolicy.assertCanReadThread.mockResolvedValue({} as any)
+      threadAccess.getContext.mockResolvedValue(createThreadAccessContext({ canViewThread: true }))
       reportsRepo.hasPendingReportForComment.mockResolvedValue(true)
 
       await expect(

@@ -31,6 +31,6 @@ import { ThreadVoteRepository } from './thread-vote.repository'
     NestThreadController,
     ThreadController
   ],
-  exports: [ThreadRepository, ThreadVoteRepository, ThreadService, ThreadAccess, ThreadPolicy, ThreadPresenter]
+  exports: [ThreadRepository, ThreadVoteRepository, ThreadService, ThreadAccess, ThreadPresenter]
 })
 export class ThreadModule { }
