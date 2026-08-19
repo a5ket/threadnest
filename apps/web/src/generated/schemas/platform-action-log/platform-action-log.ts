@@ -15,7 +15,7 @@ export const platformActionLogListQueryLimitMax = 100
 export const PlatformActionLogListQueryParams = zod.object({
   limit: zod.number().min(1).max(platformActionLogListQueryLimitMax).default(platformActionLogListQueryLimitDefault),
   cursor: zod.string().optional(),
-  type: zod.enum(['ROLE_GRANTED', 'ROLE_CHANGED', 'ROLE_REVOKED', 'USER_SUSPENDED', 'USER_UNSUSPENDED', 'THREAD_REMOVED', 'COMMENT_REMOVED', 'CONTENT_BULK_REMOVED', 'REPORT_REVIEWED']).optional(),
+  type: zod.enum(['USER_SUSPENDED', 'THREAD_REMOVED', 'COMMENT_REMOVED', 'ROLE_GRANTED', 'ROLE_CHANGED', 'ROLE_REVOKED', 'USER_UNSUSPENDED', 'CONTENT_BULK_REMOVED', 'REPORT_REVIEWED']).optional(),
   actorId: zod.uuid().optional(),
   targetUserId: zod.uuid().optional(),
   nestId: zod.uuid().optional(),

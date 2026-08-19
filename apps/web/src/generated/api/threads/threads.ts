@@ -10,6 +10,7 @@ import type {
   NestThreadCreate401,
   NestThreadCreate403,
   NestThreadCreate404,
+  NestThreadCreate429,
   NestThreadDelete401,
   NestThreadDelete403,
   NestThreadDelete404,
@@ -151,10 +152,15 @@ export type nestThreadCreateResponse404 = {
   status: 404
 }
 
+export type nestThreadCreateResponse429 = {
+  data: NestThreadCreate429
+  status: 429
+}
+
 export type nestThreadCreateResponseSuccess = (nestThreadCreateResponse201) & {
   headers: Headers
 }
-export type nestThreadCreateResponseError = (nestThreadCreateResponse400 | nestThreadCreateResponse401 | nestThreadCreateResponse403 | nestThreadCreateResponse404) & {
+export type nestThreadCreateResponseError = (nestThreadCreateResponse400 | nestThreadCreateResponse401 | nestThreadCreateResponse403 | nestThreadCreateResponse404 | nestThreadCreateResponse429) & {
   headers: Headers
 }
 

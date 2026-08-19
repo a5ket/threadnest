@@ -11,6 +11,7 @@ import type {
   CommentCreateReply401,
   CommentCreateReply403,
   CommentCreateReply404,
+  CommentCreateReply429,
   CommentDelete401,
   CommentDelete403,
   CommentDelete404,
@@ -41,6 +42,7 @@ import type {
   NestThreadCommentCreate401,
   NestThreadCommentCreate403,
   NestThreadCommentCreate404,
+  NestThreadCommentCreate429,
   NestThreadCommentList200,
   NestThreadCommentList400,
   NestThreadCommentList404,
@@ -262,10 +264,15 @@ export type commentCreateReplyResponse404 = {
   status: 404
 }
 
+export type commentCreateReplyResponse429 = {
+  data: CommentCreateReply429
+  status: 429
+}
+
 export type commentCreateReplyResponseSuccess = (commentCreateReplyResponse201) & {
   headers: Headers
 }
-export type commentCreateReplyResponseError = (commentCreateReplyResponse400 | commentCreateReplyResponse401 | commentCreateReplyResponse403 | commentCreateReplyResponse404) & {
+export type commentCreateReplyResponseError = (commentCreateReplyResponse400 | commentCreateReplyResponse401 | commentCreateReplyResponse403 | commentCreateReplyResponse404 | commentCreateReplyResponse429) & {
   headers: Headers
 }
 
@@ -469,10 +476,15 @@ export type nestThreadCommentCreateResponse404 = {
   status: 404
 }
 
+export type nestThreadCommentCreateResponse429 = {
+  data: NestThreadCommentCreate429
+  status: 429
+}
+
 export type nestThreadCommentCreateResponseSuccess = (nestThreadCommentCreateResponse201) & {
   headers: Headers
 }
-export type nestThreadCommentCreateResponseError = (nestThreadCommentCreateResponse400 | nestThreadCommentCreateResponse401 | nestThreadCommentCreateResponse403 | nestThreadCommentCreateResponse404) & {
+export type nestThreadCommentCreateResponseError = (nestThreadCommentCreateResponse400 | nestThreadCommentCreateResponse401 | nestThreadCommentCreateResponse403 | nestThreadCommentCreateResponse404 | nestThreadCommentCreateResponse429) & {
   headers: Headers
 }
 

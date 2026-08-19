@@ -4,6 +4,7 @@ export type ApiErrorResponse = {
     code?: string
     message?: string
     fields?: unknown
+    retryAfterSeconds?: number
   }
 }
 
@@ -13,14 +14,16 @@ export class ApiError<TResponse = unknown> extends Error {
   readonly statusCode: number
   readonly errorCode: CodeOf<TResponse>
   readonly details?: unknown
+  readonly retryAfterSeconds?: number
   readonly response?: TResponse
 
-  constructor(statusCode: number, errorCode: CodeOf<TResponse>, message: string, details?: unknown, response?: TResponse) {
+  constructor(statusCode: number, errorCode: CodeOf<TResponse>, message: string, details?: unknown, response?: TResponse, retryAfterSeconds?: number) {
     super(message)
     this.name = 'ApiError'
     this.statusCode = statusCode
     this.errorCode = errorCode
     this.details = details
+    this.retryAfterSeconds = retryAfterSeconds
     this.response = response
   }
 
@@ -41,7 +44,8 @@ export class ApiError<TResponse = unknown> extends Error {
       (apiError?.error?.code ?? 'UNKNOWN_ERROR') as CodeOf<TResponse>,
       apiError?.error?.message ?? (response.statusText || 'Something went wrong'),
       apiError?.error?.fields,
-      payload
+      payload,
+      apiError?.error?.retryAfterSeconds
     )
   }
 
@@ -53,7 +57,8 @@ export class ApiError<TResponse = unknown> extends Error {
       (body?.error?.code ?? 'UNKNOWN_ERROR') as CodeOf<TResponse>,
       body?.error?.message ?? 'Something went wrong',
       body?.error?.fields,
-      result.data
+      result.data,
+      body?.error?.retryAfterSeconds
     )
   }
 

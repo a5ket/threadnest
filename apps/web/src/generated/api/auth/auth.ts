@@ -18,6 +18,7 @@ import type {
   AuthLogin201,
   AuthLogin400,
   AuthLogin401,
+  AuthLogin429,
   AuthLogout401,
   AuthLogoutAll401,
   AuthRefresh201,
@@ -25,8 +26,10 @@ import type {
   AuthRegister201,
   AuthRegister400,
   AuthRegister409,
+  AuthRegister429,
   AuthRequestEmailVerification401,
   AuthRequestPasswordReset400,
+  AuthRequestPasswordReset429,
   ConfirmEmailVerificationDto,
   ConfirmPasswordResetDto,
   LoginDto,
@@ -52,10 +55,15 @@ export type authRegisterResponse409 = {
   status: 409
 }
 
+export type authRegisterResponse429 = {
+  data: AuthRegister429
+  status: 429
+}
+
 export type authRegisterResponseSuccess = (authRegisterResponse201) & {
   headers: Headers
 }
-export type authRegisterResponseError = (authRegisterResponse400 | authRegisterResponse409) & {
+export type authRegisterResponseError = (authRegisterResponse400 | authRegisterResponse409 | authRegisterResponse429) & {
   headers: Headers
 }
 
@@ -95,10 +103,15 @@ export type authLoginResponse401 = {
   status: 401
 }
 
+export type authLoginResponse429 = {
+  data: AuthLogin429
+  status: 429
+}
+
 export type authLoginResponseSuccess = (authLoginResponse201) & {
   headers: Headers
 }
-export type authLoginResponseError = (authLoginResponse400 | authLoginResponse401) & {
+export type authLoginResponseError = (authLoginResponse400 | authLoginResponse401 | authLoginResponse429) & {
   headers: Headers
 }
 
@@ -326,10 +339,15 @@ export type authRequestPasswordResetResponse400 = {
   status: 400
 }
 
+export type authRequestPasswordResetResponse429 = {
+  data: AuthRequestPasswordReset429
+  status: 429
+}
+
 export type authRequestPasswordResetResponseSuccess = (authRequestPasswordResetResponse204) & {
   headers: Headers
 }
-export type authRequestPasswordResetResponseError = (authRequestPasswordResetResponse400) & {
+export type authRequestPasswordResetResponseError = (authRequestPasswordResetResponse400 | authRequestPasswordResetResponse429) & {
   headers: Headers
 }
 

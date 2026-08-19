@@ -7,6 +7,7 @@ import { ApiDataResponse } from 'src/common/swagger/api-data-response.decorator'
 import { ResponseInterceptor } from 'src/common/interceptors/response.interceptor'
 import type { AuthUser } from 'src/common/types/auth.user'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { AuthGuard } from 'src/security/guards/auth.guard'
 import { AuthCookieService } from './auth-cookie.service'
 import { AuthService } from './auth.service'
@@ -39,6 +40,7 @@ export class AuthController {
   ) { }
 
   @Post('register')
+  @RateLimit({ limit: 5, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'authRegister', summary: 'Register a new account', description: 'Creates a user and starts a session. Tokens are also set as httpOnly cookies.' })
   @ApiDataResponse({ status: 201, description: 'Account created', type: AuthTokensDto })
   @ApiExceptionResponses(ValidationException)
@@ -51,6 +53,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @RateLimit({ limit: 5, ttlMs: 60_000, blockDurationMs: 15 * 60_000 })
   @ApiOperation({ operationId: 'authLogin', summary: 'Log in with email and password', description: 'Starts a session. Tokens are also set as httpOnly cookies.' })
   @ApiDataResponse({ status: 201, description: 'Authenticated', type: AuthTokensDto })
   @ApiExceptionResponses(ValidationException)
@@ -133,6 +136,7 @@ export class AuthController {
   }
 
   @Post('password-reset/request')
+  @RateLimit({ limit: 5, ttlMs: 60_000 })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ operationId: 'authRequestPasswordReset', summary: 'Request a password reset email', description: 'Always returns 204, whether or not the email is registered.' })
   @ApiResponse({ status: 204, description: 'Password reset email sent, if the account exists' })

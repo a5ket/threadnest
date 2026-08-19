@@ -9,6 +9,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { NestNotFoundException } from 'src/nest/exceptions/nest-not-found.exception'
 import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.exception'
 import { ReportCreateDto } from './dto/report-create.dto'
 import { ReportResponseDto } from './dto/report-response.dto'
@@ -25,6 +26,7 @@ export class NestThreadReportController {
 
   @Post()
   @AuthenticatedAndVerified()
+  @RateLimit({ limit: 5, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestThreadReportCreate', summary: 'Report a thread' })
   @ApiDataResponse({ status: 201, description: 'Report filed', type: ReportResponseDto })
   @ApiExceptionResponses(ValidationException, NestNotFoundException, ThreadNotFoundException, AlreadyReportedException, InsufficientPermissionsException)

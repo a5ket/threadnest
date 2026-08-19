@@ -11,6 +11,7 @@ import type {
   CommentReportCreate403,
   CommentReportCreate404,
   CommentReportCreate409,
+  CommentReportCreate429,
   NestReportDismiss401,
   NestReportDismiss403,
   NestReportDismiss404,
@@ -31,6 +32,7 @@ import type {
   NestThreadReportCreate403,
   NestThreadReportCreate404,
   NestThreadReportCreate409,
+  NestThreadReportCreate429,
   ReportCreateDto
 } from '../models'
 
@@ -235,10 +237,15 @@ export type nestThreadReportCreateResponse409 = {
   status: 409
 }
 
+export type nestThreadReportCreateResponse429 = {
+  data: NestThreadReportCreate429
+  status: 429
+}
+
 export type nestThreadReportCreateResponseSuccess = (nestThreadReportCreateResponse201) & {
   headers: Headers
 }
-export type nestThreadReportCreateResponseError = (nestThreadReportCreateResponse400 | nestThreadReportCreateResponse401 | nestThreadReportCreateResponse403 | nestThreadReportCreateResponse404 | nestThreadReportCreateResponse409) & {
+export type nestThreadReportCreateResponseError = (nestThreadReportCreateResponse400 | nestThreadReportCreateResponse401 | nestThreadReportCreateResponse403 | nestThreadReportCreateResponse404 | nestThreadReportCreateResponse409 | nestThreadReportCreateResponse429) & {
   headers: Headers
 }
 
@@ -295,10 +302,15 @@ export type commentReportCreateResponse409 = {
   status: 409
 }
 
+export type commentReportCreateResponse429 = {
+  data: CommentReportCreate429
+  status: 429
+}
+
 export type commentReportCreateResponseSuccess = (commentReportCreateResponse201) & {
   headers: Headers
 }
-export type commentReportCreateResponseError = (commentReportCreateResponse400 | commentReportCreateResponse401 | commentReportCreateResponse403 | commentReportCreateResponse404 | commentReportCreateResponse409) & {
+export type commentReportCreateResponseError = (commentReportCreateResponse400 | commentReportCreateResponse401 | commentReportCreateResponse403 | commentReportCreateResponse404 | commentReportCreateResponse409 | commentReportCreateResponse429) & {
   headers: Headers
 }
 

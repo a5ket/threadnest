@@ -25,6 +25,7 @@ import { NestNotFoundException } from 'src/nest/exceptions/nest-not-found.except
 import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadDetailResponseDto } from './dto/thread.detail-response.dto'
@@ -57,6 +58,7 @@ export class NestThreadController {
   }
 
   @Post()
+  @RateLimit({ limit: 10, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestThreadCreate', summary: 'Create a thread in a nest' })
   @ApiDataResponse({ status: 201, description: 'Thread created', type: ThreadDetailResponseDto })
   @AuthenticatedAndVerified()

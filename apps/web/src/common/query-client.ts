@@ -7,11 +7,22 @@ export function makeQueryClient() {
       queries: {
         gcTime: 5 * 60 * 1000,
         retry: (failureCount, error) => {
+          if (error instanceof ApiError && error.is('RATE_LIMITED')) {
+            return failureCount < 5
+          }
+
           if (error instanceof ApiError && error.statusCode < 500) {
             return false
           }
 
           return failureCount < 2
+        },
+        retryDelay: (failureCount, error) => {
+          if (error instanceof ApiError && error.is('RATE_LIMITED')) {
+            return (error.retryAfterSeconds ?? 5) * 1000
+          }
+
+          return Math.min(1000 * 2 ** failureCount, 30000)
         },
         refetchOnWindowFocus: true
       },

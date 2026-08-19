@@ -11,6 +11,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
 import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.exception'
 import { CommentService } from './comment.service'
@@ -57,6 +58,7 @@ export class CommentController {
 
   @AuthenticatedAndVerified()
   @Post(':commentId/replies')
+  @RateLimit({ limit: 10, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'commentCreateReply', summary: 'Reply to a comment' })
   @ApiDataResponse({ status: 201, description: 'Reply created', type: CommentResponseDto })
   @ApiExceptionResponses(ValidationException, CommentNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)

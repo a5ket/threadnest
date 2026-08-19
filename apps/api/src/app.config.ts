@@ -4,12 +4,14 @@ import { EmailConfig } from './email/email.config'
 import { EventConfig } from './event/event.config'
 import { QueueConfig } from './queue/queue.config'
 import { SecurityConfig } from './security/security.config'
+import { ThrottlerConfig } from './security/throttler.config'
 import { UrlConfig } from './url/url.config'
 
 export type AppConfig =
   AuthConfig &
   CacheConfig &
   SecurityConfig &
+  ThrottlerConfig &
   QueueConfig &
   EventConfig &
   UrlConfig &
@@ -35,6 +37,12 @@ export default (): AppConfig => {
     redisHost: process.env.REDIS_HOST!,
     redisPort: parseInt(process.env.REDIS_PORT!),
     cacheKeyPrefix: 'threadnest:'
+  }
+
+  const throttler: ThrottlerConfig = {
+    redisHost: process.env.REDIS_HOST!,
+    redisPort: parseInt(process.env.REDIS_PORT!),
+    throttlerKeyPrefix: 'threadnest:throttle:'
   }
 
   const queue: QueueConfig = {
@@ -65,6 +73,7 @@ export default (): AppConfig => {
     ...auth,
     ...security,
     ...cache,
+    ...throttler,
     ...queue,
     ...event,
     ...url,
