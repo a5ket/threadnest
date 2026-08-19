@@ -1,6 +1,7 @@
 import { createHash } from 'crypto'
 import { InvalidRefreshTokenException } from './exceptions/invalid-refresh-token.exception'
 import { RefreshTokenExpiredException } from './exceptions/refresh-token-expired.exception'
+import { UserSuspendedException } from './exceptions/user-suspended.exception'
 import { AuthService } from './auth.service'
 
 describe('AuthService refresh', () => {
@@ -31,6 +32,7 @@ describe('AuthService refresh', () => {
   }
   const eventBus = { publish: jest.fn() }
   const emailService = {}
+  const userSuspensions = { getActive: jest.fn() }
 
   const service = new AuthService(
     userService as any,
@@ -40,8 +42,9 @@ describe('AuthService refresh', () => {
     jwt as any,
     config as any,
     cache as any,
-    eventBus as any,
-    emailService as any
+    eventBus,
+    emailService as any,
+    userSuspensions as any
   )
 
   const session = (overrides: Record<string, unknown> = {}) => ({
@@ -66,6 +69,7 @@ describe('AuthService refresh', () => {
     cache.set.mockResolvedValue(undefined)
     eventBus.publish.mockResolvedValue(undefined)
     jwt.signAsync.mockResolvedValue('new-access-token')
+    userSuspensions.getActive.mockResolvedValue(null)
   })
 
   it('rotates the refresh token and caches the result for 15 seconds', async () => {
@@ -134,5 +138,14 @@ describe('AuthService refresh', () => {
     }))
 
     await expect(service.refresh(rawRefreshToken)).rejects.toThrow(RefreshTokenExpiredException)
+  })
+
+  it('rejects refreshing a session for a suspended user and never rotates the token', async () => {
+    refreshTokenRepo.findByHash.mockResolvedValue(session())
+    userSuspensions.getActive.mockResolvedValue({ reason: 'Spam' })
+
+    await expect(service.refresh(rawRefreshToken)).rejects.toThrow(UserSuspendedException)
+
+    expect(refreshTokenRepo.rotate).not.toHaveBeenCalled()
   })
 })

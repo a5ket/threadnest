@@ -13,27 +13,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const status = exception.getStatus()
       const body = exception.getResponse()
 
-      const code = typeof body === 'object' && body !== null && 'code' in body
-        ? (body as Record<string, unknown>).code
-        : undefined
+      if (typeof body !== 'object' || body === null) {
+        return response.status(status).json({
+          error: { status, code: undefined, message: body }
+        })
+      }
 
-      const message = typeof body === 'string'
-        ? body
-        : typeof body === 'object' && body !== null && 'message' in body
-          ? (body as Record<string, unknown>).message
-          : undefined
-
-      const fields = typeof body === 'object' && body !== null && 'fields' in body
-        ? (body as Record<string, unknown>).fields
-        : undefined
+      // Any field beyond code/message (e.g. ValidationException's `fields`, UserSuspendedException's `reason`) passes through as-is.
+      const { code, message, ...extra } = body as Record<string, unknown>
 
       return response.status(status).json({
-        error: {
-          status,
-          code,
-          message,
-          ...(fields !== undefined ? { fields } : {}),
-        }
+        error: { status, code, message, ...extra }
       })
     }
 

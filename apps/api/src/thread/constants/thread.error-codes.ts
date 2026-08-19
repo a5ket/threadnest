@@ -1,3 +1,4 @@
 export const ThreadsErrorCodes = {
   THREAD_NOT_FOUND: 'THREAD_NOT_FOUND',
+  THREAD_ALREADY_DELETED: 'THREAD_ALREADY_DELETED',
 } as const

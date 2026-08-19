@@ -16,6 +16,7 @@ export function commentViewerSelect(nestId: string, viewerId?: string) {
     editedAt: true,
     deletedAt: true,
     deletedById: true,
+    deletedByPlatform: true,
     author: {
       select: {
         ...USER_REFERENCE_SELECT,

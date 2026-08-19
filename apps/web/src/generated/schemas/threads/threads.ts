@@ -86,8 +86,9 @@ export const NestThreadCreateResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -138,8 +139,9 @@ export const NestThreadGetBySlugResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -200,8 +202,9 @@ export const NestThreadUpdateResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -262,8 +265,9 @@ export const NestThreadLockResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -314,8 +318,9 @@ export const NestThreadUnlockResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -366,8 +371,9 @@ export const NestThreadPinResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -418,8 +424,9 @@ export const NestThreadUnpinResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -474,8 +481,9 @@ export const NestThreadVoteResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({
@@ -526,8 +534,9 @@ export const NestThreadRemoveVoteResponse = zod.object({
     commentCount: zod.number().describe('Number of comments on this thread'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
-    deletedAt: zod.string().nullish().describe('Deletion timestamp. Only present when the current user can delete the thread'),
-    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present when the current user can delete the thread'),
+    deletedAt: zod.string().nullable().describe('Deletion timestamp, if the thread was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     author: zod.object({
       id: zod.string().describe('User ID'),
       profile: zod.object({

@@ -4,6 +4,9 @@ import { Avatar } from '@/common/components/avatar'
 import { formatDateTime } from '@/common/format-date'
 import { EditProfileForm } from '@/features/me/components/edit-profile-form'
 import { useUser } from '@/features/me/me.hooks'
+import { RemoveAllContentButton } from '@/features/platform-content/components/remove-all-content-button'
+import { PlatformRoleControl } from '@/features/platform-role-grant/components/platform-role-control'
+import { SuspendUserControl } from '@/features/platform-suspension/components/suspend-user-control'
 import type { UserProfileResponseDto } from '@/generated/api/models'
 import { useState } from 'react'
 
@@ -70,6 +73,19 @@ export function UserProfileView({ profile: initialProfile }: UserProfileViewProp
         {' '}
         {formatDateTime(profile.createdAt)}
       </p>
+
+      {!isOwnProfile && currentUser?.platformAccess.isModerator && (
+        <div className='flex flex-col gap-4 rounded-md border border-border p-4'>
+          <h2 className='text-sm font-semibold'>Platform moderation</h2>
+
+          <SuspendUserControl userId={profile.userId} />
+          <RemoveAllContentButton userId={profile.userId} />
+
+          {currentUser.platformAccess.isAdmin && (
+            <PlatformRoleControl userId={profile.userId} />
+          )}
+        </div>
+      )}
     </div>
   )
 }

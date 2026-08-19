@@ -12,6 +12,9 @@ export class NestDetailResponseDto {
   @ApiProperty({ type: NestAccessContextDto, description: 'The current user\'s access and permissions for this nest' })
   access!: NestAccessContextDto
 
+  @ApiProperty({ description: 'Whether the nest has been deleted' })
+  isDeleted!: boolean
+
   @ApiProperty({ description: 'Nest description. Only present when the current user can view the nest', required: false })
   description?: string
 

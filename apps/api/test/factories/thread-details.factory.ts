@@ -13,6 +13,7 @@ export const createThreadDetails = (
   updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   deletedAt: null,
   deletedById: null,
+  deletedByPlatform: false,
   lockedAt: null,
   pinnedAt: null,
   commentCount: 0,

@@ -48,7 +48,11 @@ export class CommentPresenter {
       updatedAt: comment.updatedAt,
       editedAt: comment.editedAt,
       deletedAt: comment.deletedAt,
-      deletedById: comment.deletedById,
+      // Regular viewers see only that a comment is gone; who removed it (and whether it was
+      // platform vs. nest moderation) is nest-moderator-only. Platform admin identity stays
+      // masked even from nest moderators.
+      deletedById: canModerateContent && !comment.deletedByPlatform ? comment.deletedById : undefined,
+      deletedByPlatform: canModerateContent ? comment.deletedByPlatform : undefined,
       viewerBlockedAuthor: blockFlags.viewerBlockedAuthor,
       authorBlockedViewer: blockFlags.authorBlockedViewer,
     }
@@ -78,7 +82,11 @@ export class CommentPresenter {
       updatedAt: node.updatedAt,
       editedAt: node.editedAt,
       deletedAt: node.deletedAt,
-      deletedById: node.deletedById,
+      // Regular viewers see only that a comment is gone; who removed it (and whether it was
+      // platform vs. nest moderation) is nest-moderator-only. Platform admin identity stays
+      // masked even from nest moderators.
+      deletedById: canModerateContent && !node.deletedByPlatform ? node.deletedById : undefined,
+      deletedByPlatform: canModerateContent ? node.deletedByPlatform : undefined,
       depth: node.depth,
       viewerBlockedAuthor: node.viewerBlockedAuthor,
       authorBlockedViewer: node.authorBlockedViewer,

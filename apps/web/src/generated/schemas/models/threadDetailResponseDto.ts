@@ -39,15 +39,17 @@ export interface ThreadDetailResponseDto {
      */
   viewerVote: ThreadDetailResponseDtoViewerVote
   /**
-     * Deletion timestamp. Only present when the current user can delete the thread
+     * Deletion timestamp, if the thread was deleted
      * @nullable
      */
-  deletedAt?: string | null
+  deletedAt: string | null
   /**
-     * ID of the user who deleted the thread. Only present when the current user can delete the thread
+     * ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads
      * @nullable
      */
   deletedById?: string | null
+  /** Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators */
+  deletedByPlatform?: boolean
   /** Thread author */
   author: UserReferenceDto
   /**

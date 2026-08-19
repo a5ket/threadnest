@@ -17,7 +17,12 @@ export const MeBootstrapResponse = zod.object({
       email: zod.string().describe('User email address'),
       username: zod.string().describe('Unique username'),
       avatarUrl: zod.string().nullable().describe('Avatar URL'),
-      emailVerified: zod.boolean().describe('Whether the email has been verified')
+      emailVerified: zod.boolean().describe('Whether the email has been verified'),
+      platformAccess: zod.object({
+        level: zod.number().describe('Numeric platform access level (0 for no platform role)'),
+        isModerator: zod.boolean().describe('Whether the current user holds at least the MODERATOR platform role'),
+        isAdmin: zod.boolean().describe('Whether the current user holds the ADMIN platform role')
+      }).describe('The user\'s own platform-level access (moderator\/admin role, if any)')
     }).describe('Authenticated user profile'),
     nests: zod.array(zod.object({
       name: zod.string().describe('Nest display name'),

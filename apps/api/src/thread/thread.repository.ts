@@ -326,7 +326,7 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
-  async softDelete(threadId: string, deletedById: string, db: Database = this.prisma) {
+  async softDelete(threadId: string, deletedById: string, db: Database = this.prisma, deletedByPlatform = false) {
     try {
       await db.thread.update({
         where: {
@@ -334,7 +334,8 @@ export class ThreadRepository {
         },
         data: {
           deletedAt: new Date(),
-          deletedById
+          deletedById,
+          deletedByPlatform
         }
       })
     } catch (error) {
@@ -344,6 +345,20 @@ export class ThreadRepository {
 
       throw error
     }
+  }
+
+  async listActiveByAuthor(authorId: string, db: Database = this.prisma) {
+    return db.thread.findMany({
+      where: { authorId, deletedAt: null },
+      select: { id: true, nestId: true }
+    })
+  }
+
+  async softDeleteManyByAuthor(authorId: string, deletedById: string, db: Database = this.prisma) {
+    return db.thread.updateMany({
+      where: { authorId, deletedAt: null },
+      data: { deletedAt: new Date(), deletedById, deletedByPlatform: true }
+    })
   }
 
   async updateById(threadId: string, nestId: string, dto: ThreadUpdateDto, viewerId?: string) {

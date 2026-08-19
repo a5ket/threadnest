@@ -42,6 +42,7 @@ export type CommentNode = {
     editedAt: Date | null
     deletedAt: Date | null
     deletedById: string | null
+    deletedByPlatform: boolean
     depth: number
 } & CommentBlockFlags
 

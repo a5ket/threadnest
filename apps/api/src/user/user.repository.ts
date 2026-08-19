@@ -55,6 +55,21 @@ export class UserRepository {
     return user
   }
 
+  async getByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+      }
+    })
+
+    if (!user) {
+      throw new UserNotFoundException()
+    }
+
+    return user
+  }
+
   async updatePassword(userId: string, passwordHash: string, db: Database = this.prisma) {
     return db.user.update({
       where: { id: userId },

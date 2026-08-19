@@ -39,8 +39,11 @@ export class CommentNodeResponseDto {
   @ApiProperty({ description: 'Deletion timestamp, if the comment was deleted', nullable: true, type: 'string' })
   deletedAt!: Date | null
 
-  @ApiProperty({ description: 'ID of the user who deleted the comment, if it was deleted', nullable: true, type: 'string' })
-  deletedById!: string | null
+  @ApiProperty({ description: 'ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments', required: false, nullable: true, type: 'string' })
+  deletedById?: string | null
+
+  @ApiProperty({ description: 'Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators', required: false })
+  deletedByPlatform?: boolean
 
   @ApiProperty({ description: 'Depth of this comment within the tree (0 for roots)' })
   depth!: number

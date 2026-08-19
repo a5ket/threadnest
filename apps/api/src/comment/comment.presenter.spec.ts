@@ -19,6 +19,7 @@ describe('CommentPresenter', () => {
     editedAt: null,
     deletedAt: null,
     deletedById: null,
+    deletedByPlatform: false,
     author: { id: 'author-1', profile: null, nestMembership: [] },
     viewerVote: null,
     ...overrides,
@@ -74,5 +75,44 @@ describe('CommentPresenter', () => {
 
     expect(view.content).toBeNull()
     expect(view.author).toBeNull()
+  })
+
+  it('never exposes which platform admin removed the comment, even to nest moderators', () => {
+    const comment = baseComment({
+      deletedAt: new Date(Date.now() - MODERATION_GRACE_PERIOD_MS / 2),
+      deletedById: 'platform-admin-1',
+      deletedByPlatform: true,
+    })
+
+    const view = presenter.toView(comment, undefined, true)
+
+    expect(view.deletedById).toBeUndefined()
+    expect(view.deletedByPlatform).toBe(true)
+  })
+
+  it('shows deletedById and deletedByPlatform to nest moderators for nest-removed content', () => {
+    const comment = baseComment({
+      deletedAt: new Date(Date.now() - MODERATION_GRACE_PERIOD_MS / 2),
+      deletedById: 'moderator-1',
+      deletedByPlatform: false,
+    })
+
+    const view = presenter.toView(comment, undefined, true)
+
+    expect(view.deletedById).toBe('moderator-1')
+    expect(view.deletedByPlatform).toBe(false)
+  })
+
+  it('hides deletedById and deletedByPlatform from regular (non-moderator) viewers, regardless of who removed it', () => {
+    const platformRemoved = baseComment({ deletedAt: new Date(), deletedById: 'platform-admin-1', deletedByPlatform: true })
+    const modRemoved = baseComment({ deletedAt: new Date(), deletedById: 'moderator-1', deletedByPlatform: false })
+
+    const platformView = presenter.toView(platformRemoved, undefined, false)
+    const modView = presenter.toView(modRemoved, undefined, false)
+
+    expect(platformView.deletedById).toBeUndefined()
+    expect(platformView.deletedByPlatform).toBeUndefined()
+    expect(modView.deletedById).toBeUndefined()
+    expect(modView.deletedByPlatform).toBeUndefined()
   })
 })

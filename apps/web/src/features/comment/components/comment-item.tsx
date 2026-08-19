@@ -10,6 +10,7 @@ import { useThreadStore } from '@/features/thread/components/thread-store-provid
 import { useDeleteComment, useInvalidateCommentTree, useRemoveCommentVote, useVoteComment } from '@/features/comment/comment.hooks'
 import type { CommentNode } from '@/features/comment/comment.types'
 import { useUser } from '@/features/me/me.hooks'
+import { RemoveCommentPlatformButton } from '@/features/platform-content/components/remove-comment-platform-button'
 import { ReportButton } from '@/features/report/components/report-button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -124,6 +125,16 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
 
         {!isDeleted && user && comment.author && user.id !== comment.author.id && (
           <ReportButton target={{ type: 'comment', commentId: comment.id }} />
+        )}
+
+        {!isDeleted && user?.platformAccess.isModerator && (
+          <RemoveCommentPlatformButton
+            commentId={comment.id}
+            onRemoved={() => {
+              invalidate()
+              router.refresh()
+            }}
+          />
         )}
 
         {hiddenReplyCount > 0 && (

@@ -4,6 +4,7 @@ import { NestBanRepository } from './ban/nest-ban.repository'
 import { NEST_ACCESS_LEVEL, NON_MEMBER_LEVEL } from './constants/nest-access-level'
 import { NestNotFoundException } from './exceptions/nest-not-found.exception'
 import { NestMemberRepository } from './member/nest-member.repository'
+import { NestRepository } from './nest.repository'
 import { NestSettingsNotFoundException } from './settings/exceptions/nest-settings-not-found.exception'
 import { NestSettingsRepository } from './settings/nest-settings.repository'
 import { NestAccessContext } from './types/nest.access-context'
@@ -13,7 +14,8 @@ export class NestAccess {
   constructor(
     private readonly settingsRepo: NestSettingsRepository,
     private readonly bansRepo: NestBanRepository,
-    private readonly membersRepo: NestMemberRepository
+    private readonly membersRepo: NestMemberRepository,
+    private readonly nestsRepo: NestRepository
   ) { }
 
   isHigherRole(actorRole: NestMemberRole, targetRole: NestMemberRole) {
@@ -36,10 +38,11 @@ export class NestAccess {
     nestId: string,
     userId?: string
   ): Promise<NestAccessContext> {
-    const [settingsResult, membershipResult, banResult] = await Promise.allSettled([
+    const [settingsResult, membershipResult, banResult, deletedAtResult] = await Promise.allSettled([
       this.settingsRepo.get(nestId),
       userId ? this.membersRepo.findByUser(nestId, userId) : Promise.resolve(null),
-      userId ? this.bansRepo.existsActive(nestId, userId) : Promise.resolve(null)
+      userId ? this.bansRepo.existsActive(nestId, userId) : Promise.resolve(null),
+      this.nestsRepo.getDeletedAt(nestId)
     ])
 
     if (settingsResult.status === 'rejected') {
@@ -56,6 +59,10 @@ export class NestAccess {
       throw banResult.reason
     }
 
+    if (deletedAtResult.status === 'rejected') {
+      throw deletedAtResult.reason
+    }
+
     const settings = settingsResult.value
     const membership = membershipResult.value
 
@@ -63,7 +70,8 @@ export class NestAccess {
     const level = role ? NEST_ACCESS_LEVEL[role] : NON_MEMBER_LEVEL
     const isMember = membership !== null
     const isBanned = Boolean(banResult.value)
-    const canViewNest = settings.visibility === NestVisibility.PUBLIC || isMember
+    const isDeleted = Boolean(deletedAtResult.value)
+    const canViewNest = !isDeleted && (settings.visibility === NestVisibility.PUBLIC || isMember)
     const canParticipate = canViewNest && !isBanned
     const isOwner = role === NestMemberRole.OWNER
 
@@ -102,10 +110,10 @@ export class NestAccess {
       canManageBans: hasAccess(settings.minBanManageLevel),
       canViewActionLog: hasAccess(settings.minActionLogViewLevel),
 
-      canManageSettings: isOwner,
-      canDeleteNest: isOwner,
-      canTransferOwnership: isOwner,
-      canManageMemberRoles: isOwner,
+      canManageSettings: isOwner && !isDeleted,
+      canDeleteNest: isOwner && !isDeleted,
+      canTransferOwnership: isOwner && !isDeleted,
+      canManageMemberRoles: isOwner && !isDeleted,
 
       canLeaveNest: isMember && !isOwner
     }

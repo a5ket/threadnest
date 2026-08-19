@@ -17,6 +17,6 @@ import { ThreadCommentController } from './thread-comment.controller'
   imports: [PrismaModule, EventModule, SecurityModule, ThreadModule, NestModule, BlockModule],
   controllers: [CommentController, ThreadCommentController],
   providers: [CommentRepository, CommentVoteRepository, CommentService, CommentPolicy, CommentPresenter],
-  exports: [CommentRepository]
+  exports: [CommentRepository, CommentService]
 })
 export class CommentModule { }

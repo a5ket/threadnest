@@ -31,9 +31,11 @@ import { TokenAlreadyRedeemedException } from './exceptions/token-already-redeem
 import { TokenExpiredException } from './exceptions/token-expired.exception'
 import { SamePasswordException } from './exceptions/same-password.exception'
 import { EmailService } from 'src/email/email.service'
+import { UserSuspensionService } from 'src/user/suspension/user-suspension.service'
 import { RefreshTokenRepository } from './refresh-token.repository'
 import { ConfirmationTokenStatus, ConfirmationTokenType } from 'generated/prisma/enums'
 import { ConfirmationTokenRepository } from './confirmation-token.repository'
+import { UserSuspendedException } from './exceptions/user-suspended.exception'
 
 type RefreshResult = {
   accessToken: string
@@ -55,7 +57,8 @@ export class AuthService {
     private readonly config: ConfigService<AuthConfig>,
     private readonly cache: CacheService,
     private readonly eventBus: EventBus,
-    private readonly emailService: EmailService
+    private readonly emailService: EmailService,
+    private readonly userSuspensions: UserSuspensionService
   ) { }
 
   async register(dto: RegisterDto) {
@@ -86,6 +89,12 @@ export class AuthService {
 
     if (!isPasswordValid) {
       throw new InvalidCredentialsException()
+    }
+
+    const activeSuspension = await this.userSuspensions.getActive(user.id)
+
+    if (activeSuspension) {
+      throw new UserSuspendedException(activeSuspension.reason)
     }
 
     const tokens = await this.createSession(user.id, user.email, user.emailVerifiedAt !== null)
@@ -138,6 +147,12 @@ export class AuthService {
 
     if (currentSession.expiresAt < new Date()) {
       throw new RefreshTokenExpiredException()
+    }
+
+    const activeSuspension = await this.userSuspensions.getActive(currentSession.user.id)
+
+    if (activeSuspension) {
+      throw new UserSuspendedException(activeSuspension.reason)
     }
 
     const newRefreshToken = this.generateRefreshToken()

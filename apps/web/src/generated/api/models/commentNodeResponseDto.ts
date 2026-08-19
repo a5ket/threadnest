@@ -51,10 +51,12 @@ export interface CommentNodeResponseDto {
      */
   deletedAt: string | null
   /**
-     * ID of the user who deleted the comment, if it was deleted
+     * ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments
      * @nullable
      */
-  deletedById: string | null
+  deletedById?: string | null
+  /** Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators */
+  deletedByPlatform?: boolean
   /** Depth of this comment within the tree (0 for roots) */
   depth: number
   /** Whether the current user has blocked the comment author */

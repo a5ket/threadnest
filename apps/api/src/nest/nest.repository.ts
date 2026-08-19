@@ -50,6 +50,7 @@ export class NestRepository {
     }
   }
 
+  // Returns soft-deleted nests too — "deleted" and "never existed" are different cases callers need to tell apart.
   async getBySlug(nestSlug: string) {
     const nest = await this.prisma.nest.findUnique({
       where: { slug: nestSlug },
@@ -98,10 +99,11 @@ export class NestRepository {
     })
   }
 
-  async delete(nestId: string) {
+  async delete(nestId: string, actorUserId: string) {
     try {
-      await this.prisma.nest.delete({
-        where: { id: nestId }
+      await this.prisma.nest.update({
+        where: { id: nestId },
+        data: { deletedAt: new Date(), deletedById: actorUserId }
       })
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {
@@ -125,6 +127,14 @@ export class NestRepository {
         },
       },
     })
+  }
+
+  async getDeletedAt(nestId: string) {
+    const nest = await this.prisma.nest.findUnique({
+      where: { id: nestId },
+      select: { deletedAt: true }
+    })
+    return nest?.deletedAt ?? null
   }
 
   async slugExists(nestSlug: string) {
@@ -177,6 +187,7 @@ export class NestRepository {
 
     const nests = await this.prisma.nest.findMany({
       where: {
+        deletedAt: null,
         ...visibilityWhere,
         ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {}),
         ...cursorWhere

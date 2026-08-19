@@ -16,6 +16,7 @@ export const createComment = (
   editedAt: null,
   deletedAt: null,
   deletedById: null,
+  deletedByPlatform: false,
   author: { id: 'author-1', profile: null },
   ...overrides,
 })

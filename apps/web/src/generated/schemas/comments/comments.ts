@@ -35,7 +35,8 @@ export const CommentGetResponse = zod.object({
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
     deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
     authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
   })
@@ -76,7 +77,8 @@ export const CommentUpdateResponse = zod.object({
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
     deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
     authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
   })
@@ -141,7 +143,8 @@ export const CommentListRepliesResponse = zod.object({
       updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
       editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
       deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-      deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+      deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+      deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
       depth: zod.number().describe('Depth of this comment within the tree (0 for roots)'),
       viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
       authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
@@ -190,7 +193,8 @@ export const CommentCreateReplyResponse = zod.object({
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
     deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
     authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
   })
@@ -229,7 +233,8 @@ export const CommentVoteResponse = zod.object({
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
     deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
     authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
   })
@@ -264,7 +269,8 @@ export const CommentRemoveVoteResponse = zod.object({
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
     deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
     authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
   })
@@ -321,7 +327,8 @@ export const NestThreadCommentListResponse = zod.object({
       updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
       editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
       deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-      deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+      deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+      deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
       depth: zod.number().describe('Depth of this comment within the tree (0 for roots)'),
       viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
       authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
@@ -371,7 +378,8 @@ export const NestThreadCommentCreateResponse = zod.object({
     updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
     editedAt: zod.string().nullable().describe('When the comment was last edited, if it was'),
     deletedAt: zod.string().nullable().describe('Deletion timestamp, if the comment was deleted'),
-    deletedById: zod.string().nullable().describe('ID of the user who deleted the comment, if it was deleted'),
+    deletedById: zod.string().nullish().describe('ID of the user who deleted the comment. Only present for nest moderators, and never set for platform-removed comments'),
+    deletedByPlatform: zod.boolean().optional().describe('Whether the comment was removed by platform moderators rather than nest moderation. Only present for nest moderators'),
     viewerBlockedAuthor: zod.boolean().describe('Whether the current user has blocked the comment author'),
     authorBlockedViewer: zod.boolean().describe('Whether the comment author has blocked the current user')
   })

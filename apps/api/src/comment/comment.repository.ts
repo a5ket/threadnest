@@ -38,11 +38,11 @@ export class CommentRepository {
   ) {
     return Prisma.sql`
       WITH RECURSIVE comment_tree AS (
-        SELECT id, "threadId", "authorId", "parentId", content, "replyCount", "score", "createdAt", "updatedAt", "editedAt", "deletedAt", "deletedById", 0 AS depth, id AS root_id
+        SELECT id, "threadId", "authorId", "parentId", content, "replyCount", "score", "createdAt", "updatedAt", "editedAt", "deletedAt", "deletedById", "deletedByPlatform", 0 AS depth, id AS root_id
         FROM "Comment"
         WHERE ${anchor}
         UNION ALL
-        SELECT r.id, r."threadId", r."authorId", r."parentId", r.content, r."replyCount", r."score", r."createdAt", r."updatedAt", r."editedAt", r."deletedAt", r."deletedById", ct.depth + 1, ct.root_id
+        SELECT r.id, r."threadId", r."authorId", r."parentId", r.content, r."replyCount", r."score", r."createdAt", r."updatedAt", r."editedAt", r."deletedAt", r."deletedById", r."deletedByPlatform", ct.depth + 1, ct.root_id
         FROM comment_tree ct
         CROSS JOIN LATERAL (
           SELECT c.*
@@ -55,7 +55,7 @@ export class CommentRepository {
       )
       SELECT
         t.id, t."threadId", t."authorId", t."parentId", t.content, t."replyCount", t."score",
-        t."createdAt", t."updatedAt", t."editedAt", t."deletedAt", t."deletedById", t.depth,
+        t."createdAt", t."updatedAt", t."editedAt", t."deletedAt", t."deletedById", t."deletedByPlatform", t.depth,
         (vba."blockerId" IS NOT NULL) AS "viewerBlockedAuthor",
         (abv."blockerId" IS NOT NULL) AS "authorBlockedViewer",
         up.username AS "authorUsername",
@@ -288,7 +288,7 @@ export class CommentRepository {
     }
   }
 
-  async softDeleteById(commentId: string, deletedById: string, db: Database = this.prisma) {
+  async softDeleteById(commentId: string, deletedById: string, db: Database = this.prisma, deletedByPlatform = false) {
     try {
       await db.comment.update({
         where: {
@@ -296,7 +296,8 @@ export class CommentRepository {
         },
         data: {
           deletedAt: new Date(),
-          deletedById
+          deletedById,
+          deletedByPlatform
         }
       })
     } catch (error) {
@@ -306,6 +307,20 @@ export class CommentRepository {
 
       throw error
     }
+  }
+
+  async listActiveByAuthor(authorId: string, db: Database = this.prisma) {
+    return db.comment.findMany({
+      where: { authorId, deletedAt: null },
+      select: { id: true, threadId: true, parentId: true }
+    })
+  }
+
+  async softDeleteManyByAuthor(authorId: string, deletedById: string, db: Database = this.prisma) {
+    return db.comment.updateMany({
+      where: { authorId, deletedAt: null },
+      data: { deletedAt: new Date(), deletedById, deletedByPlatform: true }
+    })
   }
 
   async getLatestCommentByThreadId(threadId: string, db: Database = this.prisma) {

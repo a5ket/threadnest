@@ -9,6 +9,7 @@ import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
 import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
+import { ThreadAlreadyDeletedException } from './exceptions/thread-already-deleted.exception'
 import { ThreadCreatedEvent } from './events/thread-created.event'
 import { ThreadDeletedEvent } from './events/thread-deleted.event'
 import { ThreadLockedEvent } from './events/thread-locked.event'
@@ -21,6 +22,7 @@ import { ThreadPolicy } from './thread.policy'
 import { ThreadPresenter } from './thread.presenter'
 import { ThreadRepository } from './thread.repository'
 import { ThreadVoteRepository } from './thread-vote.repository'
+import { ThreadPolicySubject } from './types/thread.policy-subject'
 
 @Injectable()
 export class ThreadService {
@@ -117,8 +119,48 @@ export class ThreadService {
 
     await this.threadsPolicy.assertCanDeleteThread(thread, actorUserId)
 
+    await this.softDeleteAndNotify(thread, actorUserId, false)
+  }
+
+  // Bypasses nest-level membership/permission checks: platform authority supersedes them.
+  async removeByPlatform(threadId: string, actorUserId: string) {
+    const thread = await this.threadsRepo.getById(threadId)
+
+    if (thread.deletedAt) {
+      throw new ThreadAlreadyDeletedException()
+    }
+
+    await this.softDeleteAndNotify(thread, actorUserId, true)
+  }
+
+  // Bulk moderation sweep: intentionally skips per-thread events, unlike removeByPlatform — one
+  // notification per removed thread would spam whoever's being purged for a handful of comments.
+  async removeAllByAuthorPlatform(authorId: string, actorUserId: string) {
+    const threads = await this.threadsRepo.listActiveByAuthor(authorId)
+
+    if (threads.length === 0) {
+      return 0
+    }
+
     await this.transactionManager.run(async (tx) => {
-      await this.threadsRepo.softDelete(thread.id, actorUserId, tx)
+      await this.threadsRepo.softDeleteManyByAuthor(authorId, actorUserId, tx)
+
+      const countsByNest = new Map<string, number>()
+      for (const thread of threads) {
+        countsByNest.set(thread.nestId, (countsByNest.get(thread.nestId) ?? 0) + 1)
+      }
+
+      for (const [nestId, count] of countsByNest) {
+        await this.nestsRepo.adjustThreadCount(nestId, -count, tx)
+      }
+    })
+
+    return threads.length
+  }
+
+  private async softDeleteAndNotify(thread: ThreadPolicySubject, actorUserId: string, deletedByPlatform: boolean) {
+    await this.transactionManager.run(async (tx) => {
+      await this.threadsRepo.softDelete(thread.id, actorUserId, tx, deletedByPlatform)
       await this.nestsRepo.adjustThreadCount(thread.nestId, -1, tx)
     })
 

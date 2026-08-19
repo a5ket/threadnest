@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { PlatformAccessDto } from './platformAccessDto'
 
 export interface MeBootstrapUserDto {
   /** User ID */
@@ -19,4 +20,6 @@ export interface MeBootstrapUserDto {
   avatarUrl: string | null
   /** Whether the email has been verified */
   emailVerified: boolean
+  /** The user's own platform-level access (moderator/admin role, if any) */
+  platformAccess: PlatformAccessDto
 }

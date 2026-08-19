@@ -12,19 +12,21 @@ model Thread {
   lockedAt DateTime?
   pinnedAt DateTime?
 
-  deletedAt   DateTime?
-  deletedById String?
+  deletedAt         DateTime?
+  deletedById       String?
+  deletedByPlatform Boolean   @default(false)
 
   commentCount  Int       @default(0)
   lastCommentAt DateTime?
   score         Int       @default(0)
 
-  nest        Nest            @relation(fields: [nestId], references: [id], onDelete: Cascade)
-  author      User            @relation(fields: [authorId], references: [id])
-  comments    Comment[]
-  deletedBy   User?           @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
-  threadVotes ThreadVote[]
-  reports     ContentReport[]
+  nest            Nest             @relation(fields: [nestId], references: [id], onDelete: Cascade)
+  author          User             @relation(fields: [authorId], references: [id])
+  comments        Comment[]
+  deletedBy       User?            @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+  threadVotes     ThreadVote[]
+  reports         ContentReport[]
+  platformReports PlatformReport[]
 
   @@unique([nestId, slug])
   @@index([nestId, createdAt])

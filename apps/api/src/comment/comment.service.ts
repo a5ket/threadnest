@@ -12,10 +12,12 @@ import { CommentRepository } from './comment.repository'
 import { CommentVoteRepository } from './comment-vote.repository'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
+import { CommentAlreadyDeletedException } from './exceptions/comment-already-deleted.exception'
 import { CommentCreatedEvent } from './events/comment-created.event'
 import { CommentDeletedEvent } from './events/comment-deleted.event'
 import { CommentUpdatedEvent } from './events/comment-updated.event'
-import { CommentBlockFlags, CommentTreeOptions } from './types/comment'
+import { Comment, CommentBlockFlags, CommentTreeOptions } from './types/comment'
+import { ThreadPolicySubject } from 'src/thread/types/thread.policy-subject'
 
 @Injectable()
 export class CommentService {
@@ -160,8 +162,60 @@ export class CommentService {
 
     await this.commentPolicy.assertCanDeleteComment(comment, userId)
 
+    await this.softDeleteAndNotify(comment, thread, userId, false)
+  }
+
+  // Bypasses nest-level membership/permission checks: platform authority supersedes them.
+  async removeByPlatform(commentId: string, actorUserId: string) {
+    const comment = await this.repo.getById(commentId)
+
+    if (comment.deletedAt) {
+      throw new CommentAlreadyDeletedException()
+    }
+
+    const thread = await this.threads.getById(comment.threadId)
+
+    await this.softDeleteAndNotify(comment, thread, actorUserId, true)
+  }
+
+  // Bulk moderation sweep: intentionally skips per-comment events, unlike removeByPlatform — one
+  // notification per removed comment would spam whoever's being purged for a handful of comments.
+  async removeAllByAuthorPlatform(authorId: string, actorUserId: string) {
+    const comments = await this.repo.listActiveByAuthor(authorId)
+
+    if (comments.length === 0) {
+      return 0
+    }
+
+    const countsByThread = new Map<string, number>()
+    for (const comment of comments) {
+      countsByThread.set(comment.threadId, (countsByThread.get(comment.threadId) ?? 0) + 1)
+    }
+
     await this.transactionManager.run(async (tx) => {
-      await this.repo.softDeleteById(comment.id, userId, tx)
+      await this.repo.softDeleteManyByAuthor(authorId, actorUserId, tx)
+
+      for (const comment of comments) {
+        await this.repo.decrementReplyCount(comment.parentId, tx)
+      }
+
+      for (const [threadId, count] of countsByThread) {
+        await this.threads.adjustCommentCount(threadId, -count, tx)
+
+        const [latest, thread] = await Promise.all([
+          this.repo.getLatestCommentByThreadId(threadId, tx),
+          this.threads.getById(threadId),
+        ])
+        await this.threads.updateLastCommentAt(threadId, latest?.createdAt ?? thread.createdAt, tx)
+      }
+    })
+
+    return comments.length
+  }
+
+  private async softDeleteAndNotify(comment: Comment, thread: ThreadPolicySubject, actorUserId: string, deletedByPlatform: boolean) {
+    await this.transactionManager.run(async (tx) => {
+      await this.repo.softDeleteById(comment.id, actorUserId, tx, deletedByPlatform)
       await this.repo.decrementReplyCount(comment.parentId, tx)
       await this.threads.adjustCommentCount(thread.id, -1, tx)
       const latest = await this.repo.getLatestCommentByThreadId(thread.id, tx)
@@ -172,8 +226,8 @@ export class CommentService {
       commentId: comment.id,
       content: comment.content,
       authorId: comment.author.id,
-      deletedById: userId,
-      recipientId: comment.author.id === userId ? null : comment.author.id,
+      deletedById: actorUserId,
+      recipientId: comment.author.id === actorUserId ? null : comment.author.id,
       threadId: thread.id,
       threadSlug: thread.slug,
       threadTitle: thread.title,

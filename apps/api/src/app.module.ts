@@ -1,22 +1,23 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import configuration from './app.config'
+import { AppController } from './app.controller'
 import { AuthModule } from './auth/auth.module'
 import { BlockModule } from './block/block.module'
 import { CacheModule } from './cache/cache.module'
 import { CommentModule } from './comment/comment.module'
+import { EmailModule } from './email/email.module'
 import { EventModule } from './event/event.module'
 import { MeModule } from './me/me.module'
 import { NestModule } from './nest/nest.module'
+import { NotificationModule } from './notification/notification.module'
+import { PlatformModule } from './platform/platform.module'
 import { PrismaModule } from './prisma/prisma.module'
+import { QueueModule } from './queue/queue.module'
 import { ReportModule } from './report/report.module'
 import { SecurityModule } from './security/security.module'
 import { ThreadModule } from './thread/thread.module'
 import { UserModule } from './user/user.module'
-import { QueueModule } from './queue/queue.module'
-import { EmailModule } from './email/email.module'
-import { AppController } from './app.controller'
-import { NotificationModule } from './notification/notification.module';
 
 @Module({
   controllers: [
@@ -41,7 +42,8 @@ import { NotificationModule } from './notification/notification.module';
     QueueModule,
     EmailModule,
     ReportModule,
-    NotificationModule
+    NotificationModule,
+    PlatformModule
   ]
 })
 export class AppModule { }

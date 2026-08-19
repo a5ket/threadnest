@@ -1,0 +1,75 @@
+enum PlatformRole {
+  ADMIN
+  MODERATOR
+}
+
+model PlatformRoleGrant {
+  id          String       @id @default(uuid(7))
+  userId      String
+  role        PlatformRole
+  grantedById String?
+  createdAt   DateTime     @default(now())
+
+  revokedAt   DateTime?
+  revokedById String?
+
+  user      User  @relation("PlatformRoleGrantee", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy User? @relation("PlatformRoleGrantIssued", fields: [grantedById], references: [id], onDelete: SetNull)
+  revokedBy User? @relation("PlatformRoleGrantRevoked", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId], where: { revokedAt: null })
+  @@index([userId])
+  @@index([grantedById])
+}
+
+enum PlatformReportTargetType {
+  NEST
+  USER
+  THREAD
+  COMMENT
+}
+
+enum PlatformReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+enum PlatformReportReason {
+  ILLEGAL_CONTENT
+  BAN_EVASION
+  SPAM_NETWORK
+  HARASSMENT
+  IMPERSONATION
+  PLATFORM_RULE_VIOLATION
+  OTHER
+}
+
+model PlatformReport {
+  id         String                   @id @default(uuid(7))
+  reporterId String
+  targetType PlatformReportTargetType
+
+  nestId       String?
+  targetUserId String?
+  threadId     String?
+  commentId    String?
+  reason       PlatformReportReason
+  details      String?
+
+  status    PlatformReportStatus @default(PENDING)
+  createdAt DateTime             @default(now())
+
+  resolvedAt   DateTime?
+  resolvedById String?
+
+  reporter   User     @relation("PlatformReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  nest       Nest?    @relation(fields: [nestId], references: [id], onDelete: SetNull)
+  targetUser User?    @relation("PlatformReportTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  thread     Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  comment    Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  resolvedBy User?    @relation("PlatformReportsResolved", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([reporterId])
+}

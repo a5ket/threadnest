@@ -120,7 +120,7 @@ export class NestService {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
     await this.nestsPolicy.assertCanDeleteNest(nest, actorUserId)
-    await this.nestsRepo.delete(nest.id)
+    await this.nestsRepo.delete(nest.id, actorUserId)
     void this.eventBus.publish(new NestDeletedEvent({ nestId: nest.id, userId: actorUserId }))
   }
 }

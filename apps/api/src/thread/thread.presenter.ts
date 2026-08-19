@@ -52,8 +52,12 @@ export class ThreadPresenter {
       commentCount: thread.commentCount,
       score: thread.score,
       viewerVote: thread.viewerVote,
-      deletedAt: ctx.canDeleteThread ? thread.deletedAt : undefined,
-      deletedById: ctx.canDeleteThread ? thread.deletedById : undefined,
+      deletedAt: thread.deletedAt,
+      // Regular viewers see only that a thread is gone; who removed it (and whether it was
+      // platform vs. nest moderation) is nest-moderator-only. Platform admin identity stays
+      // masked even from nest moderators.
+      deletedById: ctx.canModerateContent && !thread.deletedByPlatform ? thread.deletedById : undefined,
+      deletedByPlatform: ctx.canModerateContent ? thread.deletedByPlatform : undefined,
       author: this.toAuthorView(thread.author),
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,

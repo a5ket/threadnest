@@ -34,11 +34,14 @@ export class ThreadDetailResponseDto {
   @ApiProperty({ enum: VoteType, description: 'The current user\'s vote on this thread, if any', nullable: true })
   viewerVote!: VoteType | null
 
-  @ApiProperty({ description: 'Deletion timestamp. Only present when the current user can delete the thread', required: false, nullable: true, type: 'string' })
-  deletedAt?: Date | null
+  @ApiProperty({ description: 'Deletion timestamp, if the thread was deleted', nullable: true, type: 'string' })
+  deletedAt!: Date | null
 
-  @ApiProperty({ description: 'ID of the user who deleted the thread. Only present when the current user can delete the thread', required: false, nullable: true, type: 'string' })
+  @ApiProperty({ description: 'ID of the user who deleted the thread. Only present for nest moderators, and never set for platform-removed threads', required: false, nullable: true, type: 'string' })
   deletedById?: string | null
+
+  @ApiProperty({ description: 'Whether the thread was removed by platform moderators rather than nest moderation. Only present for nest moderators', required: false })
+  deletedByPlatform?: boolean
 
   @ApiProperty({ type: UserReferenceDto, description: 'Thread author' })
   author!: UserReferenceDto

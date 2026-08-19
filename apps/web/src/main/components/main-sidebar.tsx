@@ -1,16 +1,23 @@
-import { useMeNests } from '@/features/me/me.hooks'
+import { useMeNests, useUser } from '@/features/me/me.hooks'
 import { NestReferenceItem } from '@/features/nest/components/nest-reference-item'
 import Link from 'next/link'
 import { CreateNestButton } from './create-nest-button'
 
 export function MainSidebar() {
   const userNests = useMeNests()
+  const user = useUser()
 
   return (
     <div className='flex h-full flex-col gap-1 p-3'>
       <Link href='/discover' className='rounded-md px-3 py-2 text-sm font-medium hover:bg-muted'>
         Discover
       </Link>
+
+      {user?.platformAccess.isModerator && (
+        <Link href='/admin' className='rounded-md px-3 py-2 text-sm font-medium hover:bg-muted'>
+          Admin
+        </Link>
+      )}
 
       <div className='mt-4 flex items-center justify-between px-3'>
         <span className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Nests</span>

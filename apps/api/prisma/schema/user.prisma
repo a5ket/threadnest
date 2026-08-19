@@ -44,7 +44,20 @@ model User {
 
   nestActionLogsActedBy  NestActionLog[] @relation("NestActionLogActor")
   nestActionLogsTargeted NestActionLog[] @relation("NestActionLogTarget")
-  deletedNests       Nest[]
+
+  platformRoleGrants   PlatformRoleGrant[] @relation("PlatformRoleGrantee")
+  platformRolesIssued  PlatformRoleGrant[] @relation("PlatformRoleGrantIssued")
+  platformRolesRevoked PlatformRoleGrant[] @relation("PlatformRoleGrantRevoked")
+
+  platformReportsFiled    PlatformReport[] @relation("PlatformReportsFiled")
+  platformReportsAgainst  PlatformReport[] @relation("PlatformReportTargetUser")
+  platformReportsResolved PlatformReport[] @relation("PlatformReportsResolved")
+
+  suspensions        UserSuspension[] @relation("SuspendedUser")
+  suspensionsIssued  UserSuspension[] @relation("SuspensionIssued")
+  suspensionsRevoked UserSuspension[] @relation("SuspensionRevoked")
+
+  deletedNests Nest[]
 }
 
 model UserProfile {
@@ -83,4 +96,23 @@ model UserNestPreference {
   @@id([userId, nestId])
   @@index([userId])
   @@index([nestId])
+}
+
+model UserSuspension {
+  id            String   @id @default(uuid(7))
+  userId        String
+  reason        String
+  suspendedById String?
+  createdAt     DateTime @default(now())
+
+  revokedAt   DateTime?
+  revokedById String?
+
+  user        User  @relation("SuspendedUser", fields: [userId], references: [id], onDelete: Cascade)
+  suspendedBy User? @relation("SuspensionIssued", fields: [suspendedById], references: [id], onDelete: SetNull)
+  revokedBy   User? @relation("SuspensionRevoked", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId], where: { revokedAt: null })
+  @@index([userId])
+  @@index([suspendedById])
 }

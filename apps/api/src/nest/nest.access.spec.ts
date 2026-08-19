@@ -2,6 +2,7 @@ import { NestJoinPolicy, NestMemberRole, NestVisibility } from 'generated/prisma
 import { createMockNestBanRepository } from 'test/factories/nest-ban-repository.mock-factory'
 import { createMockNestMemberRepository } from 'test/factories/nest-member-repository.mock-factory'
 import { createNestMember } from 'test/factories/nest-member.factory'
+import { createMockNestRepository } from 'test/factories/nest-repository.mock-factory'
 import { createMockNestSettingsRepository } from 'test/factories/nest-settings-repository.mock-factory'
 import { createNestSettings, NestSettingsRecord } from 'test/factories/nest-settings.factory'
 import { NEST_ACCESS_LEVEL, NON_MEMBER_LEVEL } from './constants/nest-access-level'
@@ -14,7 +15,8 @@ describe('NestAccess', () => {
   const settingsRepo = createMockNestSettingsRepository()
   const bansRepo = createMockNestBanRepository()
   const membersRepo = createMockNestMemberRepository()
-  const nestAccess = new NestAccess(settingsRepo as any, bansRepo as any, membersRepo as any)
+  const nestsRepo = createMockNestRepository()
+  const nestAccess = new NestAccess(settingsRepo as any, bansRepo as any, membersRepo as any, nestsRepo as any)
 
   const givenSettings = (overrides: Parameters<typeof createNestSettings>[0] = {}) =>
     settingsRepo.get.mockResolvedValue(createNestSettings(overrides))
@@ -28,8 +30,12 @@ describe('NestAccess', () => {
   const givenBanned = (banned: boolean) =>
     bansRepo.existsActive.mockResolvedValue(banned)
 
+  const givenDeleted = (deleted: boolean) =>
+    nestsRepo.getDeletedAt.mockResolvedValue(deleted ? new Date('2024-01-01T00:00:00.000Z') : null)
+
   beforeEach(() => {
     jest.clearAllMocks()
+    nestsRepo.getDeletedAt.mockResolvedValue(null)
   })
 
   describe('visibility', () => {
@@ -64,6 +70,44 @@ describe('NestAccess', () => {
       const ctx = await nestAccess.getContext('nest-1', 'user-1')
 
       expect(ctx.canViewNest).toBe(true)
+    })
+  })
+
+  describe('deletion', () => {
+    it('blocks viewing a deleted nest even for a member', async () => {
+      givenSettings({ visibility: NestVisibility.PUBLIC })
+      givenMember({ role: NestMemberRole.MEMBER })
+      givenBanned(false)
+      givenDeleted(true)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canViewNest).toBe(false)
+    })
+
+    it('blocks owner-level participation gates on a deleted nest', async () => {
+      givenSettings({ minThreadCreationLevel: NEST_ACCESS_LEVEL.MEMBER })
+      givenMember({ role: NestMemberRole.OWNER })
+      givenBanned(false)
+      givenDeleted(true)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canCreateThread).toBe(false)
+    })
+
+    it('blocks owner-only actions on an already-deleted nest, unlike ban status', async () => {
+      givenSettings()
+      givenMember({ role: NestMemberRole.OWNER })
+      givenBanned(false)
+      givenDeleted(true)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canManageSettings).toBe(false)
+      expect(ctx.canDeleteNest).toBe(false)
+      expect(ctx.canTransferOwnership).toBe(false)
+      expect(ctx.canManageMemberRoles).toBe(false)
     })
   })
 

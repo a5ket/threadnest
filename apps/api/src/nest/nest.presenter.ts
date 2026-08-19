@@ -40,6 +40,7 @@ export class NestPresenter {
       name: nest.name,
       slug: nest.slug,
       access,
+      isDeleted: Boolean(nest.deletedAt),
       ...(access.canViewNest && {
         description: nest.description,
         memberCount: nest.memberCount,

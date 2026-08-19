@@ -16,6 +16,7 @@ export const COMMENT_SELECT = {
   editedAt: true,
   deletedAt: true,
   deletedById: true,
+  deletedByPlatform: true,
   author: {
     select: USER_REFERENCE_SELECT,
   },

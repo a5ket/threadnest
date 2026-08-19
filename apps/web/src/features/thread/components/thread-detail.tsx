@@ -7,6 +7,7 @@ import { VoteButtons } from '@/common/components/vote-buttons'
 import { formatDateTime } from '@/common/format-date'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useUser } from '@/features/me/me.hooks'
+import { RemoveThreadPlatformButton } from '@/features/platform-content/components/remove-thread-platform-button'
 import { ReportButton } from '@/features/report/components/report-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
 import { useDeleteThread, useLockThread, usePinThread, useRemoveThreadVote, useUnlockThread, useUnpinThread, useVoteThread } from '@/features/thread/thread.hooks'
@@ -180,6 +181,10 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
 
         {user && user.id !== thread.author.id && (
           <ReportButton target={{ type: 'thread', nestSlug, threadSlug: thread.slug }} />
+        )}
+
+        {user?.platformAccess.isModerator && !thread.deletedAt && (
+          <RemoveThreadPlatformButton nestSlug={nestSlug} threadId={thread.id} />
         )}
       </div>
     </div>

@@ -16,6 +16,7 @@ export function threadDetailsSelect(nestId: string, viewerId?: string) {
     updatedAt: true,
     deletedAt: true,
     deletedById: true,
+    deletedByPlatform: true,
     lockedAt: true,
     pinnedAt: true,
 

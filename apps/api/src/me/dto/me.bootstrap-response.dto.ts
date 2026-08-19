@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { NestReferencetDto } from 'src/nest/dto/nest-reference.dto'
+import { PlatformAccessDto } from 'src/platform/dto/platform-access.dto'
 
 export class MeBootstrapUserDto {
   @ApiProperty({ description: 'User ID' })
@@ -16,6 +17,9 @@ export class MeBootstrapUserDto {
 
   @ApiProperty({ description: 'Whether the email has been verified' })
   emailVerified!: boolean
+
+  @ApiProperty({ type: PlatformAccessDto, description: 'The user\'s own platform-level access (moderator/admin role, if any)' })
+  platformAccess!: PlatformAccessDto
 }
 
 export class MeBootstrapDataDto {

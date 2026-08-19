@@ -3,6 +3,7 @@ import { AuthModule } from 'src/auth/auth.module'
 import { BlockModule } from 'src/block/block.module'
 import { NestModule } from 'src/nest/nest.module'
 import { NotificationModule } from 'src/notification/notification.module'
+import { PlatformModule } from 'src/platform/platform.module'
 import { SecurityModule } from 'src/security/security.module'
 import { UserModule } from 'src/user/user.module'
 import { MeAuthController } from './me-auth.controller'
@@ -23,7 +24,8 @@ import { MeService } from './me.service'
     SecurityModule,
     UserModule,
     BlockModule,
-    NotificationModule
+    NotificationModule,
+    PlatformModule
   ],
   providers: [
     MeService

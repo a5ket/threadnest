@@ -42,6 +42,10 @@ export class UserService {
     return this.repo.getByIdWithCredentials(userId)
   }
 
+  async getByEmail(email: string) {
+    return this.repo.getByEmail(email)
+  }
+
   async updatePassword(userId: string, passwordHash: string, db?: Database) {
     return this.repo.updatePassword(userId, passwordHash, db)
   }

@@ -1,17 +1,29 @@
 import { Module } from '@nestjs/common'
-import { UserPresenter } from './user.presenter'
-import { UserService } from './user.service'
-import { UserRepository } from './user.repository'
-import { UserProfileRepository } from './user-profile.repository'
-import { UserPolicy } from './user.policy'
-import { UserController } from './user.controller'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
+import { UserSuspensionPresenter } from './suspension/user-suspension.presenter'
+import { UserSuspensionRepository } from './suspension/user-suspension.repository'
+import { UserSuspensionService } from './suspension/user-suspension.service'
+import { UserController } from './user.controller'
+import { UserPolicy } from './user.policy'
+import { UserPresenter } from './user.presenter'
+import { UserProfileRepository } from './user-profile.repository'
+import { UserRepository } from './user.repository'
+import { UserService } from './user.service'
 
 @Module({
   imports: [PrismaModule, SecurityModule],
   controllers: [UserController],
-  providers: [UserService, UserPresenter, UserRepository, UserProfileRepository, UserPolicy],
-  exports: [UserService, UserPresenter, UserProfileRepository]
+  providers: [
+    UserService,
+    UserPresenter,
+    UserRepository,
+    UserProfileRepository,
+    UserPolicy,
+    UserSuspensionRepository,
+    UserSuspensionPresenter,
+    UserSuspensionService
+  ],
+  exports: [UserService, UserPresenter, UserProfileRepository, UserSuspensionPresenter, UserSuspensionService]
 })
 export class UserModule { }

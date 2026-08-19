@@ -8,5 +8,7 @@ export const NEST_SUMMARY_SELECT = {
   memberCount: true,
   threadCount: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  deletedAt: true,
+  deletedById: true
 } satisfies Prisma.NestSelect
