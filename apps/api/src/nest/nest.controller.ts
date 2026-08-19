@@ -23,6 +23,7 @@ import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response.
 import type { AuthUser } from 'src/common/types/auth.user'
 import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
 import { NestCreateDto } from './dto/nest.create.dto'
@@ -60,6 +61,7 @@ export class NestController {
   }
 
   @Post()
+  @RateLimit({ limit: 5, ttlMs: 60 * 60_000 })
   @ApiOperation({ operationId: 'nestCreate', summary: 'Create a nest' })
   @ApiDataResponse({ status: 201, description: 'Nest created', type: NestDetailResponseDto })
   @AuthenticatedAndVerified()

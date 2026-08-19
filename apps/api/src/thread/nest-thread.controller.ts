@@ -85,6 +85,7 @@ export class NestThreadController {
   }
 
   @Patch(':threadSlug')
+  @RateLimit({ limit: 20, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestThreadUpdate', summary: 'Update a thread\'s title and/or content' })
   @ApiDataResponse({ status: 200, description: 'Thread updated', type: ThreadDetailResponseDto })
   @AuthenticatedAndVerified()
@@ -167,6 +168,7 @@ export class NestThreadController {
   }
 
   @Patch(':threadSlug/vote')
+  @RateLimit({ limit: 30, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestThreadVote', summary: 'Cast or change a vote on a thread' })
   @ApiDataResponse({ status: 200, description: 'Thread voted', type: ThreadDetailResponseDto })
   @AuthenticatedAndVerified()
@@ -181,6 +183,7 @@ export class NestThreadController {
   }
 
   @Delete(':threadSlug/vote')
+  @RateLimit({ limit: 30, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestThreadRemoveVote', summary: 'Remove the current user\'s vote on a thread' })
   @ApiDataResponse({ status: 200, description: 'Vote removed', type: ThreadDetailResponseDto })
   @AuthenticatedAndVerified()

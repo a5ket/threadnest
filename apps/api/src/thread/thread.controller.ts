@@ -7,6 +7,7 @@ import { ApiExceptionResponses } from 'src/common/swagger/api-exception-response
 import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response.decorator'
 import type { AuthUser } from 'src/common/types/auth.user'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
 import { ThreadSearchResponseDto } from './dto/thread-search-response.dto'
 import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
@@ -22,6 +23,7 @@ export class ThreadController {
 
   @Get('search')
   @UseGuards(OptionalAuthGuard)
+  @RateLimit({ limit: 30, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'threadSearch', summary: 'Search threads by title/content across nests visible to the current user' })
   @ApiPaginatedResponse({ status: 200, description: 'Matching threads', type: ThreadSearchResponseDto })
   @ApiExceptionResponses(ValidationException, InvalidCursorException)

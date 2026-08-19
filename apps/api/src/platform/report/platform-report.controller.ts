@@ -9,6 +9,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { AuthenticatedAndVerified } from 'src/security/decorators/authenticated-and-verified.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { AlreadyReportedToPlatformException } from './exceptions/already-reported-to-platform.exception'
 import { PlatformReportAlreadyResolvedException } from './exceptions/platform-report-already-resolved.exception'
 import { PlatformReportNotFoundException } from './exceptions/platform-report-not-found.exception'
@@ -29,6 +30,7 @@ export class PlatformReportController {
 
   @Post()
   @AuthenticatedAndVerified()
+  @RateLimit({ limit: 5, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'platformReportCreate', summary: 'Report a nest, user, thread, or comment to platform moderators' })
   @ApiDataResponse({ status: 201, description: 'Report filed', type: PlatformReportResponseDto })
   @ApiExceptionResponses(ValidationException, PlatformReportTargetNotFoundException, AlreadyReportedToPlatformException)

@@ -72,6 +72,7 @@ export class CommentController {
 
   @AuthenticatedAndVerified()
   @Patch(':commentId')
+  @RateLimit({ limit: 20, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'commentUpdate', summary: 'Update a comment\'s content' })
   @ApiDataResponse({ status: 200, description: 'Comment updated', type: CommentResponseDto })
   @ApiExceptionResponses(ValidationException, CommentNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
@@ -98,6 +99,7 @@ export class CommentController {
 
   @AuthenticatedAndVerified()
   @Patch(':commentId/vote')
+  @RateLimit({ limit: 30, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'commentVote', summary: 'Cast or change a vote on a comment' })
   @ApiDataResponse({ status: 200, description: 'Comment voted', type: CommentResponseDto })
   @ApiExceptionResponses(ValidationException, CommentNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
@@ -111,6 +113,7 @@ export class CommentController {
 
   @AuthenticatedAndVerified()
   @Delete(':commentId/vote')
+  @RateLimit({ limit: 30, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'commentRemoveVote', summary: 'Remove the current user\'s vote on a comment' })
   @ApiDataResponse({ status: 200, description: 'Vote removed', type: CommentResponseDto })
   @ApiExceptionResponses(CommentNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)

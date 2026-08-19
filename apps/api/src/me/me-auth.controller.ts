@@ -10,6 +10,7 @@ import { ApiExceptionResponses } from 'src/common/swagger/api-exception-response
 import type { AuthUser } from 'src/common/types/auth.user'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { Verified } from 'src/security/decorators/verified.decorator'
 import { ChangeEmailDto } from './dto/me-auth.change-email.dto'
 import { ChangePasswordDto } from './dto/me-auth.change-password.dto'
@@ -25,6 +26,7 @@ export class MeAuthController {
 
     @Patch('password')
     @Verified()
+    @RateLimit({ limit: 5, ttlMs: 60_000 })
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ operationId: 'meAuthChangePassword', summary: 'Change the current user\'s password' })
     @ApiResponse({ status: 204, description: 'Password changed' })
@@ -38,6 +40,7 @@ export class MeAuthController {
 
     @Patch('email')
     @Verified()
+    @RateLimit({ limit: 5, ttlMs: 60_000 })
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({
         operationId: 'meAuthChangeEmail',

@@ -9,6 +9,7 @@ import { AlreadyMemberException } from 'src/nest/member/exceptions/already-membe
 import { UserIsBannedException } from 'src/nest/member/exceptions/user-is-banned.exception'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { AlreadyHasPendingJoinRequestException } from './exceptions/already-has-pending-join-request.exception'
 import { AlreadyInvitedException } from '../invite/exceptions/already-invited.exception'
 import { JoinRequestNotPendingException } from './exceptions/join-request-not-pending.exception'
@@ -39,6 +40,7 @@ export class NestJoinRequestCollectionController {
   }
 
   @Post()
+  @RateLimit({ limit: 5, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestJoinRequestCreate', summary: 'Request to join a nest' })
   @ApiDataResponse({ status: 201, description: 'Join request created', type: NestJoinRequestPersonalResponseDto })
   @ApiExceptionResponses(

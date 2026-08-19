@@ -7,6 +7,7 @@ import { ValidationException } from 'src/common/exceptions/validation.exception'
 import type { AuthUser } from 'src/common/types/auth.user'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { UpdateProfileDto } from 'src/user/dto/update-profile.dto'
 import { UserProfileResponseDto } from 'src/user/dto/user-profile-response.dto'
 import { UsernameTakenException } from 'src/user/exceptions/username-taken.exception'
@@ -28,6 +29,7 @@ export class MeProfileController {
 
   @Patch()
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'meProfileUpdate', summary: 'Update the current user\'s profile' })
   @ApiDataResponse({ status: 200, description: 'Updated profile', type: UserProfileResponseDto })
   @ApiExceptionResponses(ValidationException, UsernameTakenException)

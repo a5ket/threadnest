@@ -11,6 +11,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { NestNotFoundException } from 'src/nest/exceptions/nest-not-found.exception'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { Verified } from 'src/security/decorators/verified.decorator'
 import { NestMemberResponseDto } from './dto/nest-member-response.dto'
 import { NestMemberQueryDto } from './dto/nest-member.query.dto'
@@ -46,6 +47,7 @@ export class NestMemberController {
   }
 
   @Post()
+  @RateLimit({ limit: 10, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestMemberJoin', summary: 'Join a nest' })
   @ApiDataResponse({ status: 201, description: 'Joined nest', type: NestMemberResponseDto })
   @ApiExceptionResponses(

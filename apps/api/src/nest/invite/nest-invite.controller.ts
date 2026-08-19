@@ -9,6 +9,7 @@ import { AlreadyMemberException } from 'src/nest/member/exceptions/already-membe
 import { UserIsBannedException } from 'src/nest/member/exceptions/user-is-banned.exception'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
+import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { Verified } from 'src/security/decorators/verified.decorator'
 import { ValidationException } from 'src/common/exceptions/validation.exception'
 import { UserNotFoundException } from 'src/user/exceptions/user-not-found.exception'
@@ -43,6 +44,7 @@ export class NestInviteCollectionController {
 
   @Post()
   @Verified()
+  @RateLimit({ limit: 10, ttlMs: 60_000 })
   @ApiOperation({ operationId: 'nestInviteCreate', summary: 'Invite a user to a nest' })
   @ApiDataResponse({ status: 201, description: 'Invite sent', type: NestInviteResponseDto })
   @ApiExceptionResponses(

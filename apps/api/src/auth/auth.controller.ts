@@ -116,6 +116,7 @@ export class AuthController {
 
   @Post('email-verification/request')
   @UseGuards(AuthGuard)
+  @RateLimit({ limit: 3, ttlMs: 60_000 })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @ApiOperation({ operationId: 'authRequestEmailVerification', summary: 'Request an email verification link for the current user' })
