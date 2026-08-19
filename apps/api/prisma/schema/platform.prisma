@@ -73,3 +73,35 @@ model PlatformReport {
   @@index([status, createdAt])
   @@index([reporterId])
 }
+
+enum PlatformActionType {
+  ROLE_GRANTED
+  ROLE_CHANGED
+  ROLE_REVOKED
+  USER_SUSPENDED
+  USER_UNSUSPENDED
+  THREAD_REMOVED
+  COMMENT_REMOVED
+  CONTENT_BULK_REMOVED
+  REPORT_REVIEWED
+}
+
+model PlatformActionLog {
+  id           String             @id @default(uuid(7))
+  actorId      String
+  targetUserId String?
+  nestId       String?
+  type         PlatformActionType
+  data         Json
+  createdAt    DateTime           @default(now())
+
+  actor  User  @relation("PlatformActionLogActor", fields: [actorId], references: [id], onDelete: Cascade)
+  target User? @relation("PlatformActionLogTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  nest   Nest? @relation(fields: [nestId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([actorId, createdAt])
+  @@index([targetUserId, createdAt])
+  @@index([nestId, createdAt])
+}

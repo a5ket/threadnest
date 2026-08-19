@@ -1,5 +1,6 @@
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { createUserSuspension } from 'test/factories/user-suspension.factory'
+import { createMockEventBus } from 'test/factories/event-bus.mock-factory'
 import { createMockPlatformUserSuspensionPolicy } from 'test/factories/platform-user-suspension-policy.mock-factory'
 import { createMockUserSuspensionPresenter } from 'test/factories/user-suspension-presenter.mock-factory'
 import { createMockUserSuspensionService } from 'test/factories/user-suspension-service.mock-factory'
@@ -9,7 +10,8 @@ describe('PlatformUserSuspensionService', () => {
   const policy = createMockPlatformUserSuspensionPolicy()
   const userSuspensions = createMockUserSuspensionService()
   const presenter = createMockUserSuspensionPresenter()
-  const service = new PlatformUserSuspensionService(policy as any, userSuspensions as any, presenter)
+  const eventBus = createMockEventBus()
+  const service = new PlatformUserSuspensionService(policy as any, userSuspensions as any, presenter, eventBus)
 
   const dto = { reason: 'Spam' }
 

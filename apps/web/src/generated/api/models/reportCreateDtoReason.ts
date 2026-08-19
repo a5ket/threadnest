@@ -8,9 +8,9 @@
 export type ReportCreateDtoReason = typeof ReportCreateDtoReason[keyof typeof ReportCreateDtoReason]
 
 export const ReportCreateDtoReason = {
-  HARASSMENT: 'HARASSMENT',
-  OTHER: 'OTHER',
   SPAM: 'SPAM',
+  HARASSMENT: 'HARASSMENT',
   MISINFORMATION: 'MISINFORMATION',
-  RULE_VIOLATION: 'RULE_VIOLATION'
+  RULE_VIOLATION: 'RULE_VIOLATION',
+  OTHER: 'OTHER'
 } as const

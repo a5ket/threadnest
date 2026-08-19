@@ -83,7 +83,7 @@ export const NestThreadReportCreateParams = zod.object({
 export const nestThreadReportCreateBodyDetailsMax = 500
 
 export const NestThreadReportCreateBody = zod.object({
-  reason: zod.enum(['HARASSMENT', 'OTHER', 'SPAM', 'MISINFORMATION', 'RULE_VIOLATION']),
+  reason: zod.enum(['SPAM', 'HARASSMENT', 'MISINFORMATION', 'RULE_VIOLATION', 'OTHER']),
   details: zod.string().max(nestThreadReportCreateBodyDetailsMax).optional()
 })
 
@@ -132,7 +132,7 @@ export const CommentReportCreateParams = zod.object({
 export const commentReportCreateBodyDetailsMax = 500
 
 export const CommentReportCreateBody = zod.object({
-  reason: zod.enum(['HARASSMENT', 'OTHER', 'SPAM', 'MISINFORMATION', 'RULE_VIOLATION']),
+  reason: zod.enum(['SPAM', 'HARASSMENT', 'MISINFORMATION', 'RULE_VIOLATION', 'OTHER']),
   details: zod.string().max(commentReportCreateBodyDetailsMax).optional()
 })
 

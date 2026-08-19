@@ -43,7 +43,7 @@ describe('PlatformReportPresenter', () => {
   it('maps a thread target and leaves comment null', () => {
     const view = presenter.toSummaryView(baseReport({
       targetType: PlatformReportTargetType.THREAD,
-      thread: { id: 'thread-1', slug: 'thread-slug', title: 'Thread title' },
+      thread: { id: 'thread-1', slug: 'thread-slug', title: 'Thread title', nestId: 'nest-1' },
       comment: null,
     }))
 
@@ -55,7 +55,7 @@ describe('PlatformReportPresenter', () => {
     const view = presenter.toSummaryView(baseReport({
       targetType: PlatformReportTargetType.COMMENT,
       thread: null,
-      comment: { id: 'comment-1', content: 'hello', thread: { slug: 'thread-slug', title: 'Thread title' } },
+      comment: { id: 'comment-1', content: 'hello', thread: { slug: 'thread-slug', title: 'Thread title', nestId: 'nest-1' } },
     }))
 
     expect(view.thread).toBeNull()

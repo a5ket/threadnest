@@ -10,4 +10,6 @@ export interface ThreadRemovedActionDataDto {
   type: ThreadRemovedActionDataDtoType
   threadSlug: string
   threadTitle: string
+  nestSlug: string
+  nestName: string
 }

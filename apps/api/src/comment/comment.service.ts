@@ -176,6 +176,8 @@ export class CommentService {
     const thread = await this.threads.getById(comment.threadId)
 
     await this.softDeleteAndNotify(comment, thread, actorUserId, true)
+
+    return { comment, thread }
   }
 
   // Bulk moderation sweep: intentionally skips per-comment events, unlike removeByPlatform — one

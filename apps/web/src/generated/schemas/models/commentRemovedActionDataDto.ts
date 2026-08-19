@@ -8,8 +8,10 @@ import type { CommentRemovedActionDataDtoType } from './commentRemovedActionData
 
 export interface CommentRemovedActionDataDto {
   type: CommentRemovedActionDataDtoType
-  threadSlug: string
-  threadTitle: string
   commentId: string
   commentExcerpt: string
+  threadSlug: string
+  threadTitle: string
+  nestSlug: string
+  nestName: string
 }

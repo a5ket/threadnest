@@ -25,6 +25,7 @@ model Nest {
   notifications       Notification[]
   actionLogs          NestActionLog[]
   platformReports     PlatformReport[]
+  platformActionLogs  PlatformActionLog[]
 
   deletedBy User? @relation(fields: [deletedById], references: [id], onDelete: SetNull)
 }

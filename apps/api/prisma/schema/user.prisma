@@ -53,6 +53,9 @@ model User {
   platformReportsAgainst  PlatformReport[] @relation("PlatformReportTargetUser")
   platformReportsResolved PlatformReport[] @relation("PlatformReportsResolved")
 
+  platformActionLogsActedBy  PlatformActionLog[] @relation("PlatformActionLogActor")
+  platformActionLogsTargeted PlatformActionLog[] @relation("PlatformActionLogTarget")
+
   suspensions        UserSuspension[] @relation("SuspendedUser")
   suspensionsIssued  UserSuspension[] @relation("SuspensionIssued")
   suspensionsRevoked UserSuspension[] @relation("SuspensionRevoked")

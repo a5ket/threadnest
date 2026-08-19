@@ -1,4 +1,5 @@
 import { PlatformReportReason, PlatformReportStatus, PlatformReportTargetType } from 'generated/prisma/enums'
+import { createMockEventBus } from 'test/factories/event-bus.mock-factory'
 import { createMockPlatformReportPolicy } from 'test/factories/platform-report-policy.mock-factory'
 import { createMockPlatformReportPresenter } from 'test/factories/platform-report-presenter.mock-factory'
 import { createMockPlatformReportRepository } from 'test/factories/platform-report-repository.mock-factory'
@@ -11,8 +12,9 @@ describe('PlatformReportService', () => {
   const reportsRepo = createMockPlatformReportRepository()
   const policy = createMockPlatformReportPolicy()
   const presenter = createMockPlatformReportPresenter()
+  const eventBus = createMockEventBus()
 
-  const service = new PlatformReportService(reportsRepo as any, policy as any, presenter as any)
+  const service = new PlatformReportService(reportsRepo as any, policy as any, presenter as any, eventBus)
 
   const dto = { targetType: PlatformReportTargetType.THREAD, targetId: 'thread-1', reason: PlatformReportReason.SPAM_NETWORK, details: 'looks like spam' }
 

@@ -62,13 +62,17 @@ export const NestActionLogListResponse = zod.object({
       }), zod.object({
         type: zod.enum(['THREAD_REMOVED']),
         threadSlug: zod.string(),
-        threadTitle: zod.string()
+        threadTitle: zod.string(),
+        nestSlug: zod.string(),
+        nestName: zod.string()
       }), zod.object({
         type: zod.enum(['COMMENT_REMOVED']),
+        commentId: zod.string(),
+        commentExcerpt: zod.string(),
         threadSlug: zod.string(),
         threadTitle: zod.string(),
-        commentId: zod.string(),
-        commentExcerpt: zod.string()
+        nestSlug: zod.string(),
+        nestName: zod.string()
       }), zod.object({
         type: zod.enum(['REPORT_RESOLVED']),
         reportId: zod.string(),

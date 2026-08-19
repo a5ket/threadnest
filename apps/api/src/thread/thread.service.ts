@@ -131,6 +131,8 @@ export class ThreadService {
     }
 
     await this.softDeleteAndNotify(thread, actorUserId, true)
+
+    return thread
   }
 
   // Bulk moderation sweep: intentionally skips per-thread events, unlike removeByPlatform — one

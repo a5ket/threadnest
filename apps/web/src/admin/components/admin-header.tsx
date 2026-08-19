@@ -21,6 +21,10 @@ export function AdminHeader() {
         <Link href='/admin' className='text-muted-foreground hover:text-foreground hover:underline'>
           Reports
         </Link>
+
+        <Link href='/admin/action-logs' className='text-muted-foreground hover:text-foreground hover:underline'>
+          Action Log
+        </Link>
       </nav>
 
       <div className='flex shrink-0 items-center gap-3'>
