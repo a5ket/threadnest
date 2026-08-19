@@ -123,4 +123,31 @@ describe('ThreadAccess', () => {
 
     expect(ctx.canVoteComment).toBe(false)
   })
+
+  it('allows saving a viewable, non-deleted thread', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true }))
+    const thread = createThreadPolicySubject({ deletedAt: null })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canSaveThread).toBe(true)
+  })
+
+  it('blocks saving a deleted thread', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true }))
+    const thread = createThreadPolicySubject({ deletedAt: new Date() })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canSaveThread).toBe(false)
+  })
+
+  it('allows saving even when the nest\'s minThreadVoteLevel isn\'t met — saving is a personal bookmark, not a nest interaction', async () => {
+    nestAccess.getContext.mockResolvedValue(createNestAccessContext({ canViewNest: true, canVoteThread: false }))
+    const thread = createThreadPolicySubject({ deletedAt: null })
+
+    const ctx = await threadAccess.getContext(thread, 'user-1')
+
+    expect(ctx.canSaveThread).toBe(true)
+  })
 })

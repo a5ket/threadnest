@@ -26,6 +26,8 @@ export interface ThreadAccessContextDto {
   canCommentThread: boolean
   /** Whether the current user can vote on the thread */
   canVoteThread: boolean
+  /** Whether the current user can save (bookmark) the thread */
+  canSaveThread: boolean
   /** Whether the current user can vote on comments in this thread */
   canVoteComment: boolean
   /** Whether the current user can moderate content on the thread */

@@ -13,6 +13,12 @@ export function MainSidebar() {
         Discover
       </Link>
 
+      {user && (
+        <Link href='/me/saved' className='rounded-md px-3 py-2 text-sm font-medium hover:bg-muted'>
+          Saved
+        </Link>
+      )}
+
       {user?.platformAccess.isModerator && (
         <Link href='/admin' className='rounded-md px-3 py-2 text-sm font-medium hover:bg-muted'>
           Admin

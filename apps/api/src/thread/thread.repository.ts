@@ -11,6 +11,7 @@ import { threadDetailsSelect } from './selects/thread.details.select'
 import { THREAD_POLICY_SUBJECT_SELECT } from './selects/thread.policy-subject.select'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto, ThreadSortBy } from './dto/thread.query.dto'
+import { ThreadSavedQueryDto } from './dto/thread-saved.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
 import { ThreadNotFoundException } from './exceptions/thread-not-found.exception'
 import type { ThreadSummary } from './types/thread.summary'
@@ -33,6 +34,7 @@ type ThreadSearchRow = {
   authorAvatarUrl: string | null
   authorRole: NestMemberRole | null
   viewerVote: VoteType | null
+  viewerSaved: boolean
 }
 
 type ThreadSearchGlobalRow = ThreadSearchRow & {
@@ -43,17 +45,19 @@ type ThreadSearchGlobalRow = ThreadSearchRow & {
 
 export type ThreadSearchResult = ThreadSummary & { nest: { name: string, slug: string } }
 
+type ThreadSavedRow = Omit<ThreadSearchGlobalRow, 'rank'> & { savedAt: Date }
+
 @Injectable()
 export class ThreadRepository {
   private readonly generateSlug = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
 
   constructor(private readonly prisma: PrismaService) { }
 
-  private toThreadWithVote<T extends { threadVotes: { type: VoteType }[] }>(
+  private toThreadWithVote<T extends { threadVotes: { type: VoteType }[], savedBy: { threadId: string }[] }>(
     thread: T,
-  ): Omit<T, 'threadVotes'> & { viewerVote: VoteType | null } {
-    const { threadVotes, ...rest } = thread
-    return { ...rest, viewerVote: threadVotes[0]?.type ?? null }
+  ): Omit<T, 'threadVotes' | 'savedBy'> & { viewerVote: VoteType | null, viewerSaved: boolean } {
+    const { threadVotes, savedBy, ...rest } = thread
+    return { ...rest, viewerVote: threadVotes[0]?.type ?? null, viewerSaved: savedBy.length > 0 }
   }
 
   async create(
@@ -139,6 +143,7 @@ export class ThreadRepository {
         nestMembership: row.authorRole ? [{ role: row.authorRole }] : [],
       },
       viewerVote: row.viewerVote,
+      viewerSaved: row.viewerSaved,
     }
   }
 
@@ -175,11 +180,13 @@ export class ThreadRepository {
         up."displayName" AS "authorDisplayName",
         up."avatarUrl" AS "authorAvatarUrl",
         nm.role AS "authorRole",
-        tv.type AS "viewerVote"
+        tv.type AS "viewerVote",
+        (st."threadId" IS NOT NULL) AS "viewerSaved"
       FROM ranked r
       LEFT JOIN "UserProfile" up ON up."userId" = r."authorId"
       LEFT JOIN "NestMember" nm ON nm."userId" = r."authorId" AND nm."nestId" = ${nestId}
       LEFT JOIN "ThreadVote" tv ON tv."threadId" = r.id AND tv."userId" = ${viewerId ?? ''}
+      LEFT JOIN "SavedThread" st ON st."threadId" = r.id AND st."userId" = ${viewerId ?? ''}
       WHERE ${cursorSql}
       ORDER BY r.rank DESC, r.id DESC
       LIMIT ${limit + 1}
@@ -242,12 +249,14 @@ export class ThreadRepository {
         up."displayName" AS "authorDisplayName",
         up."avatarUrl" AS "authorAvatarUrl",
         nm.role AS "authorRole",
-        tv.type AS "viewerVote"
+        tv.type AS "viewerVote",
+        (st."threadId" IS NOT NULL) AS "viewerSaved"
       FROM ranked r
       JOIN "Nest" n ON n.id = r."nestId"
       LEFT JOIN "UserProfile" up ON up."userId" = r."authorId"
       LEFT JOIN "NestMember" nm ON nm."userId" = r."authorId" AND nm."nestId" = r."nestId"
       LEFT JOIN "ThreadVote" tv ON tv."threadId" = r.id AND tv."userId" = ${viewerId ?? ''}
+      LEFT JOIN "SavedThread" st ON st."threadId" = r.id AND st."userId" = ${viewerId ?? ''}
       WHERE ${cursorSql}
       ORDER BY r.rank DESC, r.id DESC
       LIMIT ${limit + 1}
@@ -259,6 +268,53 @@ export class ThreadRepository {
     const last = page.at(-1)
 
     const nextCursor = last && hasMore ? encodeNumericCursor(last.rank, last.id) : null
+
+    return { items, meta: { nextCursor, hasMore } }
+  }
+
+  // Cross-nest, ordered by when the viewer saved each thread rather than thread recency/rank.
+  async listSaved(viewerId: string, query: ThreadSavedQueryDto) {
+    let cursorSql = Prisma.sql`TRUE`
+
+    if (query.cursor) {
+      try {
+        const { date, id } = decodeCursor(query.cursor)
+        cursorSql = Prisma.sql`(st."createdAt" < ${date}) OR (st."createdAt" = ${date} AND st."threadId" < ${id})`
+      } catch {
+        throw new InvalidCursorException()
+      }
+    }
+
+    const rows = await this.prisma.$queryRaw<ThreadSavedRow[]>(Prisma.sql`
+      SELECT
+        t.id, t.title, t.slug, t."createdAt", t."updatedAt", t."lastCommentAt",
+        t."commentCount", t.score, t."lockedAt", t."pinnedAt", t."authorId", t."nestId",
+        st."createdAt" AS "savedAt",
+        n.name AS "nestName",
+        n.slug AS "nestSlug",
+        up.username AS "authorUsername",
+        up."displayName" AS "authorDisplayName",
+        up."avatarUrl" AS "authorAvatarUrl",
+        nm.role AS "authorRole",
+        tv.type AS "viewerVote"
+      FROM "SavedThread" st
+      JOIN "Thread" t ON t.id = st."threadId"
+      JOIN "Nest" n ON n.id = t."nestId"
+      LEFT JOIN "UserProfile" up ON up."userId" = t."authorId"
+      LEFT JOIN "NestMember" nm ON nm."userId" = t."authorId" AND nm."nestId" = t."nestId"
+      LEFT JOIN "ThreadVote" tv ON tv."threadId" = t.id AND tv."userId" = ${viewerId}
+      WHERE st."userId" = ${viewerId} AND t."deletedAt" IS NULL AND ${cursorSql}
+      ORDER BY st."createdAt" DESC, st."threadId" DESC
+      LIMIT ${query.limit + 1}
+    `)
+
+    const hasMore = rows.length > query.limit
+    const page = hasMore ? rows.slice(0, query.limit) : rows
+    // rank is search-only and unused by toGlobalThreadSearchResult; 0 is a harmless placeholder.
+    const items = page.map((row) => ({ ...this.toGlobalThreadSearchResult({ ...row, rank: 0 }), viewerSaved: true }))
+    const last = page.at(-1)
+
+    const nextCursor = last && hasMore ? encodeCursor(last.savedAt, last.id) : null
 
     return { items, meta: { nextCursor, hasMore } }
   }

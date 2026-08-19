@@ -60,6 +60,10 @@ export class ThreadAccess {
         !isDeleted &&
         nestAccess.canVoteThread,
 
+      canSaveThread:
+        canViewThread &&
+        !isDeleted,
+
       canVoteComment:
         canViewThread &&
         !isDeleted &&

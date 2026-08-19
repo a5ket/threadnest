@@ -4,7 +4,7 @@ import { ApiError, ApiErrorResponse } from '@/common/api-error'
 import { createMutationHook } from '@/common/api-mutation'
 import { NestThreadListSortBy, ThreadCreateDto, ThreadUpdateDto, ThreadVoteDtoType } from '@/generated/api/models'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { nestThreadCreate, nestThreadDelete, nestThreadList, nestThreadLock, nestThreadPin, nestThreadRemoveVote, nestThreadUnlock, nestThreadUnpin, nestThreadUpdate, nestThreadVote } from './thread.api'
+import { nestThreadCreate, nestThreadDelete, nestThreadList, nestThreadLock, nestThreadPin, nestThreadRemoveVote, nestThreadSave, nestThreadUnlock, nestThreadUnpin, nestThreadUnsave, nestThreadUpdate, nestThreadVote } from './thread.api'
 import type { ThreadListPage } from './thread.server'
 
 export const useCreateThread = createMutationHook(
@@ -57,6 +57,18 @@ export const useVoteThread = createMutationHook(
 export const useRemoveThreadVote = createMutationHook(
   ({ nestSlug, threadSlug }: { nestSlug: string, threadSlug: string }) =>
     nestThreadRemoveVote(nestSlug, threadSlug),
+  200
+)
+
+export const useSaveThread = createMutationHook(
+  ({ nestSlug, threadSlug }: { nestSlug: string, threadSlug: string }) =>
+    nestThreadSave(nestSlug, threadSlug),
+  200
+)
+
+export const useUnsaveThread = createMutationHook(
+  ({ nestSlug, threadSlug }: { nestSlug: string, threadSlug: string }) =>
+    nestThreadUnsave(nestSlug, threadSlug),
   200
 )
 

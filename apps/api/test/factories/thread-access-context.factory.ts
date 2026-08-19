@@ -16,6 +16,7 @@ export const createThreadAccessContext = (
   canDeleteThread: false,
   canCommentThread: true,
   canVoteThread: true,
+  canSaveThread: true,
   canVoteComment: true,
   canModerateContent: false,
   canManageThreadLock: false,

@@ -34,6 +34,9 @@ export class ThreadDetailResponseDto {
   @ApiProperty({ enum: VoteType, description: 'The current user\'s vote on this thread, if any', nullable: true })
   viewerVote!: VoteType | null
 
+  @ApiProperty({ description: 'Whether the current user has saved this thread' })
+  viewerSaved!: boolean
+
   @ApiProperty({ description: 'Deletion timestamp, if the thread was deleted', nullable: true, type: 'string' })
   deletedAt!: Date | null
 

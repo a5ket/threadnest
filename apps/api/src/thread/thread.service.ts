@@ -8,6 +8,7 @@ import { computeVoteScoreDelta } from 'src/common/vote-score'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
 import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
+import { ThreadSavedQueryDto } from './dto/thread-saved.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
 import { ThreadAlreadyDeletedException } from './exceptions/thread-already-deleted.exception'
 import { ThreadCreatedEvent } from './events/thread-created.event'
@@ -22,6 +23,7 @@ import { ThreadPolicy } from './thread.policy'
 import { ThreadPresenter } from './thread.presenter'
 import { ThreadRepository } from './thread.repository'
 import { ThreadVoteRepository } from './thread-vote.repository'
+import { SavedThreadRepository } from './saved-thread.repository'
 import { ThreadPolicySubject } from './types/thread.policy-subject'
 
 @Injectable()
@@ -29,6 +31,7 @@ export class ThreadService {
   constructor(
     private readonly threadsRepo: ThreadRepository,
     private readonly threadVotesRepo: ThreadVoteRepository,
+    private readonly savedThreadsRepo: SavedThreadRepository,
     private readonly nestsRepo: NestRepository,
     private readonly threadsPolicy: ThreadPolicy,
     private readonly transactionManager: TransactionManager,
@@ -283,6 +286,38 @@ export class ThreadService {
     const threadCtx = await this.threadAccess.getContext(updated, actorUserId)
 
     return this.threadPresenter.toDetailView(updated, threadCtx)
+  }
+
+  async saveThread(nestSlug: string, threadSlug: string, actorUserId: string) {
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
+
+    await this.threadsPolicy.assertCanSaveThread(thread, actorUserId)
+
+    await this.savedThreadsRepo.upsert(thread.id, actorUserId)
+
+    const updated = { ...thread, viewerSaved: true }
+    const threadCtx = await this.threadAccess.getContext(updated, actorUserId)
+
+    return this.threadPresenter.toDetailView(updated, threadCtx)
+  }
+
+  async unsaveThread(nestSlug: string, threadSlug: string, actorUserId: string) {
+    const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
+
+    await this.threadsPolicy.assertCanSaveThread(thread, actorUserId)
+
+    await this.savedThreadsRepo.delete(thread.id, actorUserId)
+
+    const updated = { ...thread, viewerSaved: false }
+    const threadCtx = await this.threadAccess.getContext(updated, actorUserId)
+
+    return this.threadPresenter.toDetailView(updated, threadCtx)
+  }
+
+  async listSavedThreads(actorUserId: string, query: ThreadSavedQueryDto) {
+    const page = await this.threadsRepo.listSaved(actorUserId, query)
+
+    return { items: page.items.map((t) => this.threadPresenter.toSearchResultView(t)), meta: page.meta }
   }
 
   async adjustCommentCount(threadId: string, delta: number, db?: Database) {

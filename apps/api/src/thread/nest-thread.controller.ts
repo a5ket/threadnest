@@ -190,4 +190,31 @@ export class NestThreadController {
   ) {
     return this.threads.removeThreadVote(nestSlug, threadSlug, user.id)
   }
+
+  @Post(':threadSlug/save')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ operationId: 'nestThreadSave', summary: 'Save (bookmark) a thread' })
+  @ApiDataResponse({ status: 200, description: 'Thread saved', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  save(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.threads.saveThread(nestSlug, threadSlug, user.id)
+  }
+
+  @Delete(':threadSlug/save')
+  @ApiOperation({ operationId: 'nestThreadUnsave', summary: 'Unsave a thread' })
+  @ApiDataResponse({ status: 200, description: 'Thread unsaved', type: ThreadDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, ThreadNotFoundException, InsufficientPermissionsException)
+  unsave(
+    @Param('nestSlug') nestSlug: string,
+    @Param('threadSlug') threadSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.threads.unsaveThread(nestSlug, threadSlug, user.id)
+  }
 }

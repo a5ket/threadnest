@@ -32,6 +32,8 @@ export interface ThreadSummaryResponseDto {
      * @nullable
      */
   viewerVote: ThreadSummaryResponseDtoViewerVote
+  /** Whether the current user has saved this thread */
+  viewerSaved: boolean
   /**
      * When the thread was locked, if it is
      * @nullable

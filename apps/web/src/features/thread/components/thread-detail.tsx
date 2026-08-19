@@ -2,6 +2,7 @@
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
+import { SaveThreadButton } from '@/common/components/save-thread-button'
 import { UserLink } from '@/common/components/user-link'
 import { VoteButtons } from '@/common/components/vote-buttons'
 import { formatDateTime } from '@/common/format-date'
@@ -10,7 +11,7 @@ import { useUser } from '@/features/me/me.hooks'
 import { RemoveThreadPlatformButton } from '@/features/platform-content/components/remove-thread-platform-button'
 import { ReportButton } from '@/features/report/components/report-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
-import { useDeleteThread, useLockThread, usePinThread, useRemoveThreadVote, useUnlockThread, useUnpinThread, useVoteThread } from '@/features/thread/thread.hooks'
+import { useDeleteThread, useLockThread, usePinThread, useRemoveThreadVote, useSaveThread, useUnlockThread, useUnpinThread, useUnsaveThread, useVoteThread } from '@/features/thread/thread.hooks'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -39,6 +40,8 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
   const unpinThread = useUnpinThread({ onSuccess: setThread })
   const voteThread = useVoteThread({ onSuccess: setThread })
   const removeThreadVote = useRemoveThreadVote({ onSuccess: setThread })
+  const saveThread = useSaveThread({ onSuccess: setThread })
+  const unsaveThread = useUnsaveThread({ onSuccess: setThread })
 
   if (isEditing) {
     return (
@@ -115,6 +118,15 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
           {thread.commentCount}
           {' comments'}
         </p>
+
+        {thread.access.canSaveThread && (
+          <SaveThreadButton
+            saved={thread.viewerSaved}
+            disabled={saveThread.isPending || unsaveThread.isPending}
+            onSave={() => saveThread.mutate({ nestSlug, threadSlug: thread.slug })}
+            onUnsave={() => unsaveThread.mutate({ nestSlug, threadSlug: thread.slug })}
+          />
+        )}
 
         {thread.access.canEditThread && (
           <button type='button' onClick={() => setIsEditing(true)} className='text-sm text-muted-foreground hover:underline'>

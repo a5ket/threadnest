@@ -27,6 +27,7 @@ export class ThreadPresenter {
       commentCount: thread.commentCount,
       score: thread.score,
       viewerVote: thread.viewerVote,
+      viewerSaved: thread.viewerSaved,
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,
       author: this.toAuthorView(thread.author),
@@ -52,6 +53,7 @@ export class ThreadPresenter {
       commentCount: thread.commentCount,
       score: thread.score,
       viewerVote: thread.viewerVote,
+      viewerSaved: thread.viewerSaved,
       deletedAt: thread.deletedAt,
       // Regular viewers see only that a thread is gone; who removed it (and whether it was
       // platform vs. nest moderation) is nest-moderator-only. Platform admin identity stays

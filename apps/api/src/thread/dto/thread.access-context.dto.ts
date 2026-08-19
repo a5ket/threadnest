@@ -31,6 +31,9 @@ export class ThreadAccessContextDto {
   @ApiProperty({ description: 'Whether the current user can vote on the thread' })
   canVoteThread!: boolean
 
+  @ApiProperty({ description: 'Whether the current user can save (bookmark) the thread' })
+  canSaveThread!: boolean
+
   @ApiProperty({ description: 'Whether the current user can vote on comments in this thread' })
   canVoteComment!: boolean
 

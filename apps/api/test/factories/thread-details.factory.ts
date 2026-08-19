@@ -22,5 +22,6 @@ export const createThreadDetails = (
   author: { id: 'author-1', profile: null, nestMembership: [] },
   nest: { name: 'Nest', slug: 'nest-slug' },
   viewerVote: null,
+  viewerSaved: false,
   ...overrides,
 })

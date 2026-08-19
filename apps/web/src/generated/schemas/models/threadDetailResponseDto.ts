@@ -38,6 +38,8 @@ export interface ThreadDetailResponseDto {
      * @nullable
      */
   viewerVote: ThreadDetailResponseDtoViewerVote
+  /** Whether the current user has saved this thread */
+  viewerSaved: boolean
   /**
      * Deletion timestamp, if the thread was deleted
      * @nullable

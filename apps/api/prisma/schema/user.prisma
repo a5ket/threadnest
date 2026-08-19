@@ -35,6 +35,7 @@ model User {
 
   threadVotes  ThreadVote[]
   commentVotes CommentVote[]
+  savedThreads SavedThread[]
 
   reportsFiled    ContentReport[] @relation("ReportsFiled")
   reportsResolved ContentReport[] @relation("ReportsResolved")

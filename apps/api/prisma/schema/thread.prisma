@@ -25,6 +25,7 @@ model Thread {
   comments        Comment[]
   deletedBy       User?            @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
   threadVotes     ThreadVote[]
+  savedBy         SavedThread[]
   reports         ContentReport[]
   platformReports PlatformReport[]
 
@@ -44,4 +45,16 @@ model ThreadVote {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([threadId, userId])
+}
+
+model SavedThread {
+  userId    String
+  threadId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@id([userId, threadId])
+  @@index([userId, createdAt])
 }

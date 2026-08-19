@@ -129,4 +129,16 @@ export class ThreadPolicy {
       throw new InsufficientPermissionsException()
     }
   }
+
+  async assertCanSaveThread(thread: ThreadPolicySubject, actorUserId: string) {
+    const ctx = await this.threadAccess.getContext(thread, actorUserId)
+
+    if (!ctx.canViewThread) {
+      throw new ThreadNotFoundException()
+    }
+
+    if (!ctx.canSaveThread) {
+      throw new InsufficientPermissionsException()
+    }
+  }
 }

@@ -31,6 +31,9 @@ export class ThreadSearchResponseDto {
   @ApiProperty({ enum: VoteType, description: 'The current user\'s vote on this thread, if any', nullable: true })
   viewerVote!: VoteType | null
 
+  @ApiProperty({ description: 'Whether the current user has saved this thread' })
+  viewerSaved!: boolean
+
   @ApiProperty({ description: 'When the thread was locked, if it is', nullable: true, type: 'string' })
   lockedAt!: Date | null
 

@@ -38,6 +38,10 @@ import type {
   MeProfileUpdate400,
   MeProfileUpdate401,
   MeProfileUpdate409,
+  MeSavedThreadList200,
+  MeSavedThreadList400,
+  MeSavedThreadList401,
+  MeSavedThreadListParams,
   UpdateProfileDto,
   UserNestPreferenceUpdateDto
 } from '../models'
@@ -451,6 +455,57 @@ export const meProfileUpdate = async (updateProfileDto: UpdateProfileDto, option
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...options?.headers },
       body: JSON.stringify(updateProfileDto)
+    }
+  )
+}
+
+export type meSavedThreadListResponse200 = {
+  data: MeSavedThreadList200
+  status: 200
+}
+
+export type meSavedThreadListResponse400 = {
+  data: MeSavedThreadList400
+  status: 400
+}
+
+export type meSavedThreadListResponse401 = {
+  data: MeSavedThreadList401
+  status: 401
+}
+
+export type meSavedThreadListResponseSuccess = (meSavedThreadListResponse200) & {
+  headers: Headers
+}
+export type meSavedThreadListResponseError = (meSavedThreadListResponse400 | meSavedThreadListResponse401) & {
+  headers: Headers
+}
+
+export type meSavedThreadListResponse = (meSavedThreadListResponseSuccess | meSavedThreadListResponseError)
+
+export const getMeSavedThreadListUrl = (params: MeSavedThreadListParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/me/saved-threads?${stringifiedParams}` : `/me/saved-threads`
+}
+
+/**
+ * @summary List threads saved by the current user
+ */
+export const meSavedThreadList = async (params: MeSavedThreadListParams, options?: RequestInit): Promise<meSavedThreadListResponse> => {
+  return apiFetch<meSavedThreadListResponse>(getMeSavedThreadListUrl(params),
+    {
+      ...options,
+      method: 'GET'
+
     }
   )
 }

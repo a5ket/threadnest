@@ -5,6 +5,7 @@ import { NestModule } from 'src/nest/nest.module'
 import { NotificationModule } from 'src/notification/notification.module'
 import { PlatformModule } from 'src/platform/platform.module'
 import { SecurityModule } from 'src/security/security.module'
+import { ThreadModule } from 'src/thread/thread.module'
 import { UserModule } from 'src/user/user.module'
 import { MeAuthController } from './me-auth.controller'
 import { MeBlockController } from './me-block.controller'
@@ -15,6 +16,7 @@ import { MeNestController } from './me-nest.controller'
 import { MeNotificationController } from './me-notification.controller'
 import { MeController } from './me.controller'
 import { MeProfileController } from './me-profile.controller'
+import { MeSavedThreadController } from './me-saved-thread.controller'
 import { MeService } from './me.service'
 
 @Module({
@@ -25,7 +27,8 @@ import { MeService } from './me.service'
     UserModule,
     BlockModule,
     NotificationModule,
-    PlatformModule
+    PlatformModule,
+    ThreadModule
   ],
   providers: [
     MeService
@@ -39,7 +42,8 @@ import { MeService } from './me.service'
     MeNestJoinRequestController,
     MeProfileController,
     MeBlockController,
-    MeNotificationController
+    MeNotificationController,
+    MeSavedThreadController
   ]
 })
 export class MeModule { }

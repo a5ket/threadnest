@@ -32,6 +32,10 @@ import type {
   NestThreadRemoveVote401,
   NestThreadRemoveVote403,
   NestThreadRemoveVote404,
+  NestThreadSave200,
+  NestThreadSave401,
+  NestThreadSave403,
+  NestThreadSave404,
   NestThreadUnlock200,
   NestThreadUnlock401,
   NestThreadUnlock403,
@@ -40,6 +44,10 @@ import type {
   NestThreadUnpin401,
   NestThreadUnpin403,
   NestThreadUnpin404,
+  NestThreadUnsave200,
+  NestThreadUnsave401,
+  NestThreadUnsave403,
+  NestThreadUnsave404,
   NestThreadUpdate200,
   NestThreadUpdate400,
   NestThreadUpdate401,
@@ -599,6 +607,102 @@ export const getNestThreadRemoveVoteUrl = (nestSlug: string,
 export const nestThreadRemoveVote = async (nestSlug: string,
   threadSlug: string, options?: RequestInit): Promise<nestThreadRemoveVoteResponse> => {
   return apiFetch<nestThreadRemoveVoteResponse>(getNestThreadRemoveVoteUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'DELETE'
+
+    }
+  )
+}
+
+export type nestThreadSaveResponse200 = {
+  data: NestThreadSave200
+  status: 200
+}
+
+export type nestThreadSaveResponse401 = {
+  data: NestThreadSave401
+  status: 401
+}
+
+export type nestThreadSaveResponse403 = {
+  data: NestThreadSave403
+  status: 403
+}
+
+export type nestThreadSaveResponse404 = {
+  data: NestThreadSave404
+  status: 404
+}
+
+export type nestThreadSaveResponseSuccess = (nestThreadSaveResponse200) & {
+  headers: Headers
+}
+export type nestThreadSaveResponseError = (nestThreadSaveResponse401 | nestThreadSaveResponse403 | nestThreadSaveResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadSaveResponse = (nestThreadSaveResponseSuccess | nestThreadSaveResponseError)
+
+export const getNestThreadSaveUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/save`
+}
+
+/**
+ * @summary Save (bookmark) a thread
+ */
+export const nestThreadSave = async (nestSlug: string,
+  threadSlug: string, options?: RequestInit): Promise<nestThreadSaveResponse> => {
+  return apiFetch<nestThreadSaveResponse>(getNestThreadSaveUrl(nestSlug, threadSlug),
+    {
+      ...options,
+      method: 'POST'
+
+    }
+  )
+}
+
+export type nestThreadUnsaveResponse200 = {
+  data: NestThreadUnsave200
+  status: 200
+}
+
+export type nestThreadUnsaveResponse401 = {
+  data: NestThreadUnsave401
+  status: 401
+}
+
+export type nestThreadUnsaveResponse403 = {
+  data: NestThreadUnsave403
+  status: 403
+}
+
+export type nestThreadUnsaveResponse404 = {
+  data: NestThreadUnsave404
+  status: 404
+}
+
+export type nestThreadUnsaveResponseSuccess = (nestThreadUnsaveResponse200) & {
+  headers: Headers
+}
+export type nestThreadUnsaveResponseError = (nestThreadUnsaveResponse401 | nestThreadUnsaveResponse403 | nestThreadUnsaveResponse404) & {
+  headers: Headers
+}
+
+export type nestThreadUnsaveResponse = (nestThreadUnsaveResponseSuccess | nestThreadUnsaveResponseError)
+
+export const getNestThreadUnsaveUrl = (nestSlug: string,
+  threadSlug: string) => {
+  return `/nests/${nestSlug}/threads/${threadSlug}/save`
+}
+
+/**
+ * @summary Unsave a thread
+ */
+export const nestThreadUnsave = async (nestSlug: string,
+  threadSlug: string, options?: RequestInit): Promise<nestThreadUnsaveResponse> => {
+  return apiFetch<nestThreadUnsaveResponse>(getNestThreadUnsaveUrl(nestSlug, threadSlug),
     {
       ...options,
       method: 'DELETE'

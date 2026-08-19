@@ -292,4 +292,40 @@ describe('ThreadPolicy', () => {
       expect(memberRepo.findByUser).not.toHaveBeenCalled()
     })
   })
+
+  describe('assertCanSaveThread', () => {
+    it('allows when canViewThread and canSaveThread are true', async () => {
+      givenThreadContext({ canViewThread: true, canSaveThread: true })
+
+      await expect(
+        policy.assertCanSaveThread(thread, 'user-1'),
+      ).resolves.toBeUndefined()
+    })
+
+    it('throws ThreadNotFoundException when canViewThread is false', async () => {
+      givenThreadContext({ canViewThread: false })
+
+      await expect(
+        policy.assertCanSaveThread(thread, 'user-1'),
+      ).rejects.toThrow(ThreadNotFoundException)
+    })
+
+    it('throws InsufficientPermissionsException when canSaveThread is false', async () => {
+      givenThreadContext({ canViewThread: true, canSaveThread: false })
+
+      await expect(
+        policy.assertCanSaveThread(thread, 'user-1'),
+      ).rejects.toThrow(InsufficientPermissionsException)
+    })
+
+    it('does not require the actor to outrank the author, unlike lock/pin/delete', async () => {
+      givenThreadContext({ canViewThread: true, canSaveThread: true, role: NestMemberRole.MEMBER })
+
+      await expect(
+        policy.assertCanSaveThread(thread, 'user-1'),
+      ).resolves.toBeUndefined()
+
+      expect(memberRepo.findByUser).not.toHaveBeenCalled()
+    })
+  })
 })
