@@ -2,6 +2,7 @@
 
 import { Avatar } from '@/common/components/avatar'
 import { formatDateTime } from '@/common/format-date'
+import { StartChatButton } from '@/features/chat/components/start-chat-button'
 import { EditProfileForm } from '@/features/me/components/edit-profile-form'
 import { useUser } from '@/features/me/me.hooks'
 import { RemoveAllContentButton } from '@/features/platform-content/components/remove-all-content-button'
@@ -53,15 +54,19 @@ export function UserProfileView({ profile: initialProfile }: UserProfileViewProp
           </div>
         </div>
 
-        {isOwnProfile && (
-          <button
-            type='button'
-            onClick={() => setEditing(true)}
-            className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
-          >
-            Edit profile
-          </button>
-        )}
+        {isOwnProfile
+          ? (
+              <button
+                type='button'
+                onClick={() => setEditing(true)}
+                className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
+              >
+                Edit profile
+              </button>
+            )
+          : (
+              currentUser && <StartChatButton userId={profile.userId} />
+            )}
       </div>
 
       {profile.bio && (

@@ -25,17 +25,20 @@ import type {
   CommentRemoveVote401,
   CommentRemoveVote403,
   CommentRemoveVote404,
+  CommentRemoveVote429,
   CommentUpdate200,
   CommentUpdate400,
   CommentUpdate401,
   CommentUpdate403,
   CommentUpdate404,
+  CommentUpdate429,
   CommentUpdateDto,
   CommentVote200,
   CommentVote400,
   CommentVote401,
   CommentVote403,
   CommentVote404,
+  CommentVote429,
   CommentVoteDto,
   NestThreadCommentCreate201,
   NestThreadCommentCreate400,
@@ -112,10 +115,15 @@ export type commentUpdateResponse404 = {
   status: 404
 }
 
+export type commentUpdateResponse429 = {
+  data: CommentUpdate429
+  status: 429
+}
+
 export type commentUpdateResponseSuccess = (commentUpdateResponse200) & {
   headers: Headers
 }
-export type commentUpdateResponseError = (commentUpdateResponse400 | commentUpdateResponse401 | commentUpdateResponse403 | commentUpdateResponse404) & {
+export type commentUpdateResponseError = (commentUpdateResponse400 | commentUpdateResponse401 | commentUpdateResponse403 | commentUpdateResponse404 | commentUpdateResponse429) & {
   headers: Headers
 }
 
@@ -322,10 +330,15 @@ export type commentVoteResponse404 = {
   status: 404
 }
 
+export type commentVoteResponse429 = {
+  data: CommentVote429
+  status: 429
+}
+
 export type commentVoteResponseSuccess = (commentVoteResponse200) & {
   headers: Headers
 }
-export type commentVoteResponseError = (commentVoteResponse400 | commentVoteResponse401 | commentVoteResponse403 | commentVoteResponse404) & {
+export type commentVoteResponseError = (commentVoteResponse400 | commentVoteResponse401 | commentVoteResponse403 | commentVoteResponse404 | commentVoteResponse429) & {
   headers: Headers
 }
 
@@ -370,10 +383,15 @@ export type commentRemoveVoteResponse404 = {
   status: 404
 }
 
+export type commentRemoveVoteResponse429 = {
+  data: CommentRemoveVote429
+  status: 429
+}
+
 export type commentRemoveVoteResponseSuccess = (commentRemoveVoteResponse200) & {
   headers: Headers
 }
-export type commentRemoveVoteResponseError = (commentRemoveVoteResponse401 | commentRemoveVoteResponse403 | commentRemoveVoteResponse404) & {
+export type commentRemoveVoteResponseError = (commentRemoveVoteResponse401 | commentRemoveVoteResponse403 | commentRemoveVoteResponse404 | commentRemoveVoteResponse429) & {
   headers: Headers
 }
 

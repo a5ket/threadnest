@@ -11,6 +11,7 @@ import type {
   NestCreate403,
   NestCreate409,
   NestCreate422,
+  NestCreate429,
   NestCreateDto,
   NestDelete401,
   NestDelete403,
@@ -114,10 +115,15 @@ export type nestCreateResponse422 = {
   status: 422
 }
 
+export type nestCreateResponse429 = {
+  data: NestCreate429
+  status: 429
+}
+
 export type nestCreateResponseSuccess = (nestCreateResponse201) & {
   headers: Headers
 }
-export type nestCreateResponseError = (nestCreateResponse400 | nestCreateResponse401 | nestCreateResponse403 | nestCreateResponse409 | nestCreateResponse422) & {
+export type nestCreateResponseError = (nestCreateResponse400 | nestCreateResponse401 | nestCreateResponse403 | nestCreateResponse409 | nestCreateResponse422 | nestCreateResponse429) & {
   headers: Headers
 }
 

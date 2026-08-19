@@ -86,7 +86,7 @@ export const PlatformActionLogListResponse = zod.object({
       }), zod.object({
         type: zod.enum(['REPORT_REVIEWED']),
         reportId: zod.string(),
-        targetType: zod.enum(['NEST', 'USER', 'THREAD', 'COMMENT']),
+        targetType: zod.enum(['NEST', 'USER', 'THREAD', 'COMMENT', 'MESSAGE']),
         status: zod.enum(['RESOLVED', 'DISMISSED'])
       })]).describe('Type-specific context for this action — narrow on `data.type` to access the fields for that action type')
     })),

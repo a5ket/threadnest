@@ -62,6 +62,10 @@ model User {
   suspensionsRevoked UserSuspension[] @relation("SuspensionRevoked")
 
   deletedNests Nest[]
+
+  chatParticipants ChatParticipant[]
+  sentMessages     Message[]         @relation("MessageSender")
+  deletedMessages  Message[]         @relation("MessageDeletedBy")
 }
 
 model UserProfile {

@@ -28,6 +28,7 @@ import type {
   AuthRegister409,
   AuthRegister429,
   AuthRequestEmailVerification401,
+  AuthRequestEmailVerification429,
   AuthRequestPasswordReset400,
   AuthRequestPasswordReset429,
   ConfirmEmailVerificationDto,
@@ -256,10 +257,15 @@ export type authRequestEmailVerificationResponse401 = {
   status: 401
 }
 
+export type authRequestEmailVerificationResponse429 = {
+  data: AuthRequestEmailVerification429
+  status: 429
+}
+
 export type authRequestEmailVerificationResponseSuccess = (authRequestEmailVerificationResponse204) & {
   headers: Headers
 }
-export type authRequestEmailVerificationResponseError = (authRequestEmailVerificationResponse401) & {
+export type authRequestEmailVerificationResponseError = (authRequestEmailVerificationResponse401 | authRequestEmailVerificationResponse429) & {
   headers: Headers
 }
 

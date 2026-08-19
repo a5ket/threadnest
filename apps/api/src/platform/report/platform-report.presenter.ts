@@ -27,6 +27,9 @@ export class PlatformReportPresenter {
       comment: report.comment
         ? { id: report.comment.id, content: report.comment.content, threadSlug: report.comment.thread.slug, threadTitle: report.comment.thread.title }
         : null,
+      message: report.message
+        ? { id: report.message.id, content: report.message.content, chatId: report.message.chatId, senderId: report.message.senderId, createdAt: report.message.createdAt }
+        : null,
     }
   }
 }

@@ -14,5 +14,6 @@ export const PLATFORM_REPORT_SUMMARY_SELECT = {
   nest: { select: { id: true, slug: true, name: true } },
   targetUser: { select: USER_REFERENCE_SELECT },
   thread: { select: { id: true, slug: true, title: true, nestId: true } },
-  comment: { select: { id: true, content: true, thread: { select: { slug: true, title: true, nestId: true } } } }
+  comment: { select: { id: true, content: true, thread: { select: { slug: true, title: true, nestId: true } } } },
+  message: { select: { id: true, content: true, chatId: true, senderId: true, createdAt: true } }
 } satisfies Prisma.PlatformReportSelect

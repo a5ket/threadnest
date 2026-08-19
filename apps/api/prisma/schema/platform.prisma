@@ -27,6 +27,7 @@ enum PlatformReportTargetType {
   USER
   THREAD
   COMMENT
+  MESSAGE
 }
 
 enum PlatformReportStatus {
@@ -54,6 +55,7 @@ model PlatformReport {
   targetUserId String?
   threadId     String?
   commentId    String?
+  messageId    String?
   reason       PlatformReportReason
   details      String?
 
@@ -68,6 +70,7 @@ model PlatformReport {
   targetUser User?    @relation("PlatformReportTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
   thread     Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
   comment    Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  message    Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
   resolvedBy User?    @relation("PlatformReportsResolved", fields: [resolvedById], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])

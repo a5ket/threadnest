@@ -1,6 +1,7 @@
 import { Avatar } from '@/common/components/avatar'
 import { useAuthOverlayStore } from '@/features/auth/auth-overlay.store'
 import { useAuthSignOutHandler, useLogout } from '@/features/auth/auth.hooks'
+import { ChatButton } from '@/features/chat/components/chat-button'
 import { useIsSignedIn, useUser } from '@/features/me/me.hooks'
 import { NotificationBell } from '@/features/notification/components/notification-bell'
 import { SearchBar } from '@/features/search/components/search-bar'
@@ -43,6 +44,7 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
         {isSignedIn
           ? (
               <>
+                <ChatButton />
                 <NotificationBell />
 
                 {user && (

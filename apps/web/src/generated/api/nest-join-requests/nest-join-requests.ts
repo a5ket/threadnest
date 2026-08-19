@@ -20,6 +20,7 @@ import type {
   NestJoinRequestCreate201,
   NestJoinRequestCreate401,
   NestJoinRequestCreate409,
+  NestJoinRequestCreate429,
   NestJoinRequestGet200,
   NestJoinRequestGet401,
   NestJoinRequestGet403,
@@ -91,10 +92,15 @@ export type nestJoinRequestCreateResponse409 = {
   status: 409
 }
 
+export type nestJoinRequestCreateResponse429 = {
+  data: NestJoinRequestCreate429
+  status: 429
+}
+
 export type nestJoinRequestCreateResponseSuccess = (nestJoinRequestCreateResponse201) & {
   headers: Headers
 }
-export type nestJoinRequestCreateResponseError = (nestJoinRequestCreateResponse401 | nestJoinRequestCreateResponse409) & {
+export type nestJoinRequestCreateResponseError = (nestJoinRequestCreateResponse401 | nestJoinRequestCreateResponse409 | nestJoinRequestCreateResponse429) & {
   headers: Headers
 }
 

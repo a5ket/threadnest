@@ -5,6 +5,7 @@ import { AppController } from './app.controller'
 import { AuthModule } from './auth/auth.module'
 import { BlockModule } from './block/block.module'
 import { CacheModule } from './cache/cache.module'
+import { ChatModule } from './chat/chat.module'
 import { CommentModule } from './comment/comment.module'
 import { EmailModule } from './email/email.module'
 import { EventModule } from './event/event.module'
@@ -43,7 +44,8 @@ import { UserModule } from './user/user.module'
     EmailModule,
     ReportModule,
     NotificationModule,
-    PlatformModule
+    PlatformModule,
+    ChatModule
   ]
 })
 export class AppModule { }

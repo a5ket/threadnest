@@ -11,5 +11,6 @@ export const PlatformReportCreateDtoTargetType = {
   THREAD: 'THREAD',
   COMMENT: 'COMMENT',
   NEST: 'NEST',
-  USER: 'USER'
+  USER: 'USER',
+  MESSAGE: 'MESSAGE'
 } as const

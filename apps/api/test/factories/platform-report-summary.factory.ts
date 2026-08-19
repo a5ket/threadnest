@@ -17,5 +17,6 @@ export const createPlatformReportSummary = (
   targetUser: null,
   thread: { id: 'thread-1', slug: 'thread-slug', title: 'Thread title', nestId: 'nest-1' },
   comment: null,
+  message: null,
   ...overrides,
 })

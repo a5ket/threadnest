@@ -11,10 +11,12 @@ import type {
   MeAuthChangeEmail401,
   MeAuthChangeEmail403,
   MeAuthChangeEmail409,
+  MeAuthChangeEmail429,
   MeAuthChangePassword400,
   MeAuthChangePassword401,
   MeAuthChangePassword403,
   MeAuthChangePassword422,
+  MeAuthChangePassword429,
   MeBootstrap200,
   MeBootstrap401,
   MeNestLeave401,
@@ -38,6 +40,7 @@ import type {
   MeProfileUpdate400,
   MeProfileUpdate401,
   MeProfileUpdate409,
+  MeProfileUpdate429,
   MeSavedThreadList200,
   MeSavedThreadList400,
   MeSavedThreadList401,
@@ -110,10 +113,15 @@ export type meAuthChangePasswordResponse422 = {
   status: 422
 }
 
+export type meAuthChangePasswordResponse429 = {
+  data: MeAuthChangePassword429
+  status: 429
+}
+
 export type meAuthChangePasswordResponseSuccess = (meAuthChangePasswordResponse204) & {
   headers: Headers
 }
-export type meAuthChangePasswordResponseError = (meAuthChangePasswordResponse400 | meAuthChangePasswordResponse401 | meAuthChangePasswordResponse403 | meAuthChangePasswordResponse422) & {
+export type meAuthChangePasswordResponseError = (meAuthChangePasswordResponse400 | meAuthChangePasswordResponse401 | meAuthChangePasswordResponse403 | meAuthChangePasswordResponse422 | meAuthChangePasswordResponse429) & {
   headers: Headers
 }
 
@@ -162,10 +170,15 @@ export type meAuthChangeEmailResponse409 = {
   status: 409
 }
 
+export type meAuthChangeEmailResponse429 = {
+  data: MeAuthChangeEmail429
+  status: 429
+}
+
 export type meAuthChangeEmailResponseSuccess = (meAuthChangeEmailResponse204) & {
   headers: Headers
 }
-export type meAuthChangeEmailResponseError = (meAuthChangeEmailResponse400 | meAuthChangeEmailResponse401 | meAuthChangeEmailResponse403 | meAuthChangeEmailResponse409) & {
+export type meAuthChangeEmailResponseError = (meAuthChangeEmailResponse400 | meAuthChangeEmailResponse401 | meAuthChangeEmailResponse403 | meAuthChangeEmailResponse409 | meAuthChangeEmailResponse429) & {
   headers: Headers
 }
 
@@ -432,10 +445,15 @@ export type meProfileUpdateResponse409 = {
   status: 409
 }
 
+export type meProfileUpdateResponse429 = {
+  data: MeProfileUpdate429
+  status: 429
+}
+
 export type meProfileUpdateResponseSuccess = (meProfileUpdateResponse200) & {
   headers: Headers
 }
-export type meProfileUpdateResponseError = (meProfileUpdateResponse400 | meProfileUpdateResponse401 | meProfileUpdateResponse409) & {
+export type meProfileUpdateResponseError = (meProfileUpdateResponse400 | meProfileUpdateResponse401 | meProfileUpdateResponse409 | meProfileUpdateResponse429) & {
   headers: Headers
 }
 

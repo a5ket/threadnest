@@ -12,7 +12,7 @@ import * as zod from 'zod'
 export const platformReportCreateBodyDetailsMax = 500
 
 export const PlatformReportCreateBody = zod.object({
-  targetType: zod.enum(['THREAD', 'COMMENT', 'NEST', 'USER']),
+  targetType: zod.enum(['THREAD', 'COMMENT', 'NEST', 'USER', 'MESSAGE']),
   targetId: zod.uuid(),
   reason: zod.enum(['HARASSMENT', 'OTHER', 'ILLEGAL_CONTENT', 'BAN_EVASION', 'SPAM_NETWORK', 'IMPERSONATION', 'PLATFORM_RULE_VIOLATION']),
   details: zod.string().max(platformReportCreateBodyDetailsMax).optional()
@@ -21,7 +21,7 @@ export const PlatformReportCreateBody = zod.object({
 export const PlatformReportCreateResponse = zod.object({
   data: zod.object({
     id: zod.string().describe('Report ID'),
-    targetType: zod.enum(['NEST', 'USER', 'THREAD', 'COMMENT']).describe('What kind of content or user this report targets'),
+    targetType: zod.enum(['NEST', 'USER', 'THREAD', 'COMMENT', 'MESSAGE']).describe('What kind of content or user this report targets'),
     reason: zod.enum(['ILLEGAL_CONTENT', 'BAN_EVASION', 'SPAM_NETWORK', 'HARASSMENT', 'IMPERSONATION', 'PLATFORM_RULE_VIOLATION', 'OTHER']).describe('Why this was reported'),
     details: zod.string().nullable().describe('Additional details from the reporter'),
     status: zod.enum(['PENDING', 'RESOLVED', 'DISMISSED']).describe('Current status of the report'),
@@ -60,7 +60,14 @@ export const PlatformReportCreateResponse = zod.object({
       content: zod.string().describe('Comment content'),
       threadSlug: zod.string().describe('Slug of the thread this comment belongs to'),
       threadTitle: zod.string().describe('Title of the thread this comment belongs to')
-    }).nullable().describe('Set when targetType is COMMENT')
+    }).nullable().describe('Set when targetType is COMMENT'),
+    message: zod.object({
+      id: zod.string().describe('Message ID'),
+      content: zod.string().describe('Message content'),
+      chatId: zod.string().describe('ID of the chat this message belongs to'),
+      senderId: zod.string().describe('ID of the user who sent this message'),
+      createdAt: zod.iso.datetime({ offset: true }).describe('When the message was sent')
+    }).nullable().describe('Set when targetType is MESSAGE')
   })
 })
 
@@ -74,7 +81,7 @@ export const PlatformReportListQueryParams = zod.object({
 export const PlatformReportListResponse = zod.object({
   data: zod.array(zod.object({
     id: zod.string().describe('Report ID'),
-    targetType: zod.enum(['NEST', 'USER', 'THREAD', 'COMMENT']).describe('What kind of content or user this report targets'),
+    targetType: zod.enum(['NEST', 'USER', 'THREAD', 'COMMENT', 'MESSAGE']).describe('What kind of content or user this report targets'),
     reason: zod.enum(['ILLEGAL_CONTENT', 'BAN_EVASION', 'SPAM_NETWORK', 'HARASSMENT', 'IMPERSONATION', 'PLATFORM_RULE_VIOLATION', 'OTHER']).describe('Why this was reported'),
     details: zod.string().nullable().describe('Additional details from the reporter'),
     status: zod.enum(['PENDING', 'RESOLVED', 'DISMISSED']).describe('Current status of the report'),
@@ -113,7 +120,14 @@ export const PlatformReportListResponse = zod.object({
       content: zod.string().describe('Comment content'),
       threadSlug: zod.string().describe('Slug of the thread this comment belongs to'),
       threadTitle: zod.string().describe('Title of the thread this comment belongs to')
-    }).nullable().describe('Set when targetType is COMMENT')
+    }).nullable().describe('Set when targetType is COMMENT'),
+    message: zod.object({
+      id: zod.string().describe('Message ID'),
+      content: zod.string().describe('Message content'),
+      chatId: zod.string().describe('ID of the chat this message belongs to'),
+      senderId: zod.string().describe('ID of the user who sent this message'),
+      createdAt: zod.iso.datetime({ offset: true }).describe('When the message was sent')
+    }).nullable().describe('Set when targetType is MESSAGE')
   }))
 })
 

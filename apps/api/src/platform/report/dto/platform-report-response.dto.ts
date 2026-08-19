@@ -38,6 +38,23 @@ export class PlatformReportedCommentDto {
   threadTitle!: string
 }
 
+export class PlatformReportedMessageDto {
+  @ApiProperty({ description: 'Message ID' })
+  id!: string
+
+  @ApiProperty({ description: 'Message content' })
+  content!: string
+
+  @ApiProperty({ description: 'ID of the chat this message belongs to' })
+  chatId!: string
+
+  @ApiProperty({ description: 'ID of the user who sent this message' })
+  senderId!: string
+
+  @ApiProperty({ description: 'When the message was sent' })
+  createdAt!: Date
+}
+
 export class PlatformReportResponseDto {
   @ApiProperty({ description: 'Report ID' })
   id!: string
@@ -77,4 +94,7 @@ export class PlatformReportResponseDto {
 
   @ApiProperty({ type: PlatformReportedCommentDto, nullable: true, description: 'Set when targetType is COMMENT' })
   comment!: PlatformReportedCommentDto | null
+
+  @ApiProperty({ type: PlatformReportedMessageDto, nullable: true, description: 'Set when targetType is MESSAGE' })
+  message!: PlatformReportedMessageDto | null
 }

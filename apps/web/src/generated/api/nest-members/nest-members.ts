@@ -15,6 +15,7 @@ import type {
   NestMemberJoin403,
   NestMemberJoin404,
   NestMemberJoin409,
+  NestMemberJoin429,
   NestMemberList200,
   NestMemberList400,
   NestMemberList401,
@@ -118,10 +119,15 @@ export type nestMemberJoinResponse409 = {
   status: 409
 }
 
+export type nestMemberJoinResponse429 = {
+  data: NestMemberJoin429
+  status: 429
+}
+
 export type nestMemberJoinResponseSuccess = (nestMemberJoinResponse201) & {
   headers: Headers
 }
-export type nestMemberJoinResponseError = (nestMemberJoinResponse401 | nestMemberJoinResponse403 | nestMemberJoinResponse404 | nestMemberJoinResponse409) & {
+export type nestMemberJoinResponseError = (nestMemberJoinResponse401 | nestMemberJoinResponse403 | nestMemberJoinResponse404 | nestMemberJoinResponse409 | nestMemberJoinResponse429) & {
   headers: Headers
 }
 

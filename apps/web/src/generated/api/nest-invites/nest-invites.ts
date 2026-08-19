@@ -22,6 +22,7 @@ import type {
   NestInviteCreate403,
   NestInviteCreate404,
   NestInviteCreate409,
+  NestInviteCreate429,
   NestInviteCreateDto,
   NestInviteGet200,
   NestInviteGet401,
@@ -109,10 +110,15 @@ export type nestInviteCreateResponse409 = {
   status: 409
 }
 
+export type nestInviteCreateResponse429 = {
+  data: NestInviteCreate429
+  status: 429
+}
+
 export type nestInviteCreateResponseSuccess = (nestInviteCreateResponse201) & {
   headers: Headers
 }
-export type nestInviteCreateResponseError = (nestInviteCreateResponse400 | nestInviteCreateResponse401 | nestInviteCreateResponse403 | nestInviteCreateResponse404 | nestInviteCreateResponse409) & {
+export type nestInviteCreateResponseError = (nestInviteCreateResponse400 | nestInviteCreateResponse401 | nestInviteCreateResponse403 | nestInviteCreateResponse404 | nestInviteCreateResponse409 | nestInviteCreateResponse429) & {
   headers: Headers
 }
 

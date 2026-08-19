@@ -5,6 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PlatformReportedCommentDto } from './platformReportedCommentDto'
+import type { PlatformReportedMessageDto } from './platformReportedMessageDto'
 import type { PlatformReportedNestDto } from './platformReportedNestDto'
 import type { PlatformReportedThreadDto } from './platformReportedThreadDto'
 import type { PlatformReportResponseDtoReason } from './platformReportResponseDtoReason'
@@ -60,4 +61,9 @@ export interface PlatformReportResponseDto {
      * @nullable
      */
   comment: PlatformReportedCommentDto | null
+  /**
+     * Set when targetType is MESSAGE
+     * @nullable
+     */
+  message: PlatformReportedMessageDto | null
 }

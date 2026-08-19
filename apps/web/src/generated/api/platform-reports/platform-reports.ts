@@ -11,6 +11,7 @@ import type {
   PlatformReportCreate403,
   PlatformReportCreate404,
   PlatformReportCreate409,
+  PlatformReportCreate429,
   PlatformReportCreateDto,
   PlatformReportDismiss401,
   PlatformReportDismiss403,
@@ -59,10 +60,15 @@ export type platformReportCreateResponse409 = {
   status: 409
 }
 
+export type platformReportCreateResponse429 = {
+  data: PlatformReportCreate429
+  status: 429
+}
+
 export type platformReportCreateResponseSuccess = (platformReportCreateResponse201) & {
   headers: Headers
 }
-export type platformReportCreateResponseError = (platformReportCreateResponse400 | platformReportCreateResponse401 | platformReportCreateResponse403 | platformReportCreateResponse404 | platformReportCreateResponse409) & {
+export type platformReportCreateResponseError = (platformReportCreateResponse400 | platformReportCreateResponse401 | platformReportCreateResponse403 | platformReportCreateResponse404 | platformReportCreateResponse409 | platformReportCreateResponse429) & {
   headers: Headers
 }
 

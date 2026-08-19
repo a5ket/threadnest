@@ -17,6 +17,7 @@ export class PlatformReportRepository {
         case PlatformReportTargetType.USER: return this.prisma.user.findUnique({ where: { id: targetId }, select: { id: true } })
         case PlatformReportTargetType.THREAD: return this.prisma.thread.findUnique({ where: { id: targetId }, select: { id: true } })
         case PlatformReportTargetType.COMMENT: return this.prisma.comment.findUnique({ where: { id: targetId }, select: { id: true } })
+        case PlatformReportTargetType.MESSAGE: return this.prisma.message.findUnique({ where: { id: targetId }, select: { id: true } })
       }
     })()
 
@@ -80,6 +81,7 @@ export class PlatformReportRepository {
       case PlatformReportTargetType.USER: return { targetUserId: targetId }
       case PlatformReportTargetType.THREAD: return { threadId: targetId }
       case PlatformReportTargetType.COMMENT: return { commentId: targetId }
+      case PlatformReportTargetType.MESSAGE: return { messageId: targetId }
     }
   }
 

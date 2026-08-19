@@ -33,6 +33,7 @@ import type {
   NestThreadRemoveVote401,
   NestThreadRemoveVote403,
   NestThreadRemoveVote404,
+  NestThreadRemoveVote429,
   NestThreadSave200,
   NestThreadSave401,
   NestThreadSave403,
@@ -54,14 +55,17 @@ import type {
   NestThreadUpdate401,
   NestThreadUpdate403,
   NestThreadUpdate404,
+  NestThreadUpdate429,
   NestThreadVote200,
   NestThreadVote400,
   NestThreadVote401,
   NestThreadVote403,
   NestThreadVote404,
+  NestThreadVote429,
   ThreadCreateDto,
   ThreadSearch200,
   ThreadSearch400,
+  ThreadSearch429,
   ThreadSearchParams,
   ThreadUpdateDto,
   ThreadVoteDto
@@ -248,10 +252,15 @@ export type nestThreadUpdateResponse404 = {
   status: 404
 }
 
+export type nestThreadUpdateResponse429 = {
+  data: NestThreadUpdate429
+  status: 429
+}
+
 export type nestThreadUpdateResponseSuccess = (nestThreadUpdateResponse200) & {
   headers: Headers
 }
-export type nestThreadUpdateResponseError = (nestThreadUpdateResponse400 | nestThreadUpdateResponse401 | nestThreadUpdateResponse403 | nestThreadUpdateResponse404) & {
+export type nestThreadUpdateResponseError = (nestThreadUpdateResponse400 | nestThreadUpdateResponse401 | nestThreadUpdateResponse403 | nestThreadUpdateResponse404 | nestThreadUpdateResponse429) & {
   headers: Headers
 }
 
@@ -543,10 +552,15 @@ export type nestThreadVoteResponse404 = {
   status: 404
 }
 
+export type nestThreadVoteResponse429 = {
+  data: NestThreadVote429
+  status: 429
+}
+
 export type nestThreadVoteResponseSuccess = (nestThreadVoteResponse200) & {
   headers: Headers
 }
-export type nestThreadVoteResponseError = (nestThreadVoteResponse400 | nestThreadVoteResponse401 | nestThreadVoteResponse403 | nestThreadVoteResponse404) & {
+export type nestThreadVoteResponseError = (nestThreadVoteResponse400 | nestThreadVoteResponse401 | nestThreadVoteResponse403 | nestThreadVoteResponse404 | nestThreadVoteResponse429) & {
   headers: Headers
 }
 
@@ -593,10 +607,15 @@ export type nestThreadRemoveVoteResponse404 = {
   status: 404
 }
 
+export type nestThreadRemoveVoteResponse429 = {
+  data: NestThreadRemoveVote429
+  status: 429
+}
+
 export type nestThreadRemoveVoteResponseSuccess = (nestThreadRemoveVoteResponse200) & {
   headers: Headers
 }
-export type nestThreadRemoveVoteResponseError = (nestThreadRemoveVoteResponse401 | nestThreadRemoveVoteResponse403 | nestThreadRemoveVoteResponse404) & {
+export type nestThreadRemoveVoteResponseError = (nestThreadRemoveVoteResponse401 | nestThreadRemoveVoteResponse403 | nestThreadRemoveVoteResponse404 | nestThreadRemoveVoteResponse429) & {
   headers: Headers
 }
 
@@ -727,10 +746,15 @@ export type threadSearchResponse400 = {
   status: 400
 }
 
+export type threadSearchResponse429 = {
+  data: ThreadSearch429
+  status: 429
+}
+
 export type threadSearchResponseSuccess = (threadSearchResponse200) & {
   headers: Headers
 }
-export type threadSearchResponseError = (threadSearchResponse400) & {
+export type threadSearchResponseError = (threadSearchResponse400 | threadSearchResponse429) & {
   headers: Headers
 }
 

@@ -1,0 +1,57 @@
+'use client'
+
+import { InfiniteScrollSentinel } from '@/common/components/infinite-scroll-sentinel'
+import { useState } from 'react'
+import { useChatList } from '../chat.hooks'
+import type { ChatListPage } from '../chat.server'
+import { ChatListItem } from './chat-list-item'
+
+interface ChatListProps {
+  initialPage?: ChatListPage
+  onSelectChat: (chatId: string) => void
+}
+
+export function ChatList({ initialPage, onSelectChat }: ChatListProps) {
+  const [archived, setArchived] = useState(false)
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useChatList(archived, archived ? undefined : initialPage)
+  const chats = data?.pages.flatMap((page) => page.items) ?? []
+
+  return (
+    <div className='flex flex-col'>
+      <div className='flex items-center gap-3 border-b border-border px-3 py-2 text-sm'>
+        <button
+          type='button'
+          onClick={() => setArchived(false)}
+          className={!archived ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
+        >
+          Chats
+        </button>
+        <button
+          type='button'
+          onClick={() => setArchived(true)}
+          className={archived ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
+        >
+          Archived
+        </button>
+      </div>
+
+      <ul className='flex flex-col divide-y divide-border'>
+        {chats.map((chat) => (
+          <ChatListItem key={chat.id} chat={chat} onSelect={onSelectChat} />
+        ))}
+
+        {chats.length === 0 && (
+          <p className='py-8 text-center text-sm text-muted-foreground'>
+            {archived ? 'No archived chats.' : 'No chats yet.'}
+          </p>
+        )}
+
+        {hasNextPage && <InfiniteScrollSentinel onVisible={fetchNextPage} disabled={isFetchingNextPage} />}
+
+        {isFetchingNextPage && (
+          <p className='py-4 text-center text-sm text-muted-foreground'>Loading more...</p>
+        )}
+      </ul>
+    </div>
+  )
+}
