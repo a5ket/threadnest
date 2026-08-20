@@ -13,6 +13,7 @@ import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
 import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
 import { ThreadSavedQueryDto } from './dto/thread-saved.query.dto'
+import { ThreadFeedQueryDto } from './dto/thread-feed.query.dto'
 import { ThreadUpdateDto } from './dto/thread.update.dto'
 import { ThreadAlreadyDeletedException } from './exceptions/thread-already-deleted.exception'
 import { ThreadCreatedEvent } from './events/thread-created.event'
@@ -331,6 +332,12 @@ export class ThreadService {
 
   async listSavedThreads(actorUserId: string, query: ThreadSavedQueryDto) {
     const page = await this.threadsRepo.listSaved(actorUserId, query)
+
+    return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
+  }
+
+  async listFeed(actorUserId: string, query: ThreadFeedQueryDto) {
+    const page = await this.threadsRepo.listFeed(actorUserId, query)
 
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }

@@ -9,6 +9,7 @@ import { ThreadModule } from 'src/thread/thread.module'
 import { UserModule } from 'src/user/user.module'
 import { MeAuthController } from './me-auth.controller'
 import { MeBlockController } from './me-block.controller'
+import { MeFeedController } from './me-feed.controller'
 import { MeNestInviteController } from './me-nest-invite.controller'
 import { MeNestJoinRequestController } from './me-nest-join-request.controller'
 import { MeNestPreferenceController } from './me-nest-preference.controller'
@@ -43,7 +44,8 @@ import { MeService } from './me.service'
     MeProfileController,
     MeBlockController,
     MeNotificationController,
-    MeSavedThreadController
+    MeSavedThreadController,
+    MeFeedController
   ]
 })
 export class MeModule { }

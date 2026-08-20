@@ -19,6 +19,10 @@ import type {
   MeAuthChangePassword429,
   MeBootstrap200,
   MeBootstrap401,
+  MeFeedList200,
+  MeFeedList400,
+  MeFeedList401,
+  MeFeedListParams,
   MeNestLeave401,
   MeNestLeave403,
   MeNestLeave404,
@@ -614,6 +618,57 @@ export const getMeSavedThreadListUrl = (params: MeSavedThreadListParams) => {
  */
 export const meSavedThreadList = async (params: MeSavedThreadListParams, options?: RequestInit): Promise<meSavedThreadListResponse> => {
   return apiFetch<meSavedThreadListResponse>(getMeSavedThreadListUrl(params),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
+
+export type meFeedListResponse200 = {
+  data: MeFeedList200
+  status: 200
+}
+
+export type meFeedListResponse400 = {
+  data: MeFeedList400
+  status: 400
+}
+
+export type meFeedListResponse401 = {
+  data: MeFeedList401
+  status: 401
+}
+
+export type meFeedListResponseSuccess = (meFeedListResponse200) & {
+  headers: Headers
+}
+export type meFeedListResponseError = (meFeedListResponse400 | meFeedListResponse401) & {
+  headers: Headers
+}
+
+export type meFeedListResponse = (meFeedListResponseSuccess | meFeedListResponseError)
+
+export const getMeFeedListUrl = (params: MeFeedListParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/me/feed?${stringifiedParams}` : `/me/feed`
+}
+
+/**
+ * @summary List threads from nests the current user is a member of, newest first
+ */
+export const meFeedList = async (params: MeFeedListParams, options?: RequestInit): Promise<meFeedListResponse> => {
+  return apiFetch<meFeedListResponse>(getMeFeedListUrl(params),
     {
       ...options,
       method: 'GET'
