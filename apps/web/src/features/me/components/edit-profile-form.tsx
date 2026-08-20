@@ -1,9 +1,13 @@
 'use client'
 
+import { Avatar } from '@/common/components/avatar'
+import { ImageUploadField } from '@/common/components/image-upload-field'
+import { type GenericApiErrorCode } from '@/common/api-error'
 import { updateProfileSchema, type UpdateProfileFormValues } from '@/features/me/me-profile.schemas'
-import { useUpdateProfile } from '@/features/me/me.hooks'
+import { useRemoveAvatar, useUpdateMeUser, useUpdateProfile, useUploadAvatar } from '@/features/me/me.hooks'
 import type { UserProfileResponseDto } from '@/generated/api/models'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 interface EditProfileFormProps {
@@ -12,7 +16,44 @@ interface EditProfileFormProps {
   onCancel: () => void
 }
 
+function errorCodeOf(error: unknown): GenericApiErrorCode {
+  return (error as { errorCode?: GenericApiErrorCode })?.errorCode ?? 'UNKNOWN_ERROR'
+}
+
+function messageForErrorCode(code: GenericApiErrorCode) {
+  switch (code) {
+    case 'VALIDATION_FAILED':
+      return 'Please check the entered information'
+    case 'NETWORK_ERROR':
+      return 'Unable to connect. Check your internet connection.'
+    default:
+      return 'Something went wrong. Please try again.'
+  }
+}
+
 export function EditProfileForm({ profile, onSaved, onCancel }: EditProfileFormProps) {
+  // Avatar changes are staged locally and only committed to the server when the whole form is saved.
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null)
+  const [pendingAvatarRemoved, setPendingAvatarRemoved] = useState(false)
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!pendingAvatarFile) {
+      setPendingPreviewUrl(null)
+      return
+    }
+
+    const url = URL.createObjectURL(pendingAvatarFile)
+    setPendingPreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [pendingAvatarFile])
+
+  const previewUrl = pendingAvatarFile
+    ? pendingPreviewUrl
+    : pendingAvatarRemoved
+      ? null
+      : profile.avatarUrl
+
   const {
     register,
     handleSubmit,
@@ -26,38 +67,44 @@ export function EditProfileForm({ profile, onSaved, onCancel }: EditProfileFormP
     defaultValues: {
       username: profile.username,
       displayName: profile.displayName ?? '',
-      bio: profile.bio ?? '',
-      avatarUrl: profile.avatarUrl ?? ''
+      bio: profile.bio ?? ''
     }
   })
 
-  const updateProfile = useUpdateProfile({
-    onSuccess: onSaved,
-    onError: (error) => {
-      switch (error.errorCode) {
-        case 'USERNAME_TAKEN':
-          setError('username', { type: 'server', message: 'This username is already taken' })
-          break
+  const uploadAvatar = useUploadAvatar()
+  const removeAvatar = useRemoveAvatar()
+  const updateProfile = useUpdateProfile()
+  const updateMeUser = useUpdateMeUser()
 
-        case 'VALIDATION_FAILED':
-          setError('root', { type: 'server', message: 'Please check the entered information' })
-          break
-
-        case 'NETWORK_ERROR':
-          setError('root', { type: 'server', message: 'Unable to connect. Check your internet connection.' })
-          break
-
-        default:
-          setError('root', { type: 'server', message: 'Something went wrong. Please try again.' })
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      if (pendingAvatarFile) {
+        await uploadAvatar.mutateAsync(pendingAvatarFile)
       }
+      else if (pendingAvatarRemoved) {
+        await removeAvatar.mutateAsync()
+      }
+
+      // Always fetched last so the response reflects whatever avatar change just happened above.
+      const latest = await updateProfile.mutateAsync(values)
+      // The header (and anywhere else reading the global me-store) needs this too — it isn't
+      // derived from page-local state, so a profile save wouldn't otherwise reach it.
+      updateMeUser({ username: latest.username, avatarUrl: latest.avatarUrl })
+      onSaved(latest)
+    }
+    catch (error) {
+      const code = errorCodeOf(error)
+
+      if (code === 'USERNAME_TAKEN') {
+        setError('username', { type: 'server', message: 'This username is already taken' })
+        return
+      }
+
+      setError('root', { type: 'server', message: messageForErrorCode(code) })
     }
   })
 
-  const onSubmit = handleSubmit((values) => {
-    updateProfile.mutate(values)
-  })
-
-  const isPending = updateProfile.isPending || isSubmitting
+  const isPending = isSubmitting || uploadAvatar.isPending || removeAvatar.isPending || updateProfile.isPending
 
   return (
     <form onSubmit={onSubmit} noValidate className='flex w-full max-w-sm flex-col gap-4'>
@@ -127,25 +174,27 @@ export function EditProfileForm({ profile, onSaved, onCancel }: EditProfileFormP
       </div>
 
       <div className='flex flex-col gap-1.5'>
-        <label htmlFor='avatarUrl' className='text-sm font-medium'>
-          Avatar URL
-        </label>
+        <span className='text-sm font-medium'>Avatar</span>
 
-        <input
-          id='avatarUrl'
-          type='text'
-          autoComplete='off'
-          aria-invalid={errors.avatarUrl ? 'true' : 'false'}
-          aria-describedby={errors.avatarUrl ? 'avatarUrl-error' : undefined}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
-          {...register('avatarUrl')}
-        />
+        <div className='flex items-center gap-4'>
+          <Avatar avatarUrl={previewUrl} label={profile.displayName ?? profile.username} size={64} />
 
-        {errors.avatarUrl && (
-          <p id='avatarUrl-error' role='alert' className='text-sm text-destructive'>
-            {errors.avatarUrl.message}
-          </p>
-        )}
+          <ImageUploadField
+            label='avatar'
+            hasImage={Boolean(previewUrl)}
+            isUploading={false}
+            outputSize={512}
+            shape='circle'
+            onUpload={(file) => {
+              setPendingAvatarFile(file)
+              setPendingAvatarRemoved(false)
+            }}
+            onRemove={() => {
+              setPendingAvatarFile(null)
+              setPendingAvatarRemoved(true)
+            }}
+          />
+        </div>
       </div>
 
       {errors.root && (

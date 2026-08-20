@@ -8,6 +8,7 @@ export interface MeState {
   nests: BootstrapData['nests']
   error: MeBootstrapError | null
   setMe: (data: BootstrapData | null) => void
+  updateUser: (patch: Partial<NonNullable<BootstrapData['user']>>) => void
   addNest: (nest: NestReference) => void
   removeNest: (slug: string) => void
   clear: () => void
@@ -24,6 +25,10 @@ export function createMeStore(initial: MeBootstrapResult) {
         nests: data?.nests ?? [],
         error: null
       }),
+    updateUser: (patch) =>
+      set((state) => ({
+        user: state.user ? { ...state.user, ...patch } : state.user
+      })),
     addNest: (nest) =>
       set((state) => ({
         nests: state.nests.some((n) => n.slug === nest.slug) ? state.nests : [...state.nests, nest]

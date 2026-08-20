@@ -22,5 +22,4 @@ export interface UpdateProfileDto {
      * @maxLength 500
      */
   bio?: string
-  avatarUrl?: string
 }

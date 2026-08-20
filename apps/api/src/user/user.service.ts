@@ -2,6 +2,8 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { randomBytes } from 'crypto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
+import { ImageProcessor } from 'src/storage/image-processor'
+import { StorageService } from 'src/storage/storage.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { UserQueryDto } from './dto/user.query.dto'
 import { UsernameTakenException } from './exceptions/username-taken.exception'
@@ -9,13 +11,22 @@ import { UserNotFoundException } from './exceptions/user-not-found.exception'
 import { UserProfileRepository } from './user-profile.repository'
 import { UserRepository } from './user.repository'
 
+const AVATAR_SIZE = 512
+
 @Injectable()
 export class UserService {
   constructor(
     private readonly repo: UserRepository,
     private readonly profileRepo: UserProfileRepository,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+    private readonly imageProcessor: ImageProcessor
   ) { }
+
+  private toProfileView<T extends { avatarKey: string | null }>(profile: T) {
+    const { avatarKey, ...rest } = profile
+    return { ...rest, avatarUrl: avatarKey ? this.storage.getPublicUrl(avatarKey) : null }
+  }
   async assertUserExists(userId: string) {
     if (!(await this.existsById(userId))) {
       throw new UserNotFoundException()
@@ -59,15 +70,16 @@ export class UserService {
   }
 
   async getProfile(userId: string) {
-    return this.profileRepo.getByUserId(userId)
+    return this.toProfileView(await this.profileRepo.getByUserId(userId))
   }
 
   async getProfileByUsername(username: string) {
-    return this.profileRepo.getByUsername(username)
+    return this.toProfileView(await this.profileRepo.getByUsername(username))
   }
 
   async search(query: UserQueryDto) {
-    return this.profileRepo.search(query)
+    const page = await this.profileRepo.search(query)
+    return { items: page.items.map((item) => this.toProfileView(item)), meta: page.meta }
   }
 
   async getProfileWithUser(userId: string) {
@@ -83,7 +95,33 @@ export class UserService {
       }
     }
 
-    return this.profileRepo.update(userId, dto)
+    return this.toProfileView(await this.profileRepo.update(userId, dto))
+  }
+
+  async updateAvatar(userId: string, rawBuffer: Buffer) {
+    const existing = await this.profileRepo.getByUserId(userId)
+    const processed = await this.imageProcessor.toSquareWebp(rawBuffer, AVATAR_SIZE)
+    const key = `avatars/${userId}/${randomBytes(8).toString('hex')}.webp`
+
+    await this.storage.upload(key, processed, 'image/webp')
+    const updated = await this.profileRepo.updateAvatarKey(userId, key)
+
+    if (existing.avatarKey) {
+      await this.storage.delete(existing.avatarKey)
+    }
+
+    return this.toProfileView(updated)
+  }
+
+  async removeAvatar(userId: string) {
+    const existing = await this.profileRepo.getByUserId(userId)
+    const updated = await this.profileRepo.updateAvatarKey(userId, null)
+
+    if (existing.avatarKey) {
+      await this.storage.delete(existing.avatarKey)
+    }
+
+    return this.toProfileView(updated)
   }
 
   async create(email: string, passwordHash: string) {

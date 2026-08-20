@@ -5,6 +5,7 @@ import { NestModule } from 'src/nest/nest.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
 import { ThreadModule } from 'src/thread/thread.module'
+import { UserModule } from 'src/user/user.module'
 import { CommentController } from './comment.controller'
 import { CommentPolicy } from './comment.policy'
 import { CommentPresenter } from './comment.presenter'
@@ -14,7 +15,7 @@ import { CommentVoteRepository } from './comment-vote.repository'
 import { ThreadCommentController } from './thread-comment.controller'
 
 @Module({
-  imports: [PrismaModule, EventModule, SecurityModule, ThreadModule, NestModule, BlockModule],
+  imports: [PrismaModule, EventModule, SecurityModule, ThreadModule, NestModule, BlockModule, UserModule],
   controllers: [CommentController, ThreadCommentController],
   providers: [CommentRepository, CommentVoteRepository, CommentService, CommentPolicy, CommentPresenter],
   exports: [CommentRepository, CommentService]

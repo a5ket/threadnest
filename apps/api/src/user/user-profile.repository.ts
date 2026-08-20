@@ -65,6 +65,14 @@ export class UserProfileRepository {
     })
   }
 
+  async updateAvatarKey(userId: string, avatarKey: string | null) {
+    return this.prisma.userProfile.update({
+      where: { userId },
+      data: { avatarKey },
+      select: { userId: true, ...USER_PROFILE_SELECT }
+    })
+  }
+
   async search(query: UserQueryDto) {
     const { limit, cursor, search } = query
     let cursorWhere = {}
@@ -85,7 +93,7 @@ export class UserProfileRepository {
           : {}),
         ...cursorWhere
       },
-      select: { userId: true, username: true, displayName: true, avatarUrl: true, createdAt: true },
+      select: { userId: true, username: true, displayName: true, avatarKey: true, createdAt: true },
       orderBy: [{ createdAt: 'desc' }, { userId: 'desc' }],
       take: limit + 1
     })
@@ -95,7 +103,7 @@ export class UserProfileRepository {
       id: p.userId,
       username: p.username,
       displayName: p.displayName,
-      avatarUrl: p.avatarUrl,
+      avatarKey: p.avatarKey,
     }))
     const last = (hasMore ? profiles.slice(0, limit) : profiles).at(-1)
 
@@ -109,7 +117,7 @@ export class UserProfileRepository {
       where: { userId },
       select: {
         username: true,
-        avatarUrl: true,
+        avatarKey: true,
         user: {
           select: {
             id: true,

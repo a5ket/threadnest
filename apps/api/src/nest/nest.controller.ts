@@ -9,10 +9,12 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
 import { ValidationException } from 'src/common/exceptions/validation.exception'
@@ -26,6 +28,9 @@ import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
+import { ImageFileRequiredException } from 'src/storage/exceptions/image-file-required.exception'
+import { ImageTooLargeException } from 'src/storage/exceptions/image-too-large.exception'
+import { InvalidImageFileException } from 'src/storage/exceptions/invalid-image-file.exception'
 import { NestCreateDto } from './dto/nest.create.dto'
 import { NestDetailResponseDto } from './dto/nest.detail-response.dto'
 import { NestDiscoveryResponseDto } from './dto/nest-discovery-response.dto'
@@ -100,6 +105,41 @@ export class NestController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.nests.update(nestSlug, user.id, dto)
+  }
+
+  @Post(':nestSlug/icon')
+  @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlMs: 60_000 })
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 15 * 1024 * 1024 } }))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
+  @ApiOperation({ operationId: 'nestIconUpload', summary: 'Upload a nest\'s icon' })
+  @ApiDataResponse({ status: 200, description: 'Nest updated', type: NestDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(ImageFileRequiredException, InvalidImageFileException, ImageTooLargeException, NestNotFoundException, InsufficientPermissionsException)
+  updateIcon(
+    @Param('nestSlug') nestSlug: string,
+    @CurrentUser() user: AuthUser,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    if (!file) {
+      throw new ImageFileRequiredException()
+    }
+
+    return this.nests.updateIcon(nestSlug, user.id, file.buffer)
+  }
+
+  @Delete(':nestSlug/icon')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ operationId: 'nestIconDelete', summary: 'Remove a nest\'s icon' })
+  @ApiDataResponse({ status: 200, description: 'Nest updated', type: NestDetailResponseDto })
+  @AuthenticatedAndVerified()
+  @ApiExceptionResponses(NestNotFoundException, InsufficientPermissionsException)
+  removeIcon(
+    @Param('nestSlug') nestSlug: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.nests.removeIcon(nestSlug, user.id)
   }
 
   @Patch(':nestSlug/owner')

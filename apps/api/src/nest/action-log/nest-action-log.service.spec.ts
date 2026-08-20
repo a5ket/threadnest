@@ -15,7 +15,7 @@ describe('NestActionLogService', () => {
 
   const service = new NestActionLogService(
     actionLogsRepo as any,
-    presenter,
+    presenter as any,
     policy as any,
     nestsRepo as any,
   )

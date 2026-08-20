@@ -6,7 +6,7 @@ export const USER_REFERENCE_SELECT = {
     select: {
       username: true,
       displayName: true,
-      avatarUrl: true,
+      avatarKey: true,
     },
   },
 } satisfies Prisma.UserSelect

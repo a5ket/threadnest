@@ -1,9 +1,11 @@
+import { UserPresenter } from 'src/user/user.presenter'
+import { createMockStorageService } from 'test/factories/storage-service.mock-factory'
 import { createThreadAccessContext } from 'test/factories/thread-access-context.factory'
 import { createThreadDetails } from 'test/factories/thread-details.factory'
 import { ThreadPresenter } from './thread.presenter'
 
 describe('ThreadPresenter', () => {
-  const presenter = new ThreadPresenter()
+  const presenter = new ThreadPresenter(new UserPresenter(createMockStorageService() as any))
 
   describe('toDetailView', () => {
     it('never exposes which platform admin removed the thread, even to nest moderators', () => {

@@ -1,10 +1,11 @@
 import { PlatformReportReason, PlatformReportStatus, PlatformReportTargetType } from 'generated/prisma/enums'
 import { UserPresenter } from 'src/user/user.presenter'
+import { createMockStorageService } from 'test/factories/storage-service.mock-factory'
 import { createPlatformReportSummary } from 'test/factories/platform-report-summary.factory'
 import { PlatformReportPresenter } from './platform-report.presenter'
 
 describe('PlatformReportPresenter', () => {
-  const presenter = new PlatformReportPresenter(new UserPresenter())
+  const presenter = new PlatformReportPresenter(new UserPresenter(createMockStorageService() as any))
 
   const baseReport = createPlatformReportSummary
 
@@ -30,7 +31,7 @@ describe('PlatformReportPresenter', () => {
   it('maps a user target through the user presenter and leaves the others null', () => {
     const view = presenter.toSummaryView(baseReport({
       targetType: PlatformReportTargetType.USER,
-      targetUser: { id: 'target-1', profile: { username: 'target', displayName: null, avatarUrl: null } },
+      targetUser: { id: 'target-1', profile: { username: 'target', displayName: null, avatarKey: null } },
       thread: null,
     }))
 
@@ -78,7 +79,7 @@ describe('PlatformReportPresenter', () => {
     const view = presenter.toSummaryView(baseReport({
       status: PlatformReportStatus.RESOLVED,
       resolvedAt: new Date('2024-01-02T00:00:00.000Z'),
-      resolvedBy: { id: 'mod-1', profile: { username: 'mod', displayName: 'Mod', avatarUrl: null } },
+      resolvedBy: { id: 'mod-1', profile: { username: 'mod', displayName: 'Mod', avatarKey: null } },
     }))
 
     expect(view.resolvedBy).toEqual({ id: 'mod-1', username: 'mod', displayName: 'Mod', avatarUrl: null })

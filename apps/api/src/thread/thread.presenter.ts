@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { UserPresenter } from 'src/user/user.presenter'
 import { ThreadDetails } from './types/thread.details'
 import { ThreadSummary } from './types/thread.summary'
 import { ThreadAccessContext } from './types/thread.access-context'
@@ -8,12 +9,10 @@ type AuthorWithMembership = (ThreadSummary | ThreadDetails)['author']
 
 @Injectable()
 export class ThreadPresenter {
+  constructor(private readonly userPresenter: UserPresenter) { }
+
   private toAuthorView(author: AuthorWithMembership) {
-    return {
-      id: author.id,
-      profile: author.profile,
-      role: author.nestMembership[0]?.role ?? null,
-    }
+    return this.userPresenter.toReferenceView(author, author.nestMembership[0]?.role ?? null)
   }
 
   toSummaryView(thread: ThreadSummary) {

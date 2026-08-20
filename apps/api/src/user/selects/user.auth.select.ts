@@ -9,7 +9,7 @@ export const USER_AUTH_SELECT = {
   profile: {
     select: {
       username: true,
-      avatarUrl: true
+      avatarKey: true
     }
   }
 } satisfies Prisma.UserSelect

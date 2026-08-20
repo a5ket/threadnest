@@ -10,6 +10,7 @@ export const createNestSummary = (
   name: 'Nest',
   slug: 'nest-slug',
   description: null,
+  iconKey: null,
   memberCount: 1,
   threadCount: 1,
   createdAt: new Date('2024-01-01T00:00:00.000Z'),

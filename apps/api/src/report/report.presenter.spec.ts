@@ -1,10 +1,11 @@
 import { ReportReason, ReportStatus, ReportTargetType } from 'generated/prisma/enums'
 import { createReportSummary } from 'test/factories/report-summary.factory'
 import { UserPresenter } from 'src/user/user.presenter'
+import { createMockStorageService } from 'test/factories/storage-service.mock-factory'
 import { ReportPresenter } from './report.presenter'
 
 describe('ReportPresenter', () => {
-  const presenter = new ReportPresenter(new UserPresenter())
+  const presenter = new ReportPresenter(new UserPresenter(createMockStorageService() as any))
 
   const baseReport = createReportSummary
 
@@ -52,7 +53,7 @@ describe('ReportPresenter', () => {
     const view = presenter.toSummaryView(baseReport({
       status: ReportStatus.RESOLVED,
       resolvedAt: new Date('2024-01-02T00:00:00.000Z'),
-      resolvedBy: { id: 'mod-1', profile: { username: 'mod', displayName: 'Mod', avatarUrl: null } },
+      resolvedBy: { id: 'mod-1', profile: { username: 'mod', displayName: 'Mod', avatarKey: null } },
     }))
 
     expect(view.resolvedBy).toEqual({ id: 'mod-1', username: 'mod', displayName: 'Mod', avatarUrl: null })

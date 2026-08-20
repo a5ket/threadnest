@@ -30,6 +30,7 @@ export const NestListResponse = zod.object({
       name: zod.string().describe('Nest display name'),
       slug: zod.string().describe('Unique nest slug'),
       description: zod.string().nullable().describe('Nest description'),
+      iconUrl: zod.string().nullable().describe('Nest icon URL'),
       memberCount: zod.number().describe('Number of members'),
       threadCount: zod.number().describe('Number of threads'),
       createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
@@ -100,6 +101,7 @@ export const NestCreateResponse = zod.object({
     }).describe('The current user\'s access and permissions for this nest'),
     isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
     description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
+    iconUrl: zod.string().nullish().describe('Nest icon URL. Only present when the current user can view the nest'),
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
     createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
@@ -153,6 +155,7 @@ export const NestGetBySlugResponse = zod.object({
     }).describe('The current user\'s access and permissions for this nest'),
     isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
     description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
+    iconUrl: zod.string().nullish().describe('Nest icon URL. Only present when the current user can view the nest'),
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
     createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
@@ -216,6 +219,7 @@ export const NestUpdateResponse = zod.object({
     }).describe('The current user\'s access and permissions for this nest'),
     isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
     description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
+    iconUrl: zod.string().nullish().describe('Nest icon URL. Only present when the current user can view the nest'),
     memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
     threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
     createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
@@ -235,6 +239,116 @@ export const NestDeleteParams = zod.object({
 })
 
 export const NestDeleteResponse = zod.void()
+
+/**
+ * @summary Upload a nest's icon
+ */
+export const NestIconUploadParams = zod.object({
+  nestSlug: zod.string()
+})
+
+export const NestIconUploadBody = zod.object({
+  file: zod.instanceof(File).optional()
+})
+
+export const NestIconUploadResponse = zod.object({
+  data: zod.object({
+    name: zod.string().describe('Nest display name'),
+    slug: zod.string().describe('Unique nest slug'),
+    access: zod.object({
+      isMember: zod.boolean().describe('Whether the current user is a member of the nest'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The current user\'s role in the nest'),
+      level: zod.number().describe('The current user\'s permission level — 0 if they aren\'t a member. See the nest\'s roles list for what a level unlocks'),
+      isBanned: zod.boolean().describe('Whether the current user is banned from the nest'),
+      isOwner: zod.boolean().describe('Whether the current user owns the nest'),
+      visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Nest visibility'),
+      joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('Nest join policy'),
+      canViewNest: zod.boolean().describe('Whether the current user can view the nest'),
+      canCreateThread: zod.boolean().describe('Whether the current user can create a thread'),
+      canCreateComment: zod.boolean().describe('Whether the current user can create a comment'),
+      canEditNest: zod.boolean().describe('Whether the current user can edit the nest'),
+      canManageThreadLock: zod.boolean().describe('Whether the current user can manage thread locking'),
+      canManageThreadPin: zod.boolean().describe('Whether the current user can manage thread pinning'),
+      canManageCommentPin: zod.boolean().describe('Whether the current user can manage comment pinning'),
+      canModerateContent: zod.boolean().describe('Whether the current user can moderate content'),
+      canViewMembers: zod.boolean().describe('Whether the current user can view the member list'),
+      canManageInvites: zod.boolean().describe('Whether the current user can manage invites'),
+      canRemoveMembers: zod.boolean().describe('Whether the current user can remove members'),
+      canManageJoinRequests: zod.boolean().describe('Whether the current user can manage join requests'),
+      canManageBans: zod.boolean().describe('Whether the current user can manage bans'),
+      canViewActionLog: zod.boolean().describe('Whether the current user can view the nest action log'),
+      canManageSettings: zod.boolean().describe('Whether the current user can manage nest settings'),
+      canDeleteNest: zod.boolean().describe('Whether the current user can delete the nest'),
+      canTransferOwnership: zod.boolean().describe('Whether the current user can transfer nest ownership'),
+      canManageMemberRoles: zod.boolean().describe('Whether the current user can manage member roles'),
+      canLeaveNest: zod.boolean().describe('Whether the current user can leave the nest')
+    }).describe('The current user\'s access and permissions for this nest'),
+    isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
+    description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
+    iconUrl: zod.string().nullish().describe('Nest icon URL. Only present when the current user can view the nest'),
+    memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
+    threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
+    createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
+    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest'),
+    roles: zod.array(zod.object({
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Role identifier'),
+      level: zod.number().describe('Relative permission level — higher means more privileged')
+    })).optional().describe('This nest\'s role hierarchy, ordered from highest to lowest privilege. Only present for moderators and above')
+  })
+})
+
+/**
+ * @summary Remove a nest's icon
+ */
+export const NestIconDeleteParams = zod.object({
+  nestSlug: zod.string()
+})
+
+export const NestIconDeleteResponse = zod.object({
+  data: zod.object({
+    name: zod.string().describe('Nest display name'),
+    slug: zod.string().describe('Unique nest slug'),
+    access: zod.object({
+      isMember: zod.boolean().describe('Whether the current user is a member of the nest'),
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullable().describe('The current user\'s role in the nest'),
+      level: zod.number().describe('The current user\'s permission level — 0 if they aren\'t a member. See the nest\'s roles list for what a level unlocks'),
+      isBanned: zod.boolean().describe('Whether the current user is banned from the nest'),
+      isOwner: zod.boolean().describe('Whether the current user owns the nest'),
+      visibility: zod.enum(['PUBLIC', 'PRIVATE']).describe('Nest visibility'),
+      joinPolicy: zod.enum(['OPEN', 'BY_REQUEST', 'BY_INVITE']).describe('Nest join policy'),
+      canViewNest: zod.boolean().describe('Whether the current user can view the nest'),
+      canCreateThread: zod.boolean().describe('Whether the current user can create a thread'),
+      canCreateComment: zod.boolean().describe('Whether the current user can create a comment'),
+      canEditNest: zod.boolean().describe('Whether the current user can edit the nest'),
+      canManageThreadLock: zod.boolean().describe('Whether the current user can manage thread locking'),
+      canManageThreadPin: zod.boolean().describe('Whether the current user can manage thread pinning'),
+      canManageCommentPin: zod.boolean().describe('Whether the current user can manage comment pinning'),
+      canModerateContent: zod.boolean().describe('Whether the current user can moderate content'),
+      canViewMembers: zod.boolean().describe('Whether the current user can view the member list'),
+      canManageInvites: zod.boolean().describe('Whether the current user can manage invites'),
+      canRemoveMembers: zod.boolean().describe('Whether the current user can remove members'),
+      canManageJoinRequests: zod.boolean().describe('Whether the current user can manage join requests'),
+      canManageBans: zod.boolean().describe('Whether the current user can manage bans'),
+      canViewActionLog: zod.boolean().describe('Whether the current user can view the nest action log'),
+      canManageSettings: zod.boolean().describe('Whether the current user can manage nest settings'),
+      canDeleteNest: zod.boolean().describe('Whether the current user can delete the nest'),
+      canTransferOwnership: zod.boolean().describe('Whether the current user can transfer nest ownership'),
+      canManageMemberRoles: zod.boolean().describe('Whether the current user can manage member roles'),
+      canLeaveNest: zod.boolean().describe('Whether the current user can leave the nest')
+    }).describe('The current user\'s access and permissions for this nest'),
+    isDeleted: zod.boolean().describe('Whether the nest has been deleted'),
+    description: zod.string().optional().describe('Nest description. Only present when the current user can view the nest'),
+    iconUrl: zod.string().nullish().describe('Nest icon URL. Only present when the current user can view the nest'),
+    memberCount: zod.number().optional().describe('Number of members in the nest. Only present when the current user can view the nest'),
+    threadCount: zod.number().optional().describe('Number of threads in the nest. Only present when the current user can view the nest'),
+    createdAt: zod.iso.datetime({ offset: true }).optional().describe('Creation timestamp. Only present when the current user can view the nest'),
+    updatedAt: zod.iso.datetime({ offset: true }).optional().describe('Last update timestamp. Only present when the current user can view the nest'),
+    roles: zod.array(zod.object({
+      role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).describe('Role identifier'),
+      level: zod.number().describe('Relative permission level — higher means more privileged')
+    })).optional().describe('This nest\'s role hierarchy, ordered from highest to lowest privilege. Only present for moderators and above')
+  })
+})
 
 /**
  * @summary Transfer nest ownership to another member

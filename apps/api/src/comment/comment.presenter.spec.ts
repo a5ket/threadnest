@@ -1,9 +1,12 @@
 import { MODERATION_GRACE_PERIOD_MS } from 'src/common/constants/moderation.constants'
+import { UserPresenter } from 'src/user/user.presenter'
+import { createMockStorageService } from 'test/factories/storage-service.mock-factory'
 import { CommentPresenter } from './comment.presenter'
 import { CommentWithRole } from './types/comment'
 
 describe('CommentPresenter', () => {
-  const presenter = new CommentPresenter()
+  const storage = createMockStorageService()
+  const presenter = new CommentPresenter(new UserPresenter(storage as any), storage as any)
 
   const baseComment = (overrides: Partial<CommentWithRole> = {}): CommentWithRole => ({
     id: 'comment-1',

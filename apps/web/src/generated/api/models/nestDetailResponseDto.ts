@@ -18,6 +18,11 @@ export interface NestDetailResponseDto {
   isDeleted: boolean
   /** Nest description. Only present when the current user can view the nest */
   description?: string
+  /**
+     * Nest icon URL. Only present when the current user can view the nest
+     * @nullable
+     */
+  iconUrl?: string | null
   /** Number of members in the nest. Only present when the current user can view the nest */
   memberCount?: number
   /** Number of threads in the nest. Only present when the current user can view the nest */

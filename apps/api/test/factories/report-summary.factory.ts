@@ -11,7 +11,7 @@ export const createReportSummary = (
   status: ReportStatus.PENDING,
   createdAt: new Date('2024-01-01T00:00:00.000Z'),
   resolvedAt: null,
-  reporter: { id: 'reporter-1', profile: { username: 'reporter', displayName: null, avatarUrl: null } },
+  reporter: { id: 'reporter-1', profile: { username: 'reporter', displayName: null, avatarKey: null } },
   resolvedBy: null,
   thread: { id: 'thread-1', slug: 'thread-slug', title: 'Thread title' },
   comment: null,

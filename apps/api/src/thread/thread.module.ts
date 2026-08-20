@@ -3,6 +3,7 @@ import { EventModule } from 'src/event/event.module'
 import { NestModule } from 'src/nest/nest.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
+import { UserModule } from 'src/user/user.module'
 import { NestThreadController } from './nest-thread.controller'
 import { ThreadController } from './thread.controller'
 import { ThreadAccess } from './thread.access'
@@ -18,7 +19,8 @@ import { SavedThreadRepository } from './saved-thread.repository'
     PrismaModule,
     NestModule,
     EventModule,
-    SecurityModule
+    SecurityModule,
+    UserModule
   ],
   providers: [
     ThreadRepository,

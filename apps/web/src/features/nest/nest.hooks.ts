@@ -4,7 +4,7 @@ import { ApiError, ApiErrorResponse } from '@/common/api-error'
 import { createMutationHook } from '@/common/api-mutation'
 import { NestListSortBy } from '@/generated/api/models'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { nestCreate, nestDelete, nestList, nestTransferOwnership } from './nest.api'
+import { nestCreate, nestDelete, nestIconDelete, nestIconUpload, nestList, nestTransferOwnership } from './nest.api'
 import type { NestListPage } from './nest.server'
 
 export const useCreateNest = createMutationHook(nestCreate, 201)
@@ -13,6 +13,16 @@ export const useDeleteNest = createMutationHook(nestDelete, 204)
 export const useTransferOwnership = createMutationHook(
   ({ nestSlug, userId }: { nestSlug: string, userId: string }) => nestTransferOwnership(nestSlug, { userId }),
   204
+)
+
+export const useUploadNestIcon = createMutationHook(
+  ({ nestSlug, file }: { nestSlug: string, file: File }) => nestIconUpload(nestSlug, { file }),
+  200
+)
+
+export const useRemoveNestIcon = createMutationHook(
+  (nestSlug: string) => nestIconDelete(nestSlug),
+  200
 )
 
 export function nestListQueryKeyPrefix() {

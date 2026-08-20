@@ -84,6 +84,21 @@ export class NestRepository {
     }
   }
 
+  async updateIconKey(nestId: string, iconKey: string | null) {
+    try {
+      return await this.prisma.nest.update({
+        where: { id: nestId },
+        data: { iconKey },
+        select: NEST_SUMMARY_SELECT
+      })
+    } catch (error) {
+      if (this.prisma.isRecordNotFoundError(error)) {
+        throw new NestNotFoundException()
+      }
+      throw error
+    }
+  }
+
   async adjustMemberCount(
     nestId: string,
     delta: number,

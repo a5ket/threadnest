@@ -1,4 +1,5 @@
 import { DeleteNestButton } from '@/features/nest/components/delete-nest-button'
+import { NestIconField } from '@/features/nest/components/nest-icon-field'
 import { NestSettingsForm } from '@/features/nest/components/nest-settings-form'
 import { getNestServer } from '@/features/nest/nest.server'
 import { getNestSettingsServer } from '@/features/nest/nest-settings.server'
@@ -31,6 +32,10 @@ export default async function NestSettingsPage({
         {nest.name}
         {' settings'}
       </h1>
+
+      {nest.access.canEditNest && (
+        <NestIconField nestSlug={nestSlug} nestName={nest.name} iconUrl={nest.iconUrl ?? null} />
+      )}
 
       <NestSettingsForm nestSlug={nestSlug} settings={settings} readOnly={!nest.access.canManageSettings} />
 

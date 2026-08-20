@@ -1,18 +1,21 @@
 import { Injectable } from '@nestjs/common'
 import { NestMemberRole } from 'generated/prisma/enums'
-import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
+import { UserPresenter } from 'src/user/user.presenter'
+import { UserSummary } from 'src/user/types/user.summary'
 
 interface NestMemberView {
-  user: UserReferenceDto
+  user: UserSummary
   role: NestMemberRole
   createdAt: Date
 }
 
 @Injectable()
 export class NestMemberPresenter {
+  constructor(private readonly userPresenter: UserPresenter) { }
+
   toView(member: NestMemberView) {
     return {
-      user: member.user,
+      user: this.userPresenter.toReferenceView(member.user),
       role: member.role,
       createdAt: member.createdAt,
     }

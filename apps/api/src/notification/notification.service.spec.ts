@@ -10,7 +10,7 @@ describe('NotificationService', () => {
 
   const service = new NotificationService(
     notificationsRepo as any,
-    presenter,
+    presenter as any,
   )
 
   beforeEach(() => {

@@ -4,6 +4,6 @@ export const USER_PROFILE_SELECT = {
   username: true,
   displayName: true,
   bio: true,
-  avatarUrl: true,
+  avatarKey: true,
   createdAt: true
 } satisfies Prisma.UserProfileSelect

@@ -12,7 +12,7 @@ describe('PlatformActionLogService', () => {
 
   const service = new PlatformActionLogService(
     actionLogsRepo as any,
-    presenter,
+    presenter as any,
     policy as any,
   )
 

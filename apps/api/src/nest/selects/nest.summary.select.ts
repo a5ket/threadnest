@@ -5,6 +5,7 @@ export const NEST_SUMMARY_SELECT = {
   name: true,
   slug: true,
   description: true,
+  iconKey: true,
   memberCount: true,
   threadCount: true,
   createdAt: true,

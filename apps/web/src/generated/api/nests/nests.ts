@@ -18,6 +18,17 @@ import type {
   NestDelete404,
   NestGetBySlug200,
   NestGetBySlug404,
+  NestIconDelete200,
+  NestIconDelete401,
+  NestIconDelete403,
+  NestIconDelete404,
+  NestIconUpload200,
+  NestIconUpload400,
+  NestIconUpload401,
+  NestIconUpload403,
+  NestIconUpload404,
+  NestIconUpload429,
+  NestIconUploadBody,
   NestList200,
   NestList400,
   NestListParams,
@@ -275,6 +286,114 @@ export const getNestDeleteUrl = (nestSlug: string) => {
  */
 export const nestDelete = async (nestSlug: string, options?: RequestInit): Promise<nestDeleteResponse> => {
   return apiFetch<nestDeleteResponse>(getNestDeleteUrl(nestSlug),
+    {
+      ...options,
+      method: 'DELETE'
+
+    }
+  )
+}
+
+export type nestIconUploadResponse200 = {
+  data: NestIconUpload200
+  status: 200
+}
+
+export type nestIconUploadResponse400 = {
+  data: NestIconUpload400
+  status: 400
+}
+
+export type nestIconUploadResponse401 = {
+  data: NestIconUpload401
+  status: 401
+}
+
+export type nestIconUploadResponse403 = {
+  data: NestIconUpload403
+  status: 403
+}
+
+export type nestIconUploadResponse404 = {
+  data: NestIconUpload404
+  status: 404
+}
+
+export type nestIconUploadResponse429 = {
+  data: NestIconUpload429
+  status: 429
+}
+
+export type nestIconUploadResponseSuccess = (nestIconUploadResponse200) & {
+  headers: Headers
+}
+export type nestIconUploadResponseError = (nestIconUploadResponse400 | nestIconUploadResponse401 | nestIconUploadResponse403 | nestIconUploadResponse404 | nestIconUploadResponse429) & {
+  headers: Headers
+}
+
+export type nestIconUploadResponse = (nestIconUploadResponseSuccess | nestIconUploadResponseError)
+
+export const getNestIconUploadUrl = (nestSlug: string) => {
+  return `/nests/${nestSlug}/icon`
+}
+
+/**
+ * @summary Upload a nest's icon
+ */
+export const nestIconUpload = async (nestSlug: string,
+  nestIconUploadBody: NestIconUploadBody, options?: RequestInit): Promise<nestIconUploadResponse> => {
+  const formData = new FormData()
+  if (nestIconUploadBody.file !== undefined) {
+    formData.append(`file`, nestIconUploadBody.file)
+  }
+
+  return apiFetch<nestIconUploadResponse>(getNestIconUploadUrl(nestSlug),
+    {
+      ...options,
+      method: 'POST',
+      body: formData
+    }
+  )
+}
+
+export type nestIconDeleteResponse200 = {
+  data: NestIconDelete200
+  status: 200
+}
+
+export type nestIconDeleteResponse401 = {
+  data: NestIconDelete401
+  status: 401
+}
+
+export type nestIconDeleteResponse403 = {
+  data: NestIconDelete403
+  status: 403
+}
+
+export type nestIconDeleteResponse404 = {
+  data: NestIconDelete404
+  status: 404
+}
+
+export type nestIconDeleteResponseSuccess = (nestIconDeleteResponse200) & {
+  headers: Headers
+}
+export type nestIconDeleteResponseError = (nestIconDeleteResponse401 | nestIconDeleteResponse403 | nestIconDeleteResponse404) & {
+  headers: Headers
+}
+
+export type nestIconDeleteResponse = (nestIconDeleteResponseSuccess | nestIconDeleteResponseError)
+
+export const getNestIconDeleteUrl = (nestSlug: string) => {
+  return `/nests/${nestSlug}/icon`
+}
+
+/**
+ * @summary Remove a nest's icon
+ */
+export const nestIconDelete = async (nestSlug: string, options?: RequestInit): Promise<nestIconDeleteResponse> => {
+  return apiFetch<nestIconDeleteResponse>(getNestIconDeleteUrl(nestSlug),
     {
       ...options,
       method: 'DELETE'

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InvalidAccessTokenException } from 'src/auth/exceptions/invalid-access-token.exception'
 import { NestMemberService } from 'src/nest/member/nest-member.service'
 import { PlatformAccess } from 'src/platform/platform.access'
+import { StorageService } from 'src/storage/storage.service'
 import { UserNotFoundException } from 'src/user/exceptions/user-not-found.exception'
 import { UserService } from 'src/user/user.service'
 import { MeBootstrapDataDto } from './dto/me.bootstrap-response.dto'
@@ -11,7 +12,8 @@ export class MeService {
   constructor(
     private readonly user: UserService,
     private readonly nestMember: NestMemberService,
-    private readonly platformAccess: PlatformAccess
+    private readonly platformAccess: PlatformAccess,
+    private readonly storage: StorageService
   ) { }
 
   async getBootstrapData(userId: string): Promise<MeBootstrapDataDto> {
@@ -29,7 +31,7 @@ export class MeService {
           id: user.id,
           email: user.email,
           username: userProfile.username,
-          avatarUrl: userProfile.avatarUrl,
+          avatarUrl: userProfile.avatarKey ? this.storage.getPublicUrl(userProfile.avatarKey) : null,
           emailVerified: Boolean(user.emailVerifiedAt),
           platformAccess
         },

@@ -31,7 +31,7 @@ type ThreadSearchRow = {
   rank: number
   authorUsername: string | null
   authorDisplayName: string | null
-  authorAvatarUrl: string | null
+  authorAvatarKey: string | null
   authorRole: NestMemberRole | null
   viewerVote: VoteType | null
   viewerSaved: boolean
@@ -138,7 +138,7 @@ export class ThreadRepository {
       author: {
         id: row.authorId,
         profile: row.authorUsername
-          ? { username: row.authorUsername, displayName: row.authorDisplayName, avatarUrl: row.authorAvatarUrl }
+          ? { username: row.authorUsername, displayName: row.authorDisplayName, avatarKey: row.authorAvatarKey }
           : null,
         nestMembership: row.authorRole ? [{ role: row.authorRole }] : [],
       },
@@ -178,7 +178,7 @@ export class ThreadRepository {
         r.*,
         up.username AS "authorUsername",
         up."displayName" AS "authorDisplayName",
-        up."avatarUrl" AS "authorAvatarUrl",
+        up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
         tv.type AS "viewerVote",
         (st."threadId" IS NOT NULL) AS "viewerSaved"
@@ -247,7 +247,7 @@ export class ThreadRepository {
         n.slug AS "nestSlug",
         up.username AS "authorUsername",
         up."displayName" AS "authorDisplayName",
-        up."avatarUrl" AS "authorAvatarUrl",
+        up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
         tv.type AS "viewerVote",
         (st."threadId" IS NOT NULL) AS "viewerSaved"
@@ -294,7 +294,7 @@ export class ThreadRepository {
         n.slug AS "nestSlug",
         up.username AS "authorUsername",
         up."displayName" AS "authorDisplayName",
-        up."avatarUrl" AS "authorAvatarUrl",
+        up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
         tv.type AS "viewerVote"
       FROM "SavedThread" st

@@ -60,7 +60,7 @@ export class CommentRepository {
         (abv."blockerId" IS NOT NULL) AS "authorBlockedViewer",
         up.username AS "authorUsername",
         up."displayName" AS "authorDisplayName",
-        up."avatarUrl" AS "authorAvatarUrl",
+        up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
         cv.type AS "viewerVote"
       FROM comment_tree t

@@ -9,6 +9,6 @@ export const createNotificationSummary = (
   data: { nestSlug: 'nest-slug', nestName: 'Nest', threadSlug: 'thread-slug', threadTitle: 'Thread title', commentId: 'comment-1', commentExcerpt: 'hello' },
   readAt: null,
   createdAt: new Date('2024-01-01T00:00:00.000Z'),
-  actor: { id: 'actor-1', profile: { username: 'actor', displayName: null, avatarUrl: null } },
+  actor: { id: 'actor-1', profile: { username: 'actor', displayName: null, avatarKey: null } },
   ...overrides,
 })

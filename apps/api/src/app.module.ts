@@ -17,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module'
 import { QueueModule } from './queue/queue.module'
 import { ReportModule } from './report/report.module'
 import { SecurityModule } from './security/security.module'
+import { StorageModule } from './storage/storage.module'
 import { ThreadModule } from './thread/thread.module'
 import { UserModule } from './user/user.module'
 
@@ -45,7 +46,8 @@ import { UserModule } from './user/user.module'
     ReportModule,
     NotificationModule,
     PlatformModule,
-    ChatModule
+    ChatModule,
+    StorageModule
   ]
 })
 export class AppModule { }

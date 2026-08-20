@@ -20,9 +20,4 @@ export class UpdateProfileDto {
   @Length(0, 500)
   @IsOptional()
   bio?: string
-
-  @Trim()
-  @IsString()
-  @IsOptional()
-  avatarUrl?: string
 }

@@ -34,6 +34,13 @@ import type {
   MeNestPreferenceUpdate401,
   MeNestPreferenceUpdate403,
   MeNestPreferenceUpdate404,
+  MeProfileAvatarDelete200,
+  MeProfileAvatarDelete401,
+  MeProfileAvatarUpload200,
+  MeProfileAvatarUpload400,
+  MeProfileAvatarUpload401,
+  MeProfileAvatarUpload429,
+  MeProfileAvatarUploadBody,
   MeProfileGet200,
   MeProfileGet401,
   MeProfileUpdate200,
@@ -473,6 +480,93 @@ export const meProfileUpdate = async (updateProfileDto: UpdateProfileDto, option
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...options?.headers },
       body: JSON.stringify(updateProfileDto)
+    }
+  )
+}
+
+export type meProfileAvatarUploadResponse200 = {
+  data: MeProfileAvatarUpload200
+  status: 200
+}
+
+export type meProfileAvatarUploadResponse400 = {
+  data: MeProfileAvatarUpload400
+  status: 400
+}
+
+export type meProfileAvatarUploadResponse401 = {
+  data: MeProfileAvatarUpload401
+  status: 401
+}
+
+export type meProfileAvatarUploadResponse429 = {
+  data: MeProfileAvatarUpload429
+  status: 429
+}
+
+export type meProfileAvatarUploadResponseSuccess = (meProfileAvatarUploadResponse200) & {
+  headers: Headers
+}
+export type meProfileAvatarUploadResponseError = (meProfileAvatarUploadResponse400 | meProfileAvatarUploadResponse401 | meProfileAvatarUploadResponse429) & {
+  headers: Headers
+}
+
+export type meProfileAvatarUploadResponse = (meProfileAvatarUploadResponseSuccess | meProfileAvatarUploadResponseError)
+
+export const getMeProfileAvatarUploadUrl = () => {
+  return `/me/profile/avatar`
+}
+
+/**
+ * @summary Upload the current user's avatar
+ */
+export const meProfileAvatarUpload = async (meProfileAvatarUploadBody: MeProfileAvatarUploadBody, options?: RequestInit): Promise<meProfileAvatarUploadResponse> => {
+  const formData = new FormData()
+  if (meProfileAvatarUploadBody.file !== undefined) {
+    formData.append(`file`, meProfileAvatarUploadBody.file)
+  }
+
+  return apiFetch<meProfileAvatarUploadResponse>(getMeProfileAvatarUploadUrl(),
+    {
+      ...options,
+      method: 'POST',
+      body: formData
+    }
+  )
+}
+
+export type meProfileAvatarDeleteResponse200 = {
+  data: MeProfileAvatarDelete200
+  status: 200
+}
+
+export type meProfileAvatarDeleteResponse401 = {
+  data: MeProfileAvatarDelete401
+  status: 401
+}
+
+export type meProfileAvatarDeleteResponseSuccess = (meProfileAvatarDeleteResponse200) & {
+  headers: Headers
+}
+export type meProfileAvatarDeleteResponseError = (meProfileAvatarDeleteResponse401) & {
+  headers: Headers
+}
+
+export type meProfileAvatarDeleteResponse = (meProfileAvatarDeleteResponseSuccess | meProfileAvatarDeleteResponseError)
+
+export const getMeProfileAvatarDeleteUrl = () => {
+  return `/me/profile/avatar`
+}
+
+/**
+ * @summary Remove the current user's avatar
+ */
+export const meProfileAvatarDelete = async (options?: RequestInit): Promise<meProfileAvatarDeleteResponse> => {
+  return apiFetch<meProfileAvatarDeleteResponse>(getMeProfileAvatarDeleteUrl(),
+    {
+      ...options,
+      method: 'DELETE'
+
     }
   )
 }

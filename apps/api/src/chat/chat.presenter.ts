@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common'
+import { UserPresenter } from 'src/user/user.presenter'
 import { ChatAccessContext } from './types/chat.access-context'
 import { ChatSummaryRaw } from './types/chat.summary'
 
 @Injectable()
 export class ChatPresenter {
+  constructor(private readonly userPresenter: UserPresenter) { }
+
   toSummaryView(chat: ChatSummaryRaw, viewerId: string) {
     const me = chat.participants.find((p) => p.userId === viewerId)
     const other = chat.participants.find((p) => p.userId !== viewerId)
@@ -12,7 +15,7 @@ export class ChatPresenter {
 
     return {
       id: chat.id,
-      otherParticipant: other?.user ?? null,
+      otherParticipant: other?.user ? this.userPresenter.toReferenceView(other.user) : null,
       lastMessage: visibleLastMessage
         ? {
             id: visibleLastMessage.id,

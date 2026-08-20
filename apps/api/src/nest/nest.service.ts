@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common'
+import { randomBytes } from 'crypto'
 import { NestMemberRole } from 'generated/prisma/enums'
 import { EventBus } from 'src/event/event-bus'
 import { TransactionManager } from 'src/prisma/transaction-manager'
+import { ImageProcessor } from 'src/storage/image-processor'
+import { StorageService } from 'src/storage/storage.service'
 import { RESERVED_NEST_SLUGS } from './constants/reserved-nest-slugs'
 import { NestSlugReservedException } from './exceptions/nest-slug-reserved.exception'
 import { NestCreateDto } from './dto/nest.create.dto'
@@ -19,6 +22,8 @@ import { NestPolicy } from './nest.policy'
 import { NestRepository } from './nest.repository'
 import { NestSettingsRepository } from './settings/nest-settings.repository'
 
+const NEST_ICON_SIZE = 256
+
 @Injectable()
 export class NestService {
   constructor(
@@ -29,7 +34,9 @@ export class NestService {
     private readonly nestAccess: NestAccess,
     private readonly presenter: NestPresenter,
     private readonly transactionManager: TransactionManager,
-    private readonly eventBus: EventBus
+    private readonly eventBus: EventBus,
+    private readonly storage: StorageService,
+    private readonly imageProcessor: ImageProcessor
   ) { }
 
   async create(actorUserId: string, dto: NestCreateDto) {
@@ -94,6 +101,40 @@ export class NestService {
 
     void this.eventBus.publish(new NestUpdatedEvent({ nestId: updated.id, userId: actorUserId, name: updated.name, description: updated.description }))
 
+    return this.presenter.toDetailView(updated, access)
+  }
+
+  async updateIcon(nestSlug: string, actorUserId: string, rawBuffer: Buffer) {
+    const nest = await this.nestsRepo.getBySlug(nestSlug)
+
+    await this.nestsPolicy.assertCanUpdateNest(nest, actorUserId)
+
+    const processed = await this.imageProcessor.toSquareWebp(rawBuffer, NEST_ICON_SIZE)
+    const key = `nests/${nest.id}/${randomBytes(8).toString('hex')}.webp`
+
+    await this.storage.upload(key, processed, 'image/webp')
+    const updated = await this.nestsRepo.updateIconKey(nest.id, key)
+
+    if (nest.iconKey) {
+      await this.storage.delete(nest.iconKey)
+    }
+
+    const access = await this.nestAccess.getContext(updated.id, actorUserId)
+    return this.presenter.toDetailView(updated, access)
+  }
+
+  async removeIcon(nestSlug: string, actorUserId: string) {
+    const nest = await this.nestsRepo.getBySlug(nestSlug)
+
+    await this.nestsPolicy.assertCanUpdateNest(nest, actorUserId)
+
+    const updated = await this.nestsRepo.updateIconKey(nest.id, null)
+
+    if (nest.iconKey) {
+      await this.storage.delete(nest.iconKey)
+    }
+
+    const access = await this.nestAccess.getContext(updated.id, actorUserId)
     return this.presenter.toDetailView(updated, access)
   }
 

@@ -1,5 +1,5 @@
-import { createMutationHook } from '@/common/api-mutation'
-import { meAuthChangeEmail, meAuthChangePassword, meNestLeave, meProfileUpdate } from '@/generated/api/me/me'
+import { createMutationHook, createVoidMutationHook } from '@/common/api-mutation'
+import { meAuthChangeEmail, meAuthChangePassword, meNestLeave, meProfileAvatarDelete, meProfileAvatarUpload, meProfileUpdate } from '@/generated/api/me/me'
 import { useMeStore } from './components/me-store-provider'
 
 export const useLeaveNest = createMutationHook(
@@ -8,6 +8,13 @@ export const useLeaveNest = createMutationHook(
 )
 
 export const useUpdateProfile = createMutationHook(meProfileUpdate, 200)
+
+export const useUploadAvatar = createMutationHook(
+  (file: File) => meProfileAvatarUpload({ file }),
+  200
+)
+
+export const useRemoveAvatar = createVoidMutationHook(meProfileAvatarDelete, 200)
 
 export const useChangePassword = createMutationHook(
   (dto: { currentPassword: string, newPassword: string }) => meAuthChangePassword(dto),
@@ -34,4 +41,8 @@ export function useAddNest() {
 
 export function useRemoveNest() {
   return useMeStore((s) => s.removeNest)
+}
+
+export function useUpdateMeUser() {
+  return useMeStore((s) => s.updateUser)
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { StorageService } from 'src/storage/storage.service'
 import { ROLE_HIERARCHY } from './constants/nest-access-level'
 import { NestAccessContext } from './types/nest.access-context'
 import { NestDiscovery } from './types/nest.discovery'
@@ -6,12 +7,19 @@ import { NestSummary } from './types/nest.summary'
 
 @Injectable()
 export class NestPresenter {
+  constructor(private readonly storage: StorageService) { }
+
+  private resolveIconUrl(iconKey: string | null) {
+    return iconKey ? this.storage.getPublicUrl(iconKey) : null
+  }
+
   toDiscoveryView(nest: NestDiscovery) {
     return {
       id: nest.id,
       name: nest.name,
       slug: nest.slug,
       description: nest.description,
+      iconUrl: this.resolveIconUrl(nest.iconKey),
       memberCount: nest.memberCount,
       threadCount: nest.threadCount,
       createdAt: nest.createdAt,
@@ -28,6 +36,7 @@ export class NestPresenter {
       name: nest.name,
       slug: nest.slug,
       description: nest.description,
+      iconUrl: this.resolveIconUrl(nest.iconKey),
       memberCount: nest.memberCount,
       threadCount: nest.threadCount,
       createdAt: nest.createdAt,
@@ -43,6 +52,7 @@ export class NestPresenter {
       isDeleted: Boolean(nest.deletedAt),
       ...(access.canViewNest && {
         description: nest.description,
+        iconUrl: this.resolveIconUrl(nest.iconKey),
         memberCount: nest.memberCount,
         threadCount: nest.threadCount,
         createdAt: nest.createdAt,

@@ -67,6 +67,7 @@ export const MeNestListResponse = zod.object({
     name: zod.string().describe('Nest display name'),
     slug: zod.string().describe('Unique nest slug'),
     description: zod.string().nullable().describe('Nest description'),
+    iconUrl: zod.string().nullable().describe('Nest icon URL'),
     memberCount: zod.number().describe('Number of members'),
     threadCount: zod.number().describe('Number of threads'),
     createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
@@ -150,11 +151,42 @@ export const meProfileUpdateBodyBioMax = 500
 export const MeProfileUpdateBody = zod.object({
   username: zod.string().min(meProfileUpdateBodyUsernameMin).max(meProfileUpdateBodyUsernameMax).regex(meProfileUpdateBodyUsernameRegExp).optional(),
   displayName: zod.string().min(meProfileUpdateBodyDisplayNameMin).max(meProfileUpdateBodyDisplayNameMax).optional(),
-  bio: zod.string().min(meProfileUpdateBodyBioMin).max(meProfileUpdateBodyBioMax).optional(),
-  avatarUrl: zod.string().optional()
+  bio: zod.string().min(meProfileUpdateBodyBioMin).max(meProfileUpdateBodyBioMax).optional()
 })
 
 export const MeProfileUpdateResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    username: zod.string().describe('Unique username'),
+    displayName: zod.string().nullable().describe('Display name'),
+    bio: zod.string().nullable().describe('Bio'),
+    avatarUrl: zod.string().nullable().describe('Avatar URL'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+  })
+})
+
+/**
+ * @summary Upload the current user's avatar
+ */
+export const MeProfileAvatarUploadBody = zod.object({
+  file: zod.instanceof(File).optional()
+})
+
+export const MeProfileAvatarUploadResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    username: zod.string().describe('Unique username'),
+    displayName: zod.string().nullable().describe('Display name'),
+    bio: zod.string().nullable().describe('Bio'),
+    avatarUrl: zod.string().nullable().describe('Avatar URL'),
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+  })
+})
+
+/**
+ * @summary Remove the current user's avatar
+ */
+export const MeProfileAvatarDeleteResponse = zod.object({
   data: zod.object({
     userId: zod.string().describe('User ID'),
     username: zod.string().describe('Unique username'),

@@ -5,6 +5,7 @@ import { EventConfig } from './event/event.config'
 import { QueueConfig } from './queue/queue.config'
 import { SecurityConfig } from './security/security.config'
 import { ThrottlerConfig } from './security/throttler.config'
+import { StorageConfig } from './storage/storage.config'
 import { UrlConfig } from './url/url.config'
 
 export type AppConfig =
@@ -16,6 +17,7 @@ export type AppConfig =
   EventConfig &
   UrlConfig &
   EmailConfig &
+  StorageConfig &
   {
     port: number
     databaseUrl: string
@@ -67,6 +69,16 @@ export default (): AppConfig => {
     emailFrom: process.env.EMAIL_FROM!
   }
 
+  const storage: StorageConfig = {
+    storageEndpoint: process.env.STORAGE_ENDPOINT!,
+    storageRegion: process.env.STORAGE_REGION!,
+    storageBucket: process.env.STORAGE_BUCKET!,
+    storageAccessKeyId: process.env.STORAGE_ACCESS_KEY_ID!,
+    storageSecretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY!,
+    storagePublicUrl: process.env.STORAGE_PUBLIC_URL!,
+    storageForcePathStyle: process.env.STORAGE_FORCE_PATH_STYLE === 'true'
+  }
+
   return {
     port: parseInt(process.env.PORT!),
     databaseUrl: process.env.DATABASE_URL!,
@@ -77,6 +89,7 @@ export default (): AppConfig => {
     ...queue,
     ...event,
     ...url,
-    ...email
+    ...email,
+    ...storage
   }
 }

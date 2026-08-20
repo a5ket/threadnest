@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common'
 import { MODERATION_GRACE_PERIOD_MS } from 'src/common/constants/moderation.constants'
+import { StorageService } from 'src/storage/storage.service'
+import { UserPresenter } from 'src/user/user.presenter'
 import { CommentBlockFlags, CommentNode, CommentPage, CommentWithRole } from './types/comment'
 
 @Injectable()
 export class CommentPresenter {
+  constructor(
+    private readonly userPresenter: UserPresenter,
+    private readonly storage: StorageService
+  ) { }
+
   private redact(
     deletedAt: Date | null,
     deletedById: string | null,
@@ -34,11 +41,7 @@ export class CommentPresenter {
     return {
       id: comment.id,
       threadId: comment.threadId,
-      author: hideAuthor ? null : {
-        id: comment.author.id,
-        profile: comment.author.profile,
-        role: comment.author.nestMembership[0]?.role ?? null,
-      },
+      author: hideAuthor ? null : this.userPresenter.toReferenceView(comment.author, comment.author.nestMembership[0]?.role ?? null),
       parentId: comment.parentId,
       content: hideContent ? null : comment.content,
       replyCount: comment.replyCount,
@@ -69,7 +72,7 @@ export class CommentPresenter {
         profile: {
           username: node.authorUsername,
           displayName: node.authorDisplayName,
-          avatarUrl: node.authorAvatarUrl,
+          avatarUrl: node.authorAvatarKey ? this.storage.getPublicUrl(node.authorAvatarKey) : null,
         },
         role: node.authorRole,
       },

@@ -9,7 +9,7 @@ export const BLOCKED_USER_SELECT = {
         select: {
           username: true,
           displayName: true,
-          avatarUrl: true
+          avatarKey: true
         }
       }
     }

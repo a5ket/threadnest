@@ -15,6 +15,11 @@ export interface NestSummaryResponseDto {
      * @nullable
      */
   description: string | null
+  /**
+     * Nest icon URL
+     * @nullable
+     */
+  iconUrl: string | null
   /** Number of members */
   memberCount: number
   /** Number of threads */

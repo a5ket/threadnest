@@ -30,7 +30,7 @@ export type CommentNode = {
     authorId: string
     authorUsername: string | null
     authorDisplayName: string | null
-    authorAvatarUrl: string | null
+    authorAvatarKey: string | null
     authorRole: NestMemberRole | null
     parentId: string | null
     content: string

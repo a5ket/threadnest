@@ -18,6 +18,9 @@ export class NestDetailResponseDto {
   @ApiProperty({ description: 'Nest description. Only present when the current user can view the nest', required: false })
   description?: string
 
+  @ApiProperty({ description: 'Nest icon URL. Only present when the current user can view the nest', nullable: true, type: 'string', required: false })
+  iconUrl?: string | null
+
   @ApiProperty({ description: 'Number of members in the nest. Only present when the current user can view the nest', required: false })
   memberCount?: number
 
