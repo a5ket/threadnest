@@ -73,6 +73,17 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
             )}
           </p>
         </div>
+
+        {thread.attachments[0] && (
+          <Link href={`/n/${nestSlug}/t/${thread.slug}`} className='ml-auto shrink-0'>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={thread.attachments[0].url}
+              alt=''
+              className='h-16 w-16 rounded-md object-cover'
+            />
+          </Link>
+        )}
       </div>
     </li>
   )

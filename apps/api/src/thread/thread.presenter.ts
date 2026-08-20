@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { StorageService } from 'src/storage/storage.service'
 import { UserPresenter } from 'src/user/user.presenter'
 import { ThreadDetails } from './types/thread.details'
 import { ThreadSummary } from './types/thread.summary'
@@ -6,16 +7,30 @@ import { ThreadAccessContext } from './types/thread.access-context'
 import { ThreadSearchResult } from './thread.repository'
 
 type AuthorWithMembership = (ThreadSummary | ThreadDetails)['author']
+type AttachmentWithKey = (ThreadSummary | ThreadDetails)['attachments'][number]
 
 @Injectable()
 export class ThreadPresenter {
-  constructor(private readonly userPresenter: UserPresenter) { }
+  constructor(
+    private readonly userPresenter: UserPresenter,
+    private readonly storage: StorageService
+  ) { }
 
   private toAuthorView(author: AuthorWithMembership) {
     return this.userPresenter.toReferenceView(author, author.nestMembership[0]?.role ?? null)
   }
 
-  toSummaryView(thread: ThreadSummary) {
+  private async toAttachmentsView(attachments: AttachmentWithKey[]) {
+    return Promise.all(attachments.map(async (a) => ({
+      id: a.id,
+      key: a.key,
+      url: await this.storage.getPresignedUrl(a.key),
+      width: a.width,
+      height: a.height,
+    })))
+  }
+
+  async toSummaryView(thread: ThreadSummary) {
     return {
       id: thread.id,
       slug: thread.slug,
@@ -30,17 +45,18 @@ export class ThreadPresenter {
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,
       author: this.toAuthorView(thread.author),
+      attachments: await this.toAttachmentsView(thread.attachments),
     }
   }
 
-  toSearchResultView(thread: ThreadSearchResult) {
+  async toSearchResultView(thread: ThreadSearchResult) {
     return {
-      ...this.toSummaryView(thread),
+      ...await this.toSummaryView(thread),
       nest: thread.nest,
     }
   }
 
-  toDetailView(thread: ThreadDetails, ctx: ThreadAccessContext) {
+  async toDetailView(thread: ThreadDetails, ctx: ThreadAccessContext) {
     return {
       id: thread.id,
       slug: thread.slug,
@@ -63,6 +79,7 @@ export class ThreadPresenter {
       lockedAt: thread.lockedAt,
       pinnedAt: thread.pinnedAt,
       access: ctx,
+      attachments: await this.toAttachmentsView(thread.attachments),
     }
   }
 }

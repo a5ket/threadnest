@@ -26,4 +26,25 @@ export class ImageProcessor {
       throw new InvalidImageFileException()
     }
   }
+
+  // Resizes only if larger than maxDimension, preserving aspect ratio — no crop. For content
+  // (thread/comment attachments) where the original framing matters, unlike avatars/icons.
+  async toBoundedWebp(buffer: Buffer, maxDimension: number): Promise<{ buffer: Buffer, width: number, height: number }> {
+    if (buffer.byteLength > MAX_UPLOAD_BYTES) {
+      throw new ImageTooLargeException(MAX_UPLOAD_MB)
+    }
+
+    try {
+      const { data, info } = await sharp(buffer)
+        .rotate()
+        .resize(maxDimension, maxDimension, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 82 })
+        .toBuffer({ resolveWithObject: true })
+
+      return { buffer: data, width: info.width, height: info.height }
+    }
+    catch {
+      throw new InvalidImageFileException()
+    }
+  }
 }

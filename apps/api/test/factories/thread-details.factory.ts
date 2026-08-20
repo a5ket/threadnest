@@ -23,5 +23,6 @@ export const createThreadDetails = (
   nest: { name: 'Nest', slug: 'nest-slug' },
   viewerVote: null,
   viewerSaved: false,
+  attachments: [],
   ...overrides,
 })

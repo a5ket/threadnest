@@ -20,20 +20,35 @@ model Thread {
   lastCommentAt DateTime?
   score         Int       @default(0)
 
-  nest            Nest             @relation(fields: [nestId], references: [id], onDelete: Cascade)
-  author          User             @relation(fields: [authorId], references: [id])
+  nest            Nest               @relation(fields: [nestId], references: [id], onDelete: Cascade)
+  author          User               @relation(fields: [authorId], references: [id])
   comments        Comment[]
-  deletedBy       User?            @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+  deletedBy       User?              @relation("ThreadDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
   threadVotes     ThreadVote[]
   savedBy         SavedThread[]
   reports         ContentReport[]
   platformReports PlatformReport[]
+  attachments     ThreadAttachment[]
 
   @@unique([nestId, slug])
   @@index([nestId, createdAt])
   @@index([nestId, pinnedAt])
   @@index([nestId, lastCommentAt])
   @@index([authorId, createdAt])
+}
+
+model ThreadAttachment {
+  id        String   @id @default(uuid(7))
+  threadId  String
+  key       String
+  width     Int
+  height    Int
+  order     Int
+  createdAt DateTime @default(now())
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, order])
 }
 
 model ThreadVote {

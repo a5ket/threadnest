@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { VoteType } from 'generated/prisma/enums'
+import { isAttachmentKeyOwnedBy } from 'src/attachment/attachment-key.util'
+import { InvalidAttachmentKeyException } from 'src/attachment/exceptions/invalid-attachment-key.exception'
 import { EventBus } from 'src/event/event-bus'
 import { NestRepository } from 'src/nest/nest.repository'
 import { Database } from 'src/prisma/types/database'
 import { TransactionManager } from 'src/prisma/transaction-manager'
+import { StorageService } from 'src/storage/storage.service'
 import { computeVoteScoreDelta } from 'src/common/vote-score'
+import { AttachmentInputDto } from 'src/attachment/dto/attachment-input.dto'
 import { ThreadCreateDto } from './dto/thread.create.dto'
 import { ThreadQueryDto } from './dto/thread.query.dto'
 import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
@@ -37,13 +41,21 @@ export class ThreadService {
     private readonly transactionManager: TransactionManager,
     private readonly threadAccess: ThreadAccess,
     private readonly threadPresenter: ThreadPresenter,
-    private readonly eventBus: EventBus
+    private readonly eventBus: EventBus,
+    private readonly storage: StorageService
   ) { }
+
+  private assertOwnsAttachments(attachments: AttachmentInputDto[] | undefined, actorUserId: string) {
+    if (attachments?.some((a) => !isAttachmentKeyOwnedBy(a.key, actorUserId))) {
+      throw new InvalidAttachmentKeyException()
+    }
+  }
 
   async createThread(nestSlug: string, actorUserId: string, dto: ThreadCreateDto) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
     await this.threadsPolicy.assertCanCreateThread(nest.id, actorUserId)
+    this.assertOwnsAttachments(dto.attachments, actorUserId)
 
     const thread = await this.transactionManager.run(async (tx) => {
       const thread = await this.threadsRepo.create(nest.id, actorUserId, dto, tx)
@@ -89,21 +101,24 @@ export class ThreadService {
 
     const page = await this.threadsRepo.listByNest(nest.id, query, actorUserId)
 
-    return { items: page.items.map((t) => this.threadPresenter.toSummaryView(t)), meta: page.meta }
+    return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSummaryView(t))), meta: page.meta }
   }
 
   async searchThreads(query: ThreadSearchQueryDto, actorUserId?: string) {
     const page = await this.threadsRepo.searchGlobal(query.search, query.limit, query.cursor, actorUserId)
 
-    return { items: page.items.map((t) => this.threadPresenter.toSearchResultView(t)), meta: page.meta }
+    return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
   async updateThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ThreadUpdateDto) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
     await this.threadsPolicy.assertCanUpdateThread(thread, actorUserId)
+    this.assertOwnsAttachments(dto.attachments, actorUserId)
 
-    const updated = await this.threadsRepo.updateById(thread.id, thread.nestId, dto, actorUserId)
+    const { thread: updated, droppedAttachmentKeys } = await this.threadsRepo.updateById(thread.id, thread.nestId, dto, actorUserId)
+
+    await Promise.all(droppedAttachmentKeys.map((key) => this.storage.delete(key)))
 
     void this.eventBus.publish(new ThreadUpdatedEvent({
       threadId: updated.id,
@@ -317,7 +332,7 @@ export class ThreadService {
   async listSavedThreads(actorUserId: string, query: ThreadSavedQueryDto) {
     const page = await this.threadsRepo.listSaved(actorUserId, query)
 
-    return { items: page.items.map((t) => this.threadPresenter.toSearchResultView(t)), meta: page.meta }
+    return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
   async adjustCommentCount(threadId: string, delta: number, db?: Database) {

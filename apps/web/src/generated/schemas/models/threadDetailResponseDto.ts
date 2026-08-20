@@ -5,6 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ThreadAccessContextDto } from './threadAccessContextDto'
+import type { ThreadAttachmentResponseDto } from './threadAttachmentResponseDto'
 import type { ThreadDetailResponseDtoViewerVote } from './threadDetailResponseDtoViewerVote'
 import type { UserReferenceDto } from './userReferenceDto'
 
@@ -66,4 +67,6 @@ export interface ThreadDetailResponseDto {
   pinnedAt: string | null
   /** The current user's access and permissions for this thread */
   access: ThreadAccessContextDto
+  /** Images attached to this thread, in display order */
+  attachments: ThreadAttachmentResponseDto[]
 }

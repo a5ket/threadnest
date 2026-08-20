@@ -1,6 +1,7 @@
 'use client'
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
+import { Lightbox } from '@/common/components/lightbox'
 import { RoleBadge } from '@/common/components/role-badge'
 import { UserLink } from '@/common/components/user-link'
 import { VoteButtons } from '@/common/components/vote-buttons'
@@ -28,6 +29,7 @@ interface CommentItemProps {
 export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: CommentItemProps) {
   const [replying, setReplying] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   const router = useRouter()
   const user = useUser()
   const canModerateContent = useThreadStore((state) => state.thread.access.canModerateContent)
@@ -87,6 +89,26 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
         : (
             <p className='text-sm italic text-muted-foreground'>Comment unavailable.</p>
           )}
+
+      {comment.attachment && (
+        <button type='button' onClick={() => setLightboxOpen(true)} className='block w-fit cursor-zoom-in'>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={comment.attachment.url}
+            alt=''
+            className='max-h-64 max-w-xs rounded-md object-contain'
+          />
+        </button>
+      )}
+
+      {lightboxOpen && comment.attachment && (
+        <Lightbox
+          images={[comment.attachment]}
+          index={0}
+          onIndexChange={() => {}}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
 
       <div className='flex items-center gap-3 text-xs'>
         {canVote && (

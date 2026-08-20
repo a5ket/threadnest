@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { VoteType } from 'generated/prisma/enums'
 import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
+import { ThreadAttachmentResponseDto } from './thread-attachment-response.dto'
 
 export class ThreadSummaryResponseDto {
   @ApiProperty({ description: 'Thread ID' })
@@ -41,4 +42,7 @@ export class ThreadSummaryResponseDto {
 
   @ApiProperty({ type: UserReferenceDto, description: 'Thread author' })
   author!: UserReferenceDto
+
+  @ApiProperty({ type: [ThreadAttachmentResponseDto], description: 'Images attached to this thread, in display order' })
+  attachments!: ThreadAttachmentResponseDto[]
 }

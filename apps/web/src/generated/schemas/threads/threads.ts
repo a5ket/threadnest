@@ -49,7 +49,14 @@ export const NestThreadListResponse = zod.object({
           avatarUrl: zod.string().nullable().describe('Avatar URL')
         }).nullable().describe('Null if the user has no profile'),
         role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
-      }).describe('Thread author')
+      }).describe('Thread author'),
+      attachments: zod.array(zod.object({
+        id: zod.string().describe('Attachment ID'),
+        key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+        url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+        width: zod.number().describe('Image width in pixels'),
+        height: zod.number().describe('Image height in pixels')
+      })).describe('Images attached to this thread, in display order')
     })),
     meta: zod.object({
       nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
@@ -72,7 +79,12 @@ export const nestThreadCreateBodyContentMax = 10000
 
 export const NestThreadCreateBody = zod.object({
   title: zod.string().min(nestThreadCreateBodyTitleMin).max(nestThreadCreateBodyTitleMax),
-  content: zod.string().min(1).max(nestThreadCreateBodyContentMax)
+  content: zod.string().min(1).max(nestThreadCreateBodyContentMax),
+  attachments: zod.array(zod.object({
+    key: zod.string(),
+    width: zod.number().min(1),
+    height: zod.number().min(1)
+  })).optional()
 })
 
 export const NestThreadCreateResponse = zod.object({
@@ -118,7 +130,14 @@ export const NestThreadCreateResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -173,7 +192,14 @@ export const NestThreadGetBySlugResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -192,7 +218,12 @@ export const nestThreadUpdateBodyContentMax = 10000
 
 export const NestThreadUpdateBody = zod.object({
   title: zod.string().min(nestThreadUpdateBodyTitleMin).max(nestThreadUpdateBodyTitleMax),
-  content: zod.string().min(1).max(nestThreadUpdateBodyContentMax)
+  content: zod.string().min(1).max(nestThreadUpdateBodyContentMax),
+  attachments: zod.array(zod.object({
+    key: zod.string(),
+    width: zod.number().min(1),
+    height: zod.number().min(1)
+  })).optional()
 })
 
 export const NestThreadUpdateResponse = zod.object({
@@ -238,7 +269,14 @@ export const NestThreadUpdateResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -303,7 +341,14 @@ export const NestThreadLockResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -358,7 +403,14 @@ export const NestThreadUnlockResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -413,7 +465,14 @@ export const NestThreadPinResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -468,7 +527,14 @@ export const NestThreadUnpinResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -527,7 +593,14 @@ export const NestThreadVoteResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -582,7 +655,14 @@ export const NestThreadRemoveVoteResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -637,7 +717,14 @@ export const NestThreadSaveResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -692,7 +779,14 @@ export const NestThreadUnsaveResponse = zod.object({
       canModerateContent: zod.boolean().describe('Whether the current user can moderate content on the thread'),
       canManageThreadLock: zod.boolean().describe('Whether the current user can lock\/unlock the thread'),
       canManageThreadPin: zod.boolean().describe('Whether the current user can pin\/unpin the thread')
-    }).describe('The current user\'s access and permissions for this thread')
+    }).describe('The current user\'s access and permissions for this thread'),
+    attachments: zod.array(zod.object({
+      id: zod.string().describe('Attachment ID'),
+      key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+      url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    })).describe('Images attached to this thread, in display order')
   })
 })
 
@@ -737,7 +831,14 @@ export const ThreadSearchResponse = zod.object({
       nest: zod.object({
         name: zod.string().describe('Nest display name'),
         slug: zod.string().describe('Unique nest slug')
-      }).describe('The nest this thread belongs to')
+      }).describe('The nest this thread belongs to'),
+      attachments: zod.array(zod.object({
+        id: zod.string().describe('Attachment ID'),
+        key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+        url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+        width: zod.number().describe('Image width in pixels'),
+        height: zod.number().describe('Image height in pixels')
+      })).describe('Always empty for search results')
     })),
     meta: zod.object({
       nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),

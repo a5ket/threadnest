@@ -43,6 +43,9 @@ export type CommentNode = {
     deletedAt: Date | null
     deletedById: string | null
     deletedByPlatform: boolean
+    attachmentKey: string | null
+    attachmentWidth: number | null
+    attachmentHeight: number | null
     depth: number
 } & CommentBlockFlags
 

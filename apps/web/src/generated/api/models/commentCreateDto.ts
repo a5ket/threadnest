@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { AttachmentInputDto } from './attachmentInputDto'
 
 export interface CommentCreateDto {
   /**
@@ -11,4 +12,5 @@ export interface CommentCreateDto {
      * @maxLength 10000
      */
   content: string
+  attachment?: AttachmentInputDto
 }

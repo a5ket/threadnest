@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { ThreadAttachmentResponseDto } from './threadAttachmentResponseDto'
 import type { ThreadSummaryResponseDtoViewerVote } from './threadSummaryResponseDtoViewerVote'
 import type { UserReferenceDto } from './userReferenceDto'
 
@@ -46,4 +47,6 @@ export interface ThreadSummaryResponseDto {
   pinnedAt: string | null
   /** Thread author */
   author: UserReferenceDto
+  /** Images attached to this thread, in display order */
+  attachments: ThreadAttachmentResponseDto[]
 }

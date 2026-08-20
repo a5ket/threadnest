@@ -56,6 +56,7 @@ export class CommentRepository {
       SELECT
         t.id, t."threadId", t."authorId", t."parentId", t.content, t."replyCount", t."score",
         t."createdAt", t."updatedAt", t."editedAt", t."deletedAt", t."deletedById", t."deletedByPlatform", t.depth,
+        ca.key AS "attachmentKey", ca.width AS "attachmentWidth", ca.height AS "attachmentHeight",
         (vba."blockerId" IS NOT NULL) AS "viewerBlockedAuthor",
         (abv."blockerId" IS NOT NULL) AS "authorBlockedViewer",
         up.username AS "authorUsername",
@@ -64,6 +65,7 @@ export class CommentRepository {
         nm.role AS "authorRole",
         cv.type AS "viewerVote"
       FROM comment_tree t
+      LEFT JOIN "CommentAttachment" ca ON ca."commentId" = t.id
       LEFT JOIN "UserProfile" up ON up."userId" = t."authorId"
       LEFT JOIN "UserBlock" vba ON vba."blockerId" = ${viewerId} AND vba."blockedId" = t."authorId"
       LEFT JOIN "UserBlock" abv ON abv."blockerId" = t."authorId" AND abv."blockedId" = ${viewerId}
@@ -244,7 +246,10 @@ export class CommentRepository {
       data: {
         threadId,
         authorId,
-        content: dto.content
+        content: dto.content,
+        attachments: dto.attachment
+          ? { create: { key: dto.attachment.key, width: dto.attachment.width, height: dto.attachment.height, order: 0 } }
+          : undefined
       },
       select: commentViewerSelect(nestId, authorId)
     })
@@ -259,6 +264,9 @@ export class CommentRepository {
         authorId,
         content: dto.content,
         depth: parentComment.depth + 1,
+        attachments: dto.attachment
+          ? { create: { key: dto.attachment.key, width: dto.attachment.width, height: dto.attachment.height, order: 0 } }
+          : undefined
       },
       select: commentViewerSelect(nestId, authorId)
     })

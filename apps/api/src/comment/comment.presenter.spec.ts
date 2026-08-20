@@ -23,95 +23,96 @@ describe('CommentPresenter', () => {
     deletedAt: null,
     deletedById: null,
     deletedByPlatform: false,
+    attachments: [],
     author: { id: 'author-1', profile: null, nestMembership: [] },
     viewerVote: null,
     ...overrides,
   })
 
-  it('shows content when not deleted', () => {
-    const view = presenter.toView(baseComment())
+  it('shows content when not deleted', async () => {
+    const view = await presenter.toView(baseComment())
 
     expect(view.content).toBe('hello')
     expect(view.author).not.toBeNull()
   })
 
-  it('hides content and author from everyone, including moderators, on self-delete', () => {
+  it('hides content and author from everyone, including moderators, on self-delete', async () => {
     const comment = baseComment({ deletedAt: new Date(), deletedById: 'author-1' })
 
-    const view = presenter.toView(comment, undefined, true)
+    const view = await presenter.toView(comment, undefined, true)
 
     expect(view.content).toBeNull()
     expect(view.author).toBeNull()
   })
 
-  it('shows moderator-removed content to a moderator within the grace period', () => {
+  it('shows moderator-removed content to a moderator within the grace period', async () => {
     const comment = baseComment({
       deletedAt: new Date(Date.now() - MODERATION_GRACE_PERIOD_MS / 2),
       deletedById: 'moderator-1',
     })
 
-    const view = presenter.toView(comment, undefined, true)
+    const view = await presenter.toView(comment, undefined, true)
 
     expect(view.content).toBe('hello')
     expect(view.author).not.toBeNull()
   })
 
-  it('hides moderator-removed content from a non-moderator within the grace period', () => {
+  it('hides moderator-removed content from a non-moderator within the grace period', async () => {
     const comment = baseComment({
       deletedAt: new Date(Date.now() - MODERATION_GRACE_PERIOD_MS / 2),
       deletedById: 'moderator-1',
     })
 
-    const view = presenter.toView(comment, undefined, false)
+    const view = await presenter.toView(comment, undefined, false)
 
     expect(view.content).toBeNull()
     expect(view.author).toBeNull()
   })
 
-  it('hides moderator-removed content from moderators once the grace period has passed', () => {
+  it('hides moderator-removed content from moderators once the grace period has passed', async () => {
     const comment = baseComment({
       deletedAt: new Date(Date.now() - MODERATION_GRACE_PERIOD_MS - 1000),
       deletedById: 'moderator-1',
     })
 
-    const view = presenter.toView(comment, undefined, true)
+    const view = await presenter.toView(comment, undefined, true)
 
     expect(view.content).toBeNull()
     expect(view.author).toBeNull()
   })
 
-  it('never exposes which platform admin removed the comment, even to nest moderators', () => {
+  it('never exposes which platform admin removed the comment, even to nest moderators', async () => {
     const comment = baseComment({
       deletedAt: new Date(Date.now() - MODERATION_GRACE_PERIOD_MS / 2),
       deletedById: 'platform-admin-1',
       deletedByPlatform: true,
     })
 
-    const view = presenter.toView(comment, undefined, true)
+    const view = await presenter.toView(comment, undefined, true)
 
     expect(view.deletedById).toBeUndefined()
     expect(view.deletedByPlatform).toBe(true)
   })
 
-  it('shows deletedById and deletedByPlatform to nest moderators for nest-removed content', () => {
+  it('shows deletedById and deletedByPlatform to nest moderators for nest-removed content', async () => {
     const comment = baseComment({
       deletedAt: new Date(Date.now() - MODERATION_GRACE_PERIOD_MS / 2),
       deletedById: 'moderator-1',
       deletedByPlatform: false,
     })
 
-    const view = presenter.toView(comment, undefined, true)
+    const view = await presenter.toView(comment, undefined, true)
 
     expect(view.deletedById).toBe('moderator-1')
     expect(view.deletedByPlatform).toBe(false)
   })
 
-  it('hides deletedById and deletedByPlatform from regular (non-moderator) viewers, regardless of who removed it', () => {
+  it('hides deletedById and deletedByPlatform from regular (non-moderator) viewers, regardless of who removed it', async () => {
     const platformRemoved = baseComment({ deletedAt: new Date(), deletedById: 'platform-admin-1', deletedByPlatform: true })
     const modRemoved = baseComment({ deletedAt: new Date(), deletedById: 'moderator-1', deletedByPlatform: false })
 
-    const platformView = presenter.toView(platformRemoved, undefined, false)
-    const modView = presenter.toView(modRemoved, undefined, false)
+    const platformView = await presenter.toView(platformRemoved, undefined, false)
+    const modView = await presenter.toView(modRemoved, undefined, false)
 
     expect(platformView.deletedById).toBeUndefined()
     expect(platformView.deletedByPlatform).toBeUndefined()

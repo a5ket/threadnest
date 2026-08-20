@@ -28,6 +28,11 @@ export const CommentGetResponse = zod.object({
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    attachment: zod.object({
+      url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    }).nullable().describe('Attached image, if any. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
@@ -70,6 +75,11 @@ export const CommentUpdateResponse = zod.object({
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    attachment: zod.object({
+      url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    }).nullable().describe('Attached image, if any. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
@@ -136,6 +146,11 @@ export const CommentListRepliesResponse = zod.object({
       }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
       parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
       content: zod.string().nullable().describe('Comment content. Null if hidden'),
+      attachment: zod.object({
+        url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+        width: zod.number().describe('Image width in pixels'),
+        height: zod.number().describe('Image height in pixels')
+      }).nullable().describe('Attached image, if any. Null if hidden'),
       replyCount: zod.number().describe('Number of direct replies to this comment'),
       score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
       viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
@@ -168,7 +183,12 @@ export const CommentCreateReplyParams = zod.object({
 export const commentCreateReplyBodyContentMax = 10000
 
 export const CommentCreateReplyBody = zod.object({
-  content: zod.string().min(1).max(commentCreateReplyBodyContentMax)
+  content: zod.string().min(1).max(commentCreateReplyBodyContentMax),
+  attachment: zod.object({
+    key: zod.string(),
+    width: zod.number().min(1),
+    height: zod.number().min(1)
+  }).optional()
 })
 
 export const CommentCreateReplyResponse = zod.object({
@@ -186,6 +206,11 @@ export const CommentCreateReplyResponse = zod.object({
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    attachment: zod.object({
+      url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    }).nullable().describe('Attached image, if any. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
@@ -226,6 +251,11 @@ export const CommentVoteResponse = zod.object({
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    attachment: zod.object({
+      url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    }).nullable().describe('Attached image, if any. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
@@ -262,6 +292,11 @@ export const CommentRemoveVoteResponse = zod.object({
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    attachment: zod.object({
+      url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    }).nullable().describe('Attached image, if any. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
@@ -320,6 +355,11 @@ export const NestThreadCommentListResponse = zod.object({
       }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
       parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
       content: zod.string().nullable().describe('Comment content. Null if hidden'),
+      attachment: zod.object({
+        url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+        width: zod.number().describe('Image width in pixels'),
+        height: zod.number().describe('Image height in pixels')
+      }).nullable().describe('Attached image, if any. Null if hidden'),
       replyCount: zod.number().describe('Number of direct replies to this comment'),
       score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
       viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),
@@ -353,7 +393,12 @@ export const NestThreadCommentCreateParams = zod.object({
 export const nestThreadCommentCreateBodyContentMax = 10000
 
 export const NestThreadCommentCreateBody = zod.object({
-  content: zod.string().min(1).max(nestThreadCommentCreateBodyContentMax)
+  content: zod.string().min(1).max(nestThreadCommentCreateBodyContentMax),
+  attachment: zod.object({
+    key: zod.string(),
+    width: zod.number().min(1),
+    height: zod.number().min(1)
+  }).optional()
 })
 
 export const NestThreadCommentCreateResponse = zod.object({
@@ -371,6 +416,11 @@ export const NestThreadCommentCreateResponse = zod.object({
     }).nullable().describe('Comment author. Null if hidden (e.g. deleted by author, or a block applies)'),
     parentId: zod.string().nullable().describe('ID of the parent comment, if this is a reply'),
     content: zod.string().nullable().describe('Comment content. Null if hidden'),
+    attachment: zod.object({
+      url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+      width: zod.number().describe('Image width in pixels'),
+      height: zod.number().describe('Image height in pixels')
+    }).nullable().describe('Attached image, if any. Null if hidden'),
     replyCount: zod.number().describe('Number of direct replies to this comment'),
     score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
     viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this comment, if any'),

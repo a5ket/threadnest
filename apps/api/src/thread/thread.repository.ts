@@ -81,6 +81,13 @@ export class ThreadRepository {
             title: dto.title,
             content: dto.content,
             lastCommentAt: now,
+            ...(dto.attachments?.length && {
+              attachments: {
+                createMany: {
+                  data: dto.attachments.map((a, index) => ({ key: a.key, width: a.width, height: a.height, order: index }))
+                }
+              }
+            })
           },
           select: threadDetailsSelect(nestId, authorId),
         })
@@ -144,6 +151,9 @@ export class ThreadRepository {
       },
       viewerVote: row.viewerVote,
       viewerSaved: row.viewerSaved,
+      // Search/saved-list results are text-first and skip the per-row attachment fetch —
+      // not worth a LATERAL join in these already-complex raw queries for a thumbnail.
+      attachments: [],
     }
   }
 
@@ -417,19 +427,37 @@ export class ThreadRepository {
     })
   }
 
-  async updateById(threadId: string, nestId: string, dto: ThreadUpdateDto, viewerId?: string) {
+  // When dto.attachments is provided, replaces the full set and returns the keys that were
+  // dropped (present before, absent from the new set) so the caller can clean them up in storage.
+  async updateById(threadId: string, nestId: string, dto: ThreadUpdateDto, viewerId?: string, db: Database = this.prisma) {
+    const previousKeys = dto.attachments !== undefined
+      ? (await db.threadAttachment.findMany({ where: { threadId }, select: { key: true } })).map((a) => a.key)
+      : []
+
     try {
-      const thread = await this.prisma.thread.update({
+      const thread = await db.thread.update({
         where: {
           id: threadId,
         },
         data: {
           title: dto.title,
-          content: dto.content
+          content: dto.content,
+          ...(dto.attachments !== undefined && {
+            attachments: {
+              deleteMany: {},
+              createMany: {
+                data: dto.attachments.map((a, index) => ({ key: a.key, width: a.width, height: a.height, order: index }))
+              }
+            }
+          })
         },
         select: threadDetailsSelect(nestId, viewerId)
       })
-      return this.toThreadWithVote(thread)
+
+      const newKeys = new Set(dto.attachments?.map((a) => a.key) ?? [])
+      const droppedAttachmentKeys = previousKeys.filter((key) => !newKeys.has(key))
+
+      return { thread: this.toThreadWithVote(thread), droppedAttachmentKeys }
     } catch (error) {
       if (this.prisma.isRecordNotFoundError(error)) {
         throw new ThreadNotFoundException()

@@ -1,9 +1,12 @@
 'use client'
 
+import { type AttachmentItem, MultiImageUploadField } from '@/common/components/multi-image-upload-field'
+import { useUploadAttachment } from '@/features/attachment/attachment.hooks'
 import { useReplyToComment } from '@/features/comment/comment.hooks'
 import { createCommentSchema, type CreateCommentFormValues } from '@/features/comment/comment.schemas'
 import type { CommentDetail } from '@/features/comment/comment.types'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 interface ReplyFormProps {
@@ -13,6 +16,10 @@ interface ReplyFormProps {
 }
 
 export function ReplyForm({ commentId, onCreated, onCancel }: ReplyFormProps) {
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([])
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
+  const uploadAttachment = useUploadAttachment()
+
   const {
     register,
     handleSubmit,
@@ -61,10 +68,15 @@ export function ReplyForm({ commentId, onCreated, onCancel }: ReplyFormProps) {
   })
 
   const onSubmit = handleSubmit((values) => {
-    replyToComment.mutate({ commentId, content: values.content })
+    const [attachment] = attachments
+    replyToComment.mutate({
+      commentId,
+      content: values.content,
+      attachment: attachment ? { key: attachment.key, width: attachment.width, height: attachment.height } : undefined
+    })
   })
 
-  const isPending = replyToComment.isPending || isSubmitting
+  const isPending = replyToComment.isPending || isSubmitting || isUploadingAttachment
 
   return (
     <form onSubmit={onSubmit} noValidate className='flex flex-col gap-2'>
@@ -75,6 +87,14 @@ export function ReplyForm({ commentId, onCreated, onCancel }: ReplyFormProps) {
         aria-invalid={errors.content ? 'true' : 'false'}
         className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
         {...register('content')}
+      />
+
+      <MultiImageUploadField
+        items={attachments}
+        onItemsChange={setAttachments}
+        onUploadingChange={setIsUploadingAttachment}
+        maxFiles={1}
+        onUpload={(file) => uploadAttachment.mutateAsync(file)}
       />
 
       {errors.content && (

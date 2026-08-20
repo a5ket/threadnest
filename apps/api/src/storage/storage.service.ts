@@ -3,15 +3,26 @@ import {
   BucketAlreadyOwnedByYou,
   CreateBucketCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadBucketCommand,
   NoSuchKey,
   PutBucketPolicyCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { StorageConfig } from './storage.config'
+
+// Prefixes served as permanently public (avatars, nest icons) — anything else (e.g. thread/comment
+// attachments, which can live inside private nests) stays private and must go through getPresignedUrl.
+const PUBLIC_READ_PREFIXES = ['avatars/*', 'nests/*']
+
+// Signed with an hour-aligned timestamp (not "now") so repeated calls for the same key within the
+// same hour produce a byte-identical URL — that lets the browser's HTTP cache actually work, instead
+// of treating every re-fetch of the same image as a new resource because the signature changed.
+const PRESIGN_EXPIRES_IN_SECONDS = 25 * 60 * 60
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -66,7 +77,7 @@ export class StorageService implements OnModuleInit {
             Effect: 'Allow',
             Principal: '*',
             Action: ['s3:GetObject'],
-            Resource: [`arn:aws:s3:::${this.bucket}/*`]
+            Resource: PUBLIC_READ_PREFIXES.map((prefix) => `arn:aws:s3:::${this.bucket}/${prefix}`)
           }]
         })
       }))
@@ -110,6 +121,20 @@ export class StorageService implements OnModuleInit {
 
   getPublicUrl(key: string): string {
     return `${this.publicUrl}/${key}`
+  }
+
+  // For content that isn't unconditionally public (thread/comment attachments, which can live inside
+  // private nests) — only ever handed out by a response that already passed the content's own
+  // permission check, and expires rather than being a permanent bypass of that check.
+  async getPresignedUrl(key: string): Promise<string> {
+    const now = new Date()
+    const signingDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours())
+
+    return getSignedUrl(
+      this.client,
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      { expiresIn: PRESIGN_EXPIRES_IN_SECONDS, signingDate }
+    )
   }
 
   getKeyFromUrl(url: string | null): string | null {

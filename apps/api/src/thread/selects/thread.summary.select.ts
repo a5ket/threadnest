@@ -27,6 +27,11 @@ export function threadSummarySelect(nestId: string, viewerId?: string) {
     },
 
     threadVotes: { where: { userId: viewerId ?? '' }, select: { type: true }, take: 1 },
-    savedBy: { where: { userId: viewerId ?? '' }, select: { threadId: true }, take: 1 }
+    savedBy: { where: { userId: viewerId ?? '' }, select: { threadId: true }, take: 1 },
+
+    attachments: {
+      select: { id: true, key: true, width: true, height: true, order: true },
+      orderBy: { order: 'asc' }
+    }
   } satisfies Prisma.ThreadSelect
 }

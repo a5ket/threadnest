@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { VoteType } from 'generated/prisma/enums'
 import { NestReferencetDto } from 'src/nest/dto/nest-reference.dto'
 import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
+import { ThreadAttachmentResponseDto } from './thread-attachment-response.dto'
 
 export class ThreadSearchResponseDto {
   @ApiProperty({ description: 'Thread ID' })
@@ -45,4 +46,7 @@ export class ThreadSearchResponseDto {
 
   @ApiProperty({ type: NestReferencetDto, description: 'The nest this thread belongs to' })
   nest!: NestReferencetDto
+
+  @ApiProperty({ type: [ThreadAttachmentResponseDto], description: 'Always empty for search results' })
+  attachments!: ThreadAttachmentResponseDto[]
 }

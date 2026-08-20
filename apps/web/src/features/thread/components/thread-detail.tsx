@@ -1,6 +1,7 @@
 'use client'
 
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
+import { ImageCarousel } from '@/common/components/image-carousel'
 import { RoleBadge } from '@/common/components/role-badge'
 import { SaveThreadButton } from '@/common/components/save-thread-button'
 import { UserLink } from '@/common/components/user-link'
@@ -95,6 +96,10 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
           <BlockButton userId={thread.author.id} />
         </p>
       </div>
+
+      {thread.attachments.length > 0 && (
+        <ImageCarousel images={thread.attachments} />
+      )}
 
       <div className='rounded-md border border-border p-4'>
         {thread.content !== null

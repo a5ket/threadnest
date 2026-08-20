@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { CommentAttachmentResponseDto } from './commentAttachmentResponseDto'
 import type { CommentResponseDtoViewerVote } from './commentResponseDtoViewerVote'
 import type { UserReferenceDto } from './userReferenceDto'
 
@@ -27,6 +28,11 @@ export interface CommentResponseDto {
      * @nullable
      */
   content: string | null
+  /**
+     * Attached image, if any. Null if hidden
+     * @nullable
+     */
+  attachment: CommentAttachmentResponseDto | null
   /** Number of direct replies to this comment */
   replyCount: number
   /** Net vote score (upvotes minus downvotes) */

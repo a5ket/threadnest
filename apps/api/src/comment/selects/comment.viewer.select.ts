@@ -17,6 +17,10 @@ export function commentViewerSelect(nestId: string, viewerId?: string) {
     deletedAt: true,
     deletedById: true,
     deletedByPlatform: true,
+    attachments: {
+      select: { id: true, key: true, width: true, height: true, order: true },
+      orderBy: { order: 'asc' }
+    },
     author: {
       select: {
         ...USER_REFERENCE_SELECT,

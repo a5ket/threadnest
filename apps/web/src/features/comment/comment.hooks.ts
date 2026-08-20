@@ -2,20 +2,20 @@
 
 import { ApiError, ApiErrorResponse } from '@/common/api-error'
 import { createMutationHook } from '@/common/api-mutation'
-import { CommentVoteDtoType, NestThreadCommentListSortBy } from '@/generated/api/models'
+import { AttachmentInputDto, CommentVoteDtoType, NestThreadCommentListSortBy } from '@/generated/api/models'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { commentCreateReply, commentDelete, commentRemoveVote, commentUpdate, commentVote, nestThreadCommentCreate, nestThreadCommentList } from './comment.api'
 import type { CommentTreePage } from './comment.types'
 
 export const useCreateThreadComment = createMutationHook(
-  ({ nestSlug, threadSlug, content }: { nestSlug: string, threadSlug: string, content: string }) =>
-    nestThreadCommentCreate(nestSlug, threadSlug, { content }),
+  ({ nestSlug, threadSlug, content, attachment }: { nestSlug: string, threadSlug: string, content: string, attachment?: AttachmentInputDto }) =>
+    nestThreadCommentCreate(nestSlug, threadSlug, { content, attachment }),
   201
 )
 
 export const useReplyToComment = createMutationHook(
-  ({ commentId, content }: { commentId: string, content: string }) =>
-    commentCreateReply(commentId, { content }),
+  ({ commentId, content, attachment }: { commentId: string, content: string, attachment?: AttachmentInputDto }) =>
+    commentCreateReply(commentId, { content, attachment }),
   201
 )
 

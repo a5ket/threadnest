@@ -1,10 +1,15 @@
 'use client'
 
+import { type AttachmentItem, MultiImageUploadField } from '@/common/components/multi-image-upload-field'
+import { useUploadAttachment } from '@/features/attachment/attachment.hooks'
 import { useUpdateThread } from '@/features/thread/thread.hooks'
 import { updateThreadSchema, type UpdateThreadFormValues } from '@/features/thread/thread.schemas'
 import type { ThreadDetail } from '@/features/thread/thread.types'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+
+const MAX_ATTACHMENTS = 4
 
 interface EditThreadFormProps {
   nestSlug: string
@@ -15,6 +20,9 @@ interface EditThreadFormProps {
 }
 
 export function EditThreadForm({ nestSlug, threadSlug, thread, onSaved, onCancel }: EditThreadFormProps) {
+  const [attachments, setAttachments] = useState<AttachmentItem[]>(thread.attachments)
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -30,6 +38,8 @@ export function EditThreadForm({ nestSlug, threadSlug, thread, onSaved, onCancel
       content: thread.content ?? ''
     }
   })
+
+  const uploadAttachment = useUploadAttachment()
 
   const updateThread = useUpdateThread({
     onSuccess: onSaved,
@@ -63,10 +73,15 @@ export function EditThreadForm({ nestSlug, threadSlug, thread, onSaved, onCancel
   })
 
   const onSubmit = handleSubmit((values) => {
-    updateThread.mutate({ nestSlug, threadSlug, ...values })
+    updateThread.mutate({
+      nestSlug,
+      threadSlug,
+      ...values,
+      attachments: attachments.map(({ key, width, height }) => ({ key, width, height }))
+    })
   })
 
-  const isPending = updateThread.isPending || isSubmitting
+  const isPending = updateThread.isPending || isSubmitting || isUploadingAttachment
 
   return (
     <form onSubmit={onSubmit} noValidate className='flex flex-col gap-4'>
@@ -89,6 +104,18 @@ export function EditThreadForm({ nestSlug, threadSlug, thread, onSaved, onCancel
             {errors.title.message}
           </p>
         )}
+      </div>
+
+      <div className='flex flex-col gap-1.5'>
+        <span className='text-sm font-medium'>Images</span>
+
+        <MultiImageUploadField
+          items={attachments}
+          onItemsChange={setAttachments}
+          onUploadingChange={setIsUploadingAttachment}
+          maxFiles={MAX_ATTACHMENTS}
+          onUpload={(file) => uploadAttachment.mutateAsync(file)}
+        />
       </div>
 
       <div className='flex flex-col gap-1.5'>

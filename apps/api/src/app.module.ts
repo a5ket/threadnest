@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import configuration from './app.config'
 import { AppController } from './app.controller'
+import { AttachmentModule } from './attachment/attachment.module'
 import { AuthModule } from './auth/auth.module'
 import { BlockModule } from './block/block.module'
 import { CacheModule } from './cache/cache.module'
@@ -47,7 +48,8 @@ import { UserModule } from './user/user.module'
     NotificationModule,
     PlatformModule,
     ChatModule,
-    StorageModule
+    StorageModule,
+    AttachmentModule
   ]
 })
 export class AppModule { }

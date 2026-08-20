@@ -35,7 +35,12 @@ export class CommentPresenter {
     return { hideContent: !visibleToModerator, hideAuthor: !visibleToModerator }
   }
 
-  toView(comment: CommentWithRole, blockFlags: CommentBlockFlags = { viewerBlockedAuthor: false, authorBlockedViewer: false }, canModerateContent = false) {
+  private async toAttachmentView(key: string | null, width: number | null, height: number | null) {
+    if (!key) return null
+    return { url: await this.storage.getPresignedUrl(key), width, height }
+  }
+
+  async toView(comment: CommentWithRole, blockFlags: CommentBlockFlags = { viewerBlockedAuthor: false, authorBlockedViewer: false }, canModerateContent = false) {
     const { hideContent, hideAuthor } = this.redact(comment.deletedAt, comment.deletedById, comment.authorId, canModerateContent, blockFlags.authorBlockedViewer)
 
     return {
@@ -44,6 +49,7 @@ export class CommentPresenter {
       author: hideAuthor ? null : this.userPresenter.toReferenceView(comment.author, comment.author.nestMembership[0]?.role ?? null),
       parentId: comment.parentId,
       content: hideContent ? null : comment.content,
+      attachment: hideContent ? null : await this.toAttachmentView(comment.attachments[0]?.key ?? null, comment.attachments[0]?.width ?? null, comment.attachments[0]?.height ?? null),
       replyCount: comment.replyCount,
       score: comment.score,
       viewerVote: comment.viewerVote,
@@ -61,7 +67,7 @@ export class CommentPresenter {
     }
   }
 
-  toNodeView(node: CommentNode, canModerateContent = false) {
+  async toNodeView(node: CommentNode, canModerateContent = false) {
     const { hideContent, hideAuthor } = this.redact(node.deletedAt, node.deletedById, node.authorId, canModerateContent, node.authorBlockedViewer)
 
     return {
@@ -78,6 +84,7 @@ export class CommentPresenter {
       },
       parentId: node.parentId,
       content: hideContent ? null : node.content,
+      attachment: hideContent ? null : await this.toAttachmentView(node.attachmentKey, node.attachmentWidth, node.attachmentHeight),
       replyCount: node.replyCount,
       score: node.score,
       viewerVote: node.viewerVote,
@@ -96,9 +103,9 @@ export class CommentPresenter {
     }
   }
 
-  toTreePage(page: CommentPage, canModerateContent = false) {
+  async toTreePage(page: CommentPage, canModerateContent = false) {
     return {
-      items: page.items.map((node) => this.toNodeView(node, canModerateContent)),
+      items: await Promise.all(page.items.map((node) => this.toNodeView(node, canModerateContent))),
       meta: page.meta,
     }
   }

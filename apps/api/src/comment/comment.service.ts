@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { VoteType } from 'generated/prisma/enums'
+import { isAttachmentKeyOwnedBy } from 'src/attachment/attachment-key.util'
+import { InvalidAttachmentKeyException } from 'src/attachment/exceptions/invalid-attachment-key.exception'
 import { BlockService } from 'src/block/block.service'
 import { computeVoteScoreDelta } from 'src/common/vote-score'
 import { EventBus } from 'src/event/event-bus'
@@ -32,6 +34,12 @@ export class CommentService {
     private readonly blocks: BlockService,
     private readonly eventBus: EventBus
   ) { }
+
+  private assertOwnsAttachment(dto: CommentCreateDto, actorUserId: string) {
+    if (dto.attachment && !isAttachmentKeyOwnedBy(dto.attachment.key, actorUserId)) {
+      throw new InvalidAttachmentKeyException()
+    }
+  }
 
   async listCommentsByThreadSlug(nestSlug: string, threadSlug: string, viewerId: string | null, options: CommentTreeOptions) {
     const thread = await this.threads.getByNestSlug(nestSlug, threadSlug)
@@ -66,6 +74,7 @@ export class CommentService {
     const threadCtx = await this.threadAccess.getContext(thread, userId)
 
     this.commentPolicy.assertCanCreateThreadComment(threadCtx)
+    this.assertOwnsAttachment(dto, userId)
 
     const comment = await this.transactionManager.run(async (tx) => {
       const created = await this.repo.create(thread.id, userId, thread.nestId, dto, tx)
@@ -100,6 +109,7 @@ export class CommentService {
     const threadCtx = await this.threadAccess.getContext(thread, userId)
 
     this.commentPolicy.assertCanReplyToComment(comment, threadCtx)
+    this.assertOwnsAttachment(dto, userId)
 
     const reply = await this.transactionManager.run(async (tx) => {
       const created = await this.repo.createReply(comment, userId, thread.nestId, dto, tx)

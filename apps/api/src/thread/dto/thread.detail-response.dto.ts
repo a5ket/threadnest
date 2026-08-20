@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { VoteType } from 'generated/prisma/enums'
 import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
 import { ThreadAccessContextDto } from './thread.access-context.dto'
+import { ThreadAttachmentResponseDto } from './thread-attachment-response.dto'
 
 export class ThreadDetailResponseDto {
   @ApiProperty({ description: 'Thread ID' })
@@ -57,4 +58,7 @@ export class ThreadDetailResponseDto {
 
   @ApiProperty({ type: ThreadAccessContextDto, description: 'The current user\'s access and permissions for this thread' })
   access!: ThreadAccessContextDto
+
+  @ApiProperty({ type: [ThreadAttachmentResponseDto], description: 'Images attached to this thread, in display order' })
+  attachments!: ThreadAttachmentResponseDto[]
 }

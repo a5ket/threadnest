@@ -1,5 +1,9 @@
-import { IsString, Length } from 'class-validator'
+import { Type } from 'class-transformer'
+import { ArrayMaxSize, IsArray, IsOptional, IsString, Length, ValidateNested } from 'class-validator'
+import { AttachmentInputDto } from 'src/attachment/dto/attachment-input.dto'
 import { Trim } from 'src/common/transforms/trim.transform'
+
+const MAX_ATTACHMENTS = 4
 
 export class ThreadCreateDto {
   @Trim()
@@ -11,4 +15,11 @@ export class ThreadCreateDto {
   @IsString()
   @Length(1, 10000)
   content!: string
+
+  @IsArray()
+  @ArrayMaxSize(MAX_ATTACHMENTS)
+  @ValidateNested({ each: true })
+  @Type(() => AttachmentInputDto)
+  @IsOptional()
+  attachments?: AttachmentInputDto[]
 }

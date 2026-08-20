@@ -4,6 +4,7 @@
  * ThreadNest API
  * OpenAPI spec version: 1.0.0
  */
+import type { AttachmentInputDto } from './attachmentInputDto'
 
 export interface ThreadUpdateDto {
   /**
@@ -16,4 +17,5 @@ export interface ThreadUpdateDto {
      * @maxLength 10000
      */
   content: string
+  attachments?: AttachmentInputDto[]
 }

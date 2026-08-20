@@ -235,7 +235,14 @@ export const MeSavedThreadListResponse = zod.object({
       nest: zod.object({
         name: zod.string().describe('Nest display name'),
         slug: zod.string().describe('Unique nest slug')
-      }).describe('The nest this thread belongs to')
+      }).describe('The nest this thread belongs to'),
+      attachments: zod.array(zod.object({
+        id: zod.string().describe('Attachment ID'),
+        key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+        url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+        width: zod.number().describe('Image width in pixels'),
+        height: zod.number().describe('Image height in pixels')
+      })).describe('Always empty for search results')
     })),
     meta: zod.object({
       nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),

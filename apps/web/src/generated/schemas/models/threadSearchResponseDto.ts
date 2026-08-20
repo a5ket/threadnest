@@ -5,6 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { NestReferencetDto } from './nestReferencetDto'
+import type { ThreadAttachmentResponseDto } from './threadAttachmentResponseDto'
 import type { ThreadSearchResponseDtoViewerVote } from './threadSearchResponseDtoViewerVote'
 import type { UserReferenceDto } from './userReferenceDto'
 
@@ -49,4 +50,6 @@ export interface ThreadSearchResponseDto {
   author: UserReferenceDto
   /** The nest this thread belongs to */
   nest: NestReferencetDto
+  /** Always empty for search results */
+  attachments: ThreadAttachmentResponseDto[]
 }

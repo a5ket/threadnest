@@ -1,10 +1,15 @@
 'use client'
 
+import { type AttachmentItem, MultiImageUploadField } from '@/common/components/multi-image-upload-field'
+import { useUploadAttachment } from '@/features/attachment/attachment.hooks'
 import { useCreateThread } from '@/features/thread/thread.hooks'
 import { createThreadSchema, type CreateThreadFormValues } from '@/features/thread/thread.schemas'
 import type { ThreadDetail } from '@/features/thread/thread.types'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+
+const MAX_ATTACHMENTS = 4
 
 interface CreateThreadFormProps {
   nestSlug: string
@@ -12,6 +17,9 @@ interface CreateThreadFormProps {
 }
 
 export function CreateThreadForm({ nestSlug, onCreated }: CreateThreadFormProps) {
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([])
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -27,6 +35,8 @@ export function CreateThreadForm({ nestSlug, onCreated }: CreateThreadFormProps)
       content: ''
     }
   })
+
+  const uploadAttachment = useUploadAttachment()
 
   const createThread = useCreateThread({
     onSuccess: onCreated,
@@ -51,8 +61,6 @@ export function CreateThreadForm({ nestSlug, onCreated }: CreateThreadFormProps)
             type: 'server',
             message: 'Please check the entered information'
           })
-
-          // Map server validation errors to fields if needed.
           break
 
         case 'NETWORK_ERROR':
@@ -72,10 +80,14 @@ export function CreateThreadForm({ nestSlug, onCreated }: CreateThreadFormProps)
   })
 
   const onSubmit = handleSubmit((values) => {
-    createThread.mutate({ nestSlug, ...values })
+    createThread.mutate({
+      nestSlug,
+      ...values,
+      attachments: attachments.map(({ key, width, height }) => ({ key, width, height }))
+    })
   })
 
-  const isPending = createThread.isPending || isSubmitting
+  const isPending = createThread.isPending || isSubmitting || isUploadingAttachment
 
   return (
     <form onSubmit={onSubmit} noValidate className='flex w-full max-w-sm flex-col gap-4'>
@@ -99,6 +111,18 @@ export function CreateThreadForm({ nestSlug, onCreated }: CreateThreadFormProps)
             {errors.title.message}
           </p>
         )}
+      </div>
+
+      <div className='flex flex-col gap-1.5'>
+        <span className='text-sm font-medium'>Images</span>
+
+        <MultiImageUploadField
+          items={attachments}
+          onItemsChange={setAttachments}
+          onUploadingChange={setIsUploadingAttachment}
+          maxFiles={MAX_ATTACHMENTS}
+          onUpload={(file) => uploadAttachment.mutateAsync(file)}
+        />
       </div>
 
       <div className='flex flex-col gap-1.5'>

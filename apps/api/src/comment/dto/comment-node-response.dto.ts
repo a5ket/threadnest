@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { VoteType } from 'generated/prisma/enums'
 import { UserReferenceDto } from 'src/user/dto/user-reference.dto'
+import { CommentAttachmentResponseDto } from './comment-attachment-response.dto'
 
 export class CommentNodeResponseDto {
   @ApiProperty({ description: 'Comment ID' })
@@ -17,6 +18,9 @@ export class CommentNodeResponseDto {
 
   @ApiProperty({ description: 'Comment content. Null if hidden', nullable: true, type: 'string' })
   content!: string | null
+
+  @ApiProperty({ type: CommentAttachmentResponseDto, nullable: true, description: 'Attached image, if any. Null if hidden' })
+  attachment!: CommentAttachmentResponseDto | null
 
   @ApiProperty({ description: 'Number of direct replies to this comment' })
   replyCount!: number
