@@ -1,84 +1,14 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from 'src/prisma/prisma.service'
+import { Prisma } from 'generated/prisma/client'
 import { Database } from 'src/prisma/types/database'
 import { NEST_BAN_SUMMARY_SELECT } from './selects/nest-ban.summary.select'
-import { BanNotFoundException } from './exceptions/ban-not-found.exception'
-import { UserAlreadyBannedException } from './exceptions/user-already-banned.exception'
-import { NestBanStatus } from 'generated/prisma/enums'
 
-@Injectable()
-export class NestBanRepository {
-  constructor(
-    private readonly prisma: PrismaService
-  ) { }
+export type NestBan = Prisma.NestBanGetPayload<Record<string, never>>
+export type NestBanSummary = Prisma.NestBanGetPayload<{ select: typeof NEST_BAN_SUMMARY_SELECT }>
 
-  async findByNestIdAndUserId(nestId: string, userId: string) {
-    return await this.prisma.nestBan.findUnique({
-      where: {
-        nestId_userId: {
-          nestId,
-          userId
-        }
-      }
-    })
-  }
-
-  async existsActive(nestId: string, userId: string) {
-    const ban = await this.prisma.nestBan.findFirst({
-      where: {
-        nestId,
-        userId,
-        status: NestBanStatus.ACTIVE
-      },
-      select: {
-        userId: true
-      }
-    })
-
-    return Boolean(ban)
-  }
-
-  async create(nestId: string, userId: string, bannedById: string, db: Database = this.prisma) {
-    try {
-      return await db.nestBan.create({
-        data: {
-          nestId,
-          userId,
-          bannedById
-        },
-        select: NEST_BAN_SUMMARY_SELECT
-      })
-    } catch (error) {
-      if (this.prisma.isUniqueConstraintError(error)) {
-        throw new UserAlreadyBannedException()
-      }
-
-      throw error
-    }
-  }
-
-  async revoke(nestId: string, userId: string, revokedById: string, db: Database = this.prisma) {
-    const result = await db.nestBan.updateMany({
-      where: { nestId, userId, status: NestBanStatus.ACTIVE },
-      data: {
-        status: NestBanStatus.REVOKED,
-        revokedAt: new Date(),
-        revokedById,
-      }
-    })
-
-    if (result.count === 0) {
-      throw new BanNotFoundException()
-    }
-  }
-
-  async listSummaryByNestId(nestId: string) {
-    return this.prisma.nestBan.findMany({
-      where: {
-        nestId,
-        status: NestBanStatus.ACTIVE
-      },
-      select: NEST_BAN_SUMMARY_SELECT
-    })
-  }
+export abstract class NestBanRepository {
+  abstract findByNestIdAndUserId(nestId: string, userId: string): Promise<NestBan | null>
+  abstract existsActive(nestId: string, userId: string): Promise<boolean>
+  abstract create(nestId: string, userId: string, bannedById: string, db?: Database): Promise<NestBanSummary>
+  abstract revoke(nestId: string, userId: string, revokedById: string, db?: Database): Promise<void>
+  abstract listSummaryByNestId(nestId: string): Promise<NestBanSummary[]>
 }

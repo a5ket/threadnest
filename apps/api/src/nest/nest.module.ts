@@ -23,6 +23,8 @@ import { NestBanController } from './ban/nest-ban.controller'
 import { NestBanPolicy } from './ban/nest-ban.policy'
 import { NestBanPresenter } from './ban/nest-ban.presenter'
 import { NestBanRepository } from './ban/nest-ban.repository'
+import { NestBanPrismaRepository } from './ban/nest-ban.prisma.repository'
+import { NestBanCachedRepository } from './ban/nest-ban.cached.repository'
 import { NestBanService } from './ban/nest-ban.service'
 import { NestInviteCollectionController } from './invite/nest-invite.controller'
 import { NestInvitePolicy } from './invite/nest-invite.policy'
@@ -38,6 +40,8 @@ import { NestMemberController } from './member/nest-member.controller'
 import { NestMemberPolicy } from './member/nest-member.policy'
 import { NestMemberPresenter } from './member/nest-member.presenter'
 import { NestMemberRepository } from './member/nest-member.repository'
+import { NestMemberPrismaRepository } from './member/nest-member.prisma.repository'
+import { NestMemberCachedRepository } from './member/nest-member.cached.repository'
 import { NestMemberService } from './member/nest-member.service'
 import { NestSlugController } from './nest-slug.controller'
 import { NestAccess } from './nest.access'
@@ -45,6 +49,8 @@ import { NestController } from './nest.controller'
 import { NestPolicy } from './nest.policy'
 import { NestPresenter } from './nest.presenter'
 import { NestRepository } from './nest.repository'
+import { NestPrismaRepository } from './nest.prisma.repository'
+import { NestCachedRepository } from './nest.cached.repository'
 import { NestService } from './nest.service'
 import { UserNestPreferencePolicy } from './preferences/user-nest-preference.policy'
 import { UserNestPreferenceRepository } from './preferences/user-nest-preference.repository'
@@ -52,6 +58,8 @@ import { UserNestPreferenceService } from './preferences/user-nest-preference.se
 import { NestSettingsController } from './settings/nest-settings.controller'
 import { NestSettingsPolicy } from './settings/nest-settings.policy'
 import { NestSettingsRepository } from './settings/nest-settings.repository'
+import { NestSettingsPrismaRepository } from './settings/nest-settings.prisma.repository'
+import { NestSettingsCachedRepository } from './settings/nest-settings.cached.repository'
 import { NestSettingsService } from './settings/nest-settings.service'
 
 @Module({
@@ -72,12 +80,16 @@ import { NestSettingsService } from './settings/nest-settings.service'
     NestActionLogController
   ],
   providers: [
-    NestRepository,
-    NestMemberRepository,
-    NestBanRepository,
+    NestPrismaRepository,
+    { provide: NestRepository, useClass: NestCachedRepository },
+    NestMemberPrismaRepository,
+    { provide: NestMemberRepository, useClass: NestMemberCachedRepository },
+    NestBanPrismaRepository,
+    { provide: NestBanRepository, useClass: NestBanCachedRepository },
     NestInviteRepository,
     NestJoinRequestRepository,
-    NestSettingsRepository,
+    NestSettingsPrismaRepository,
+    { provide: NestSettingsRepository, useClass: NestSettingsCachedRepository },
     UserNestPreferenceRepository,
     NestActionLogRepository,
     NestService,
