@@ -47,6 +47,6 @@ export class ThreadSearchResponseDto {
   @ApiProperty({ type: NestReferencetDto, description: 'The nest this thread belongs to' })
   nest!: NestReferencetDto
 
-  @ApiProperty({ type: [ThreadAttachmentResponseDto], description: 'Always empty for search results' })
+  @ApiProperty({ type: [ThreadAttachmentResponseDto], description: 'At most one attachment — a thumbnail preview, not the full set' })
   attachments!: ThreadAttachmentResponseDto[]
 }

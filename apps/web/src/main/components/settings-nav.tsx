@@ -7,6 +7,7 @@ const SECTIONS = [
   { href: '/me/profile', label: 'Profile' },
   { href: '/me/security', label: 'Security' },
   { href: '/me/notifications', label: 'Notifications' },
+  { href: '/me/preferences', label: 'Preferences' },
   { href: '/me/blocks', label: 'Blocked users' },
   { href: '/me/saved', label: 'Saved' }
 ]

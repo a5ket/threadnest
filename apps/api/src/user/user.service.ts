@@ -8,6 +8,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto'
 import { UserQueryDto } from './dto/user.query.dto'
 import { UsernameTakenException } from './exceptions/username-taken.exception'
 import { UserNotFoundException } from './exceptions/user-not-found.exception'
+import { UserPreferenceService } from './preferences/user-preference.service'
 import { UserProfileRepository } from './user-profile.repository'
 import { UserRepository } from './user.repository'
 
@@ -18,14 +19,15 @@ export class UserService {
   constructor(
     private readonly repo: UserRepository,
     private readonly profileRepo: UserProfileRepository,
+    private readonly preferences: UserPreferenceService,
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly imageProcessor: ImageProcessor
   ) { }
 
-  private toProfileView<T extends { avatarKey: string | null }>(profile: T) {
+  private toProfileView<T extends { avatarKey: string | null }>(profile: T, activityVisible = true) {
     const { avatarKey, ...rest } = profile
-    return { ...rest, avatarUrl: avatarKey ? this.storage.getPublicUrl(avatarKey) : null }
+    return { ...rest, avatarUrl: avatarKey ? this.storage.getPublicUrl(avatarKey) : null, activityVisible }
   }
   async assertUserExists(userId: string) {
     if (!(await this.existsById(userId))) {
@@ -73,8 +75,11 @@ export class UserService {
     return this.toProfileView(await this.profileRepo.getByUserId(userId))
   }
 
-  async getProfileByUsername(username: string) {
-    return this.toProfileView(await this.profileRepo.getByUsername(username))
+  async getProfileByUsername(username: string, viewerId?: string) {
+    const profile = await this.profileRepo.getByUsername(username)
+    const activityVisible = viewerId === profile.userId || (await this.preferences.get(profile.userId)).showActivityOnProfile
+
+    return this.toProfileView(profile, activityVisible)
   }
 
   async search(query: UserQueryDto) {

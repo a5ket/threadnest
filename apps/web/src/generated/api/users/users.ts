@@ -5,6 +5,10 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  UserActivityList200,
+  UserActivityList400,
+  UserActivityList404,
+  UserActivityListParams,
   UserGetByUsername200,
   UserGetByUsername404,
   UserList200,
@@ -88,6 +92,59 @@ export const getUserGetByUsernameUrl = (username: string) => {
  */
 export const userGetByUsername = async (username: string, options?: RequestInit): Promise<userGetByUsernameResponse> => {
   return apiFetch<userGetByUsernameResponse>(getUserGetByUsernameUrl(username),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
+
+export type userActivityListResponse200 = {
+  data: UserActivityList200
+  status: 200
+}
+
+export type userActivityListResponse400 = {
+  data: UserActivityList400
+  status: 400
+}
+
+export type userActivityListResponse404 = {
+  data: UserActivityList404
+  status: 404
+}
+
+export type userActivityListResponseSuccess = (userActivityListResponse200) & {
+  headers: Headers
+}
+export type userActivityListResponseError = (userActivityListResponse400 | userActivityListResponse404) & {
+  headers: Headers
+}
+
+export type userActivityListResponse = (userActivityListResponseSuccess | userActivityListResponseError)
+
+export const getUserActivityListUrl = (username: string,
+  params: UserActivityListParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/users/${username}/activity?${stringifiedParams}` : `/users/${username}/activity`
+}
+
+/**
+ * @summary List threads and comments authored by this user, newest first
+ */
+export const userActivityList = async (username: string,
+  params: UserActivityListParams, options?: RequestInit): Promise<userActivityListResponse> => {
+  return apiFetch<userActivityListResponse>(getUserActivityListUrl(username, params),
     {
       ...options,
       method: 'GET'

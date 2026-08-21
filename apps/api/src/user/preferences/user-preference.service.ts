@@ -1,0 +1,25 @@
+import { Injectable } from '@nestjs/common'
+import { UserPreferenceUpdateDto } from './dto/user-preference.update.dto'
+import { UserPreferenceRepository } from './user-preference.repository'
+
+@Injectable()
+export class UserPreferenceService {
+  constructor(private readonly repo: UserPreferenceRepository) { }
+
+  async get(userId: string) {
+    const preference = await this.repo.getByUserId(userId)
+
+    return preference ?? { userId, showActivityOnProfile: true }
+  }
+
+  async update(userId: string, dto: UserPreferenceUpdateDto) {
+    if (dto.showActivityOnProfile === undefined) {
+      return this.get(userId)
+    }
+
+    const existing = await this.repo.getByUserId(userId)
+    const showActivityOnProfile = dto.showActivityOnProfile ?? existing?.showActivityOnProfile ?? true
+
+    return this.repo.upsert(userId, showActivityOnProfile)
+  }
+}

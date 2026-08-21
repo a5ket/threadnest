@@ -20,6 +20,7 @@ import { ReportModule } from './report/report.module'
 import { SecurityModule } from './security/security.module'
 import { StorageModule } from './storage/storage.module'
 import { ThreadModule } from './thread/thread.module'
+import { UserActivityModule } from './user-activity/user-activity.module'
 import { UserModule } from './user/user.module'
 
 @Module({
@@ -49,7 +50,8 @@ import { UserModule } from './user/user.module'
     PlatformModule,
     ChatModule,
     StorageModule,
-    AttachmentModule
+    AttachmentModule,
+    UserActivityModule
   ]
 })
 export class AppModule { }

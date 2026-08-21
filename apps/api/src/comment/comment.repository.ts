@@ -6,10 +6,35 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { Database } from 'src/prisma/types/database'
 import { COMMENT_SELECT } from './selects/comment.select'
 import { commentViewerSelect } from './selects/comment.viewer.select'
+import { CommentAuthorQueryDto } from './dto/comment-author.query.dto'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
 import { CommentNotFoundException } from './exceptions/comment-not-found.exception'
 import type { Comment, CommentNode, CommentPage, CommentSortBy, CommentTreeOptions, CommentViewerSelectResult, CommentWithRole } from './types/comment'
+
+type CommentAuthorRow = {
+  id: string
+  content: string
+  createdAt: Date
+  threadTitle: string
+  threadSlug: string
+  nestName: string
+  nestSlug: string
+  attachmentKey: string | null
+  attachmentWidth: number | null
+  attachmentHeight: number | null
+}
+
+export type CommentAuthorListItem = {
+  id: string
+  content: string
+  createdAt: Date
+  thread: { title: string, slug: string }
+  nest: { name: string, slug: string }
+  attachmentKey: string | null
+  attachmentWidth: number | null
+  attachmentHeight: number | null
+}
 
 const SORTABLE_COLUMNS = {
   createdAt: Prisma.sql`"createdAt"`,
@@ -315,6 +340,59 @@ export class CommentRepository {
 
       throw error
     }
+  }
+
+  async listByAuthor(authorId: string, viewerId: string | undefined, query: CommentAuthorQueryDto) {
+    let cursorSql = Prisma.sql`TRUE`
+
+    if (query.cursor) {
+      try {
+        const { date, id } = decodeCursor(query.cursor)
+        cursorSql = Prisma.sql`(c."createdAt" < ${date}) OR (c."createdAt" = ${date} AND c.id < ${id})`
+      } catch {
+        throw new InvalidCursorException()
+      }
+    }
+
+    const visibilitySql = viewerId
+      ? Prisma.sql`(ns.visibility = 'PUBLIC' OR EXISTS (SELECT 1 FROM "NestMember" vm WHERE vm."nestId" = t."nestId" AND vm."userId" = ${viewerId}))`
+      : Prisma.sql`ns.visibility = 'PUBLIC'`
+
+    const rows = await this.prisma.$queryRaw<CommentAuthorRow[]>(Prisma.sql`
+      SELECT
+        c.id, c.content, c."createdAt",
+        t.title AS "threadTitle", t.slug AS "threadSlug",
+        n.name AS "nestName", n.slug AS "nestSlug",
+        ca.key AS "attachmentKey", ca.width AS "attachmentWidth", ca.height AS "attachmentHeight"
+      FROM "Comment" c
+      JOIN "Thread" t ON t.id = c."threadId"
+      JOIN "Nest" n ON n.id = t."nestId"
+      JOIN "NestSettings" ns ON ns."nestId" = t."nestId"
+      LEFT JOIN "CommentAttachment" ca ON ca."commentId" = c.id
+      WHERE c."authorId" = ${authorId}
+        AND c."deletedAt" IS NULL AND t."deletedAt" IS NULL AND n."deletedAt" IS NULL
+        AND ${visibilitySql} AND ${cursorSql}
+      ORDER BY c."createdAt" DESC, c.id DESC
+      LIMIT ${query.limit + 1}
+    `)
+
+    const hasMore = rows.length > query.limit
+    const page = hasMore ? rows.slice(0, query.limit) : rows
+    const items: CommentAuthorListItem[] = page.map((row) => ({
+      id: row.id,
+      content: row.content,
+      createdAt: row.createdAt,
+      thread: { title: row.threadTitle, slug: row.threadSlug },
+      nest: { name: row.nestName, slug: row.nestSlug },
+      attachmentKey: row.attachmentKey,
+      attachmentWidth: row.attachmentWidth,
+      attachmentHeight: row.attachmentHeight,
+    }))
+    const last = page.at(-1)
+
+    const nextCursor = last && hasMore ? encodeCursor(last.createdAt, last.id) : null
+
+    return { items, meta: { nextCursor, hasMore } }
   }
 
   async listActiveByAuthor(authorId: string, db: Database = this.prisma) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common'
+import { Controller, Get, Param, Query, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ValidationException } from 'src/common/exceptions/validation.exception'
 import { InvalidCursorException } from 'src/common/exceptions/invalid-cursor.exception'
@@ -6,6 +6,9 @@ import { ResponseInterceptor } from 'src/common/interceptors/response.intercepto
 import { ApiDataResponse } from 'src/common/swagger/api-data-response.decorator'
 import { ApiExceptionResponses } from 'src/common/swagger/api-exception-responses.decorator'
 import { ApiPaginatedResponse } from 'src/common/swagger/api-paginated-response.decorator'
+import type { AuthUser } from 'src/common/types/auth.user'
+import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
+import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
 import { UserProfileResponseDto } from './dto/user-profile-response.dto'
 import { UserQueryDto } from './dto/user.query.dto'
 import { UserSummaryResponseDto } from './dto/user-summary-response.dto'
@@ -27,10 +30,14 @@ export class UserController {
   }
 
   @Get(':username')
+  @UseGuards(OptionalAuthGuard)
   @ApiOperation({ operationId: 'userGetByUsername', summary: 'Get a user\'s profile by username' })
   @ApiDataResponse({ status: 200, description: 'User profile', type: UserProfileResponseDto })
   @ApiExceptionResponses(UserNotFoundException)
-  getByUsername(@Param('username') username: string) {
-    return this.user.getProfileByUsername(username)
+  getByUsername(
+    @Param('username') username: string,
+    @OptionalCurrentUser() user: AuthUser | null
+  ) {
+    return this.user.getProfileByUsername(username, user?.id)
   }
 }

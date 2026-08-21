@@ -16,6 +16,7 @@ import { MeNestPreferenceController } from './me-nest-preference.controller'
 import { MeNestController } from './me-nest.controller'
 import { MeNotificationController } from './me-notification.controller'
 import { MeController } from './me.controller'
+import { MePreferenceController } from './me-preference.controller'
 import { MeProfileController } from './me-profile.controller'
 import { MeSavedThreadController } from './me-saved-thread.controller'
 import { MeService } from './me.service'
@@ -42,6 +43,7 @@ import { MeService } from './me.service'
     MeNestInviteController,
     MeNestJoinRequestController,
     MeProfileController,
+    MePreferenceController,
     MeBlockController,
     MeNotificationController,
     MeSavedThreadController,

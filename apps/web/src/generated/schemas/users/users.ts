@@ -49,6 +49,86 @@ export const UserGetByUsernameResponse = zod.object({
     displayName: zod.string().nullable().describe('Display name'),
     bio: zod.string().nullable().describe('Bio'),
     avatarUrl: zod.string().nullable().describe('Avatar URL'),
-    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created'),
+    activityVisible: zod.boolean().describe('Whether this user\'s authored threads and comments are visible to the current viewer')
+  })
+})
+
+/**
+ * @summary List threads and comments authored by this user, newest first
+ */
+export const UserActivityListParams = zod.object({
+  username: zod.string()
+})
+
+export const userActivityListQueryLimitDefault = 20
+export const userActivityListQueryLimitMax = 100
+
+export const UserActivityListQueryParams = zod.object({
+  limit: zod.number().min(1).max(userActivityListQueryLimitMax).default(userActivityListQueryLimitDefault),
+  cursor: zod.string().optional()
+})
+
+export const UserActivityListResponse = zod.object({
+  data: zod.object({
+    items: zod.array(zod.object({
+      type: zod.enum(['THREAD', 'COMMENT']).describe('Whether this entry is a thread or a comment'),
+      thread: zod.object({
+        id: zod.string().describe('Thread ID'),
+        slug: zod.string().describe('Unique thread slug (within its nest)'),
+        title: zod.string().describe('Thread title'),
+        createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+        updatedAt: zod.iso.datetime({ offset: true }).describe('Last update timestamp'),
+        lastCommentAt: zod.string().nullable().describe('Timestamp of the last comment on this thread'),
+        commentCount: zod.number().describe('Number of comments on this thread'),
+        score: zod.number().describe('Net vote score (upvotes minus downvotes)'),
+        viewerVote: zod.enum(['UPVOTE', 'DOWNVOTE']).nullable().describe('The current user\'s vote on this thread, if any'),
+        viewerSaved: zod.boolean().describe('Whether the current user has saved this thread'),
+        lockedAt: zod.string().nullable().describe('When the thread was locked, if it is'),
+        pinnedAt: zod.string().nullable().describe('When the thread was pinned, if it is'),
+        author: zod.object({
+          id: zod.string().describe('User ID'),
+          profile: zod.object({
+            username: zod.string().describe('Unique username'),
+            displayName: zod.string().nullable().describe('Display name'),
+            avatarUrl: zod.string().nullable().describe('Avatar URL')
+          }).nullable().describe('Null if the user has no profile'),
+          role: zod.enum(['OWNER', 'MODERATOR', 'MEMBER']).nullish().describe('The user\'s role in the nest this reference was resolved for. Omitted where role isn\'t resolved for this reference')
+        }).describe('Thread author'),
+        nest: zod.object({
+          name: zod.string().describe('Nest display name'),
+          slug: zod.string().describe('Unique nest slug')
+        }).describe('The nest this thread belongs to'),
+        attachments: zod.array(zod.object({
+          id: zod.string().describe('Attachment ID'),
+          key: zod.string().describe('Storage key — pass this back (unchanged) when updating the thread to keep this attachment'),
+          url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
+          width: zod.number().describe('Image width in pixels'),
+          height: zod.number().describe('Image height in pixels')
+        })).describe('At most one attachment — a thumbnail preview, not the full set')
+      }).optional().describe('Present when type is THREAD'),
+      comment: zod.object({
+        id: zod.string().describe('Comment ID'),
+        content: zod.string().describe('Comment content'),
+        createdAt: zod.iso.datetime({ offset: true }).describe('Creation timestamp'),
+        thread: zod.object({
+          title: zod.string().describe('Thread title'),
+          slug: zod.string().describe('Thread slug')
+        }).describe('The thread this comment was posted in'),
+        nest: zod.object({
+          name: zod.string().describe('Nest display name'),
+          slug: zod.string().describe('Unique nest slug')
+        }).describe('The nest this comment belongs to'),
+        attachment: zod.object({
+          url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),
+          width: zod.number().describe('Image width in pixels'),
+          height: zod.number().describe('Image height in pixels')
+        }).nullable().describe('The comment\'s attachment, if it has one')
+      }).optional().describe('Present when type is COMMENT')
+    })),
+    meta: zod.object({
+      nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
+      hasMore: zod.boolean().describe('Whether more results are available')
+    })
   })
 })

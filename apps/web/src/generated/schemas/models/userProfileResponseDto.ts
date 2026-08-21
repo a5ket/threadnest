@@ -27,4 +27,6 @@ export interface UserProfileResponseDto {
   avatarUrl: string | null
   /** When the profile was created */
   createdAt: string
+  /** Whether this user's authored threads and comments are visible to the current viewer */
+  activityVisible: boolean
 }

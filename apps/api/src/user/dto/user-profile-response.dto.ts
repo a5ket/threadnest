@@ -18,4 +18,7 @@ export class UserProfileResponseDto {
 
   @ApiProperty({ description: 'When the profile was created' })
   createdAt!: Date
+
+  @ApiProperty({ description: 'Whether this user\'s authored threads and comments are visible to the current viewer' })
+  activityVisible!: boolean
 }

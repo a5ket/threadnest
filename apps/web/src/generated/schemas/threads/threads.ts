@@ -838,7 +838,7 @@ export const ThreadSearchResponse = zod.object({
         url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
         width: zod.number().describe('Image width in pixels'),
         height: zod.number().describe('Image height in pixels')
-      })).describe('Always empty for search results')
+      })).describe('At most one attachment — a thumbnail preview, not the full set')
     })),
     meta: zod.object({
       nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),

@@ -38,6 +38,11 @@ import type {
   MeNestPreferenceUpdate401,
   MeNestPreferenceUpdate403,
   MeNestPreferenceUpdate404,
+  MePreferenceGet200,
+  MePreferenceGet401,
+  MePreferenceUpdate200,
+  MePreferenceUpdate400,
+  MePreferenceUpdate401,
   MeProfileAvatarDelete200,
   MeProfileAvatarDelete401,
   MeProfileAvatarUpload200,
@@ -57,7 +62,8 @@ import type {
   MeSavedThreadList401,
   MeSavedThreadListParams,
   UpdateProfileDto,
-  UserNestPreferenceUpdateDto
+  UserNestPreferenceUpdateDto,
+  UserPreferenceUpdateDto
 } from '../models'
 
 import { apiFetch } from '../../../common/api-client'
@@ -571,6 +577,84 @@ export const meProfileAvatarDelete = async (options?: RequestInit): Promise<mePr
       ...options,
       method: 'DELETE'
 
+    }
+  )
+}
+
+export type mePreferenceGetResponse200 = {
+  data: MePreferenceGet200
+  status: 200
+}
+
+export type mePreferenceGetResponse401 = {
+  data: MePreferenceGet401
+  status: 401
+}
+
+export type mePreferenceGetResponseSuccess = (mePreferenceGetResponse200) & {
+  headers: Headers
+}
+export type mePreferenceGetResponseError = (mePreferenceGetResponse401) & {
+  headers: Headers
+}
+
+export type mePreferenceGetResponse = (mePreferenceGetResponseSuccess | mePreferenceGetResponseError)
+
+export const getMePreferenceGetUrl = () => {
+  return `/me/preferences`
+}
+
+/**
+ * @summary Get the current user's preferences
+ */
+export const mePreferenceGet = async (options?: RequestInit): Promise<mePreferenceGetResponse> => {
+  return apiFetch<mePreferenceGetResponse>(getMePreferenceGetUrl(),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
+
+export type mePreferenceUpdateResponse200 = {
+  data: MePreferenceUpdate200
+  status: 200
+}
+
+export type mePreferenceUpdateResponse400 = {
+  data: MePreferenceUpdate400
+  status: 400
+}
+
+export type mePreferenceUpdateResponse401 = {
+  data: MePreferenceUpdate401
+  status: 401
+}
+
+export type mePreferenceUpdateResponseSuccess = (mePreferenceUpdateResponse200) & {
+  headers: Headers
+}
+export type mePreferenceUpdateResponseError = (mePreferenceUpdateResponse400 | mePreferenceUpdateResponse401) & {
+  headers: Headers
+}
+
+export type mePreferenceUpdateResponse = (mePreferenceUpdateResponseSuccess | mePreferenceUpdateResponseError)
+
+export const getMePreferenceUpdateUrl = () => {
+  return `/me/preferences`
+}
+
+/**
+ * @summary Update the current user's preferences
+ */
+export const mePreferenceUpdate = async (userPreferenceUpdateDto: UserPreferenceUpdateDto, options?: RequestInit): Promise<mePreferenceUpdateResponse> => {
+  return apiFetch<mePreferenceUpdateResponse>(getMePreferenceUpdateUrl(),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(userPreferenceUpdateDto)
     }
   )
 }

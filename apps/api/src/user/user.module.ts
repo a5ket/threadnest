@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
+import { UserPreferenceRepository } from './preferences/user-preference.repository'
+import { UserPreferenceService } from './preferences/user-preference.service'
 import { UserSuspensionPresenter } from './suspension/user-suspension.presenter'
 import { UserSuspensionRepository } from './suspension/user-suspension.repository'
 import { UserSuspensionService } from './suspension/user-suspension.service'
@@ -20,10 +22,12 @@ import { UserService } from './user.service'
     UserRepository,
     UserProfileRepository,
     UserPolicy,
+    UserPreferenceRepository,
+    UserPreferenceService,
     UserSuspensionRepository,
     UserSuspensionPresenter,
     UserSuspensionService
   ],
-  exports: [UserService, UserPresenter, UserProfileRepository, UserSuspensionPresenter, UserSuspensionService]
+  exports: [UserService, UserPresenter, UserProfileRepository, UserPreferenceService, UserSuspensionPresenter, UserSuspensionService]
 })
 export class UserModule { }

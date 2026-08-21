@@ -36,6 +36,10 @@ type ThreadSearchRow = {
   authorRole: NestMemberRole | null
   viewerVote: VoteType | null
   viewerSaved: boolean
+  attachmentId: string | null
+  attachmentKey: string | null
+  attachmentWidth: number | null
+  attachmentHeight: number | null
 }
 
 type ThreadSearchGlobalRow = ThreadSearchRow & {
@@ -154,9 +158,9 @@ export class ThreadRepository {
       },
       viewerVote: row.viewerVote,
       viewerSaved: row.viewerSaved,
-      // Search/saved-list results are text-first and skip the per-row attachment fetch —
-      // not worth a LATERAL join in these already-complex raw queries for a thumbnail.
-      attachments: [],
+      attachments: row.attachmentKey
+        ? [{ id: row.attachmentId!, key: row.attachmentKey, width: row.attachmentWidth!, height: row.attachmentHeight!, order: 0 }]
+        : [],
     }
   }
 
@@ -194,12 +198,20 @@ export class ThreadRepository {
         up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
         tv.type AS "viewerVote",
-        (st."threadId" IS NOT NULL) AS "viewerSaved"
+        (st."threadId" IS NOT NULL) AS "viewerSaved",
+        ta.id AS "attachmentId",
+        ta.key AS "attachmentKey",
+        ta.width AS "attachmentWidth",
+        ta.height AS "attachmentHeight"
       FROM ranked r
       LEFT JOIN "UserProfile" up ON up."userId" = r."authorId"
       LEFT JOIN "NestMember" nm ON nm."userId" = r."authorId" AND nm."nestId" = ${nestId}
       LEFT JOIN "ThreadVote" tv ON tv."threadId" = r.id AND tv."userId" = ${viewerId ?? ''}
       LEFT JOIN "SavedThread" st ON st."threadId" = r.id AND st."userId" = ${viewerId ?? ''}
+      LEFT JOIN LATERAL (
+        SELECT id, key, width, height FROM "ThreadAttachment"
+        WHERE "threadId" = r.id ORDER BY "order" ASC LIMIT 1
+      ) ta ON true
       WHERE ${cursorSql}
       ORDER BY r.rank DESC, r.id DESC
       LIMIT ${limit + 1}
@@ -263,13 +275,21 @@ export class ThreadRepository {
         up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
         tv.type AS "viewerVote",
-        (st."threadId" IS NOT NULL) AS "viewerSaved"
+        (st."threadId" IS NOT NULL) AS "viewerSaved",
+        ta.id AS "attachmentId",
+        ta.key AS "attachmentKey",
+        ta.width AS "attachmentWidth",
+        ta.height AS "attachmentHeight"
       FROM ranked r
       JOIN "Nest" n ON n.id = r."nestId"
       LEFT JOIN "UserProfile" up ON up."userId" = r."authorId"
       LEFT JOIN "NestMember" nm ON nm."userId" = r."authorId" AND nm."nestId" = r."nestId"
       LEFT JOIN "ThreadVote" tv ON tv."threadId" = r.id AND tv."userId" = ${viewerId ?? ''}
       LEFT JOIN "SavedThread" st ON st."threadId" = r.id AND st."userId" = ${viewerId ?? ''}
+      LEFT JOIN LATERAL (
+        SELECT id, key, width, height FROM "ThreadAttachment"
+        WHERE "threadId" = r.id ORDER BY "order" ASC LIMIT 1
+      ) ta ON true
       WHERE ${cursorSql}
       ORDER BY r.rank DESC, r.id DESC
       LIMIT ${limit + 1}
@@ -309,13 +329,21 @@ export class ThreadRepository {
         up."displayName" AS "authorDisplayName",
         up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
-        tv.type AS "viewerVote"
+        tv.type AS "viewerVote",
+        ta.id AS "attachmentId",
+        ta.key AS "attachmentKey",
+        ta.width AS "attachmentWidth",
+        ta.height AS "attachmentHeight"
       FROM "SavedThread" st
       JOIN "Thread" t ON t.id = st."threadId"
       JOIN "Nest" n ON n.id = t."nestId"
       LEFT JOIN "UserProfile" up ON up."userId" = t."authorId"
       LEFT JOIN "NestMember" nm ON nm."userId" = t."authorId" AND nm."nestId" = t."nestId"
       LEFT JOIN "ThreadVote" tv ON tv."threadId" = t.id AND tv."userId" = ${viewerId}
+      LEFT JOIN LATERAL (
+        SELECT id, key, width, height FROM "ThreadAttachment"
+        WHERE "threadId" = t.id ORDER BY "order" ASC LIMIT 1
+      ) ta ON true
       WHERE st."userId" = ${viewerId} AND t."deletedAt" IS NULL AND ${cursorSql}
       ORDER BY st."createdAt" DESC, st."threadId" DESC
       LIMIT ${query.limit + 1}
@@ -356,7 +384,11 @@ export class ThreadRepository {
         up."avatarKey" AS "authorAvatarKey",
         nm.role AS "authorRole",
         tv.type AS "viewerVote",
-        (st."threadId" IS NOT NULL) AS "viewerSaved"
+        (st."threadId" IS NOT NULL) AS "viewerSaved",
+        ta.id AS "attachmentId",
+        ta.key AS "attachmentKey",
+        ta.width AS "attachmentWidth",
+        ta.height AS "attachmentHeight"
       FROM "NestMember" vm
       JOIN "Thread" t ON t."nestId" = vm."nestId"
       JOIN "Nest" n ON n.id = t."nestId"
@@ -364,6 +396,10 @@ export class ThreadRepository {
       LEFT JOIN "NestMember" nm ON nm."userId" = t."authorId" AND nm."nestId" = t."nestId"
       LEFT JOIN "ThreadVote" tv ON tv."threadId" = t.id AND tv."userId" = ${viewerId}
       LEFT JOIN "SavedThread" st ON st."threadId" = t.id AND st."userId" = ${viewerId}
+      LEFT JOIN LATERAL (
+        SELECT id, key, width, height FROM "ThreadAttachment"
+        WHERE "threadId" = t.id ORDER BY "order" ASC LIMIT 1
+      ) ta ON true
       WHERE vm."userId" = ${viewerId} AND t."deletedAt" IS NULL AND n."deletedAt" IS NULL AND ${cursorSql}
       ORDER BY t."createdAt" DESC, t.id DESC
       LIMIT ${query.limit + 1}
@@ -372,6 +408,64 @@ export class ThreadRepository {
     const hasMore = rows.length > query.limit
     const page = hasMore ? rows.slice(0, query.limit) : rows
     // rank is search-only and unused by toGlobalThreadSearchResult; 0 is a harmless placeholder.
+    const items = page.map((row) => this.toGlobalThreadSearchResult({ ...row, rank: 0 }))
+    const last = page.at(-1)
+
+    const nextCursor = last && hasMore ? encodeCursor(last.createdAt, last.id) : null
+
+    return { items, meta: { nextCursor, hasMore } }
+  }
+
+  async listByAuthor(authorId: string, viewerId: string | undefined, query: ThreadFeedQueryDto) {
+    let cursorSql = Prisma.sql`TRUE`
+
+    if (query.cursor) {
+      try {
+        const { date, id } = decodeCursor(query.cursor)
+        cursorSql = Prisma.sql`(t."createdAt" < ${date}) OR (t."createdAt" = ${date} AND t.id < ${id})`
+      } catch {
+        throw new InvalidCursorException()
+      }
+    }
+
+    const visibilitySql = viewerId
+      ? Prisma.sql`(ns.visibility = 'PUBLIC' OR EXISTS (SELECT 1 FROM "NestMember" vm WHERE vm."nestId" = t."nestId" AND vm."userId" = ${viewerId}))`
+      : Prisma.sql`ns.visibility = 'PUBLIC'`
+
+    const rows = await this.prisma.$queryRaw<ThreadFeedRow[]>(Prisma.sql`
+      SELECT
+        t.id, t.title, t.slug, t."createdAt", t."updatedAt", t."lastCommentAt",
+        t."commentCount", t.score, t."lockedAt", t."pinnedAt", t."authorId", t."nestId",
+        n.name AS "nestName",
+        n.slug AS "nestSlug",
+        up.username AS "authorUsername",
+        up."displayName" AS "authorDisplayName",
+        up."avatarKey" AS "authorAvatarKey",
+        nm.role AS "authorRole",
+        tv.type AS "viewerVote",
+        (st."threadId" IS NOT NULL) AS "viewerSaved",
+        ta.id AS "attachmentId",
+        ta.key AS "attachmentKey",
+        ta.width AS "attachmentWidth",
+        ta.height AS "attachmentHeight"
+      FROM "Thread" t
+      JOIN "Nest" n ON n.id = t."nestId"
+      JOIN "NestSettings" ns ON ns."nestId" = t."nestId"
+      LEFT JOIN "UserProfile" up ON up."userId" = t."authorId"
+      LEFT JOIN "NestMember" nm ON nm."userId" = t."authorId" AND nm."nestId" = t."nestId"
+      LEFT JOIN "ThreadVote" tv ON tv."threadId" = t.id AND tv."userId" = ${viewerId ?? ''}
+      LEFT JOIN "SavedThread" st ON st."threadId" = t.id AND st."userId" = ${viewerId ?? ''}
+      LEFT JOIN LATERAL (
+        SELECT id, key, width, height FROM "ThreadAttachment"
+        WHERE "threadId" = t.id ORDER BY "order" ASC LIMIT 1
+      ) ta ON true
+      WHERE t."authorId" = ${authorId} AND t."deletedAt" IS NULL AND n."deletedAt" IS NULL AND ${visibilitySql} AND ${cursorSql}
+      ORDER BY t."createdAt" DESC, t.id DESC
+      LIMIT ${query.limit + 1}
+    `)
+
+    const hasMore = rows.length > query.limit
+    const page = hasMore ? rows.slice(0, query.limit) : rows
     const items = page.map((row) => this.toGlobalThreadSearchResult({ ...row, rank: 0 }))
     const last = page.at(-1)
 

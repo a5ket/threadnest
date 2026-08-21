@@ -50,6 +50,6 @@ export interface ThreadSearchResponseDto {
   author: UserReferenceDto
   /** The nest this thread belongs to */
   nest: NestReferencetDto
-  /** Always empty for search results */
+  /** At most one attachment — a thumbnail preview, not the full set */
   attachments: ThreadAttachmentResponseDto[]
 }

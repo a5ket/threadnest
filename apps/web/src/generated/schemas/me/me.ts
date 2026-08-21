@@ -131,7 +131,8 @@ export const MeProfileGetResponse = zod.object({
     displayName: zod.string().nullable().describe('Display name'),
     bio: zod.string().nullable().describe('Bio'),
     avatarUrl: zod.string().nullable().describe('Avatar URL'),
-    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created'),
+    activityVisible: zod.boolean().describe('Whether this user\'s authored threads and comments are visible to the current viewer')
   })
 })
 
@@ -161,7 +162,8 @@ export const MeProfileUpdateResponse = zod.object({
     displayName: zod.string().nullable().describe('Display name'),
     bio: zod.string().nullable().describe('Bio'),
     avatarUrl: zod.string().nullable().describe('Avatar URL'),
-    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created'),
+    activityVisible: zod.boolean().describe('Whether this user\'s authored threads and comments are visible to the current viewer')
   })
 })
 
@@ -179,7 +181,8 @@ export const MeProfileAvatarUploadResponse = zod.object({
     displayName: zod.string().nullable().describe('Display name'),
     bio: zod.string().nullable().describe('Bio'),
     avatarUrl: zod.string().nullable().describe('Avatar URL'),
-    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created'),
+    activityVisible: zod.boolean().describe('Whether this user\'s authored threads and comments are visible to the current viewer')
   })
 })
 
@@ -193,7 +196,32 @@ export const MeProfileAvatarDeleteResponse = zod.object({
     displayName: zod.string().nullable().describe('Display name'),
     bio: zod.string().nullable().describe('Bio'),
     avatarUrl: zod.string().nullable().describe('Avatar URL'),
-    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created')
+    createdAt: zod.iso.datetime({ offset: true }).describe('When the profile was created'),
+    activityVisible: zod.boolean().describe('Whether this user\'s authored threads and comments are visible to the current viewer')
+  })
+})
+
+/**
+ * @summary Get the current user's preferences
+ */
+export const MePreferenceGetResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    showActivityOnProfile: zod.boolean().describe('Whether threads and comments authored by this user appear on their public profile')
+  })
+})
+
+/**
+ * @summary Update the current user's preferences
+ */
+export const MePreferenceUpdateBody = zod.object({
+  showActivityOnProfile: zod.boolean().optional()
+})
+
+export const MePreferenceUpdateResponse = zod.object({
+  data: zod.object({
+    userId: zod.string().describe('User ID'),
+    showActivityOnProfile: zod.boolean().describe('Whether threads and comments authored by this user appear on their public profile')
   })
 })
 
@@ -242,7 +270,7 @@ export const MeSavedThreadListResponse = zod.object({
         url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
         width: zod.number().describe('Image width in pixels'),
         height: zod.number().describe('Image height in pixels')
-      })).describe('Always empty for search results')
+      })).describe('At most one attachment — a thumbnail preview, not the full set')
     })),
     meta: zod.object({
       nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),
@@ -296,7 +324,7 @@ export const MeFeedListResponse = zod.object({
         url: zod.string().describe('Presigned, time-limited URL — refetch the thread once it expires rather than caching this indefinitely'),
         width: zod.number().describe('Image width in pixels'),
         height: zod.number().describe('Image height in pixels')
-      })).describe('Always empty for search results')
+      })).describe('At most one attachment — a thumbnail preview, not the full set')
     })),
     meta: zod.object({
       nextCursor: zod.string().nullable().describe('Cursor to fetch the next page, or null if there are no more results'),

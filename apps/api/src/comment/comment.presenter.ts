@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { MODERATION_GRACE_PERIOD_MS } from 'src/common/constants/moderation.constants'
 import { StorageService } from 'src/storage/storage.service'
 import { UserPresenter } from 'src/user/user.presenter'
+import { CommentAuthorListItem } from './comment.repository'
 import { CommentBlockFlags, CommentNode, CommentPage, CommentWithRole } from './types/comment'
 
 @Injectable()
@@ -100,6 +101,17 @@ export class CommentPresenter {
       depth: node.depth,
       viewerBlockedAuthor: node.viewerBlockedAuthor,
       authorBlockedViewer: node.authorBlockedViewer,
+    }
+  }
+
+  async toAuthorItemView(item: CommentAuthorListItem) {
+    return {
+      id: item.id,
+      content: item.content,
+      createdAt: item.createdAt,
+      thread: item.thread,
+      nest: item.nest,
+      attachment: await this.toAttachmentView(item.attachmentKey, item.attachmentWidth, item.attachmentHeight),
     }
   }
 

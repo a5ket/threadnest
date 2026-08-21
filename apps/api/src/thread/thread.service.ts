@@ -342,6 +342,12 @@ export class ThreadService {
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
+  async listByAuthor(authorId: string, viewerId: string | undefined, query: ThreadFeedQueryDto) {
+    const page = await this.threadsRepo.listByAuthor(authorId, viewerId, query)
+
+    return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
+  }
+
   async adjustCommentCount(threadId: string, delta: number, db?: Database) {
     return this.threadsRepo.adjustCommentCount(threadId, delta, db)
   }

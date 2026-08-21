@@ -32,6 +32,7 @@ model User {
   nestInvitesIssued   NestInvite[]         @relation("NestIssuedInvites")
   nestInvitesResolved NestInvite[]         @relation("NestResolvedInvites")
   userNestPreferences UserNestPreference[]
+  preferences         UserPreference?
 
   threadVotes  ThreadVote[]
   commentVotes CommentVote[]
@@ -76,6 +77,13 @@ model UserProfile {
   avatarKey   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPreference {
+  userId                String  @id
+  showActivityOnProfile Boolean @default(true)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

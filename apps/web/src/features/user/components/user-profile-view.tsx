@@ -7,14 +7,17 @@ import { useUser } from '@/features/me/me.hooks'
 import { RemoveAllContentButton } from '@/features/platform-content/components/remove-all-content-button'
 import { PlatformRoleControl } from '@/features/platform-role-grant/components/platform-role-control'
 import { SuspendUserControl } from '@/features/platform-suspension/components/suspend-user-control'
+import { UserActivityList } from './user-activity-list'
+import type { UserActivityPage } from '../user-activity.server'
 import type { UserProfileResponseDto } from '@/generated/api/models'
 import Link from 'next/link'
 
 interface UserProfileViewProps {
   profile: UserProfileResponseDto
+  initialActivity: UserActivityPage | null
 }
 
-export function UserProfileView({ profile }: UserProfileViewProps) {
+export function UserProfileView({ profile, initialActivity }: UserProfileViewProps) {
   const currentUser = useUser()
   const isOwnProfile = currentUser?.username === profile.username
 
@@ -56,6 +59,10 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
         {' '}
         {formatMonthYear(profile.createdAt)}
       </p>
+
+      {initialActivity
+        ? <UserActivityList username={profile.username} initialPage={initialActivity} />
+        : <p className='text-sm text-muted-foreground'>This user has chosen to keep their activity private.</p>}
 
       {!isOwnProfile && currentUser?.platformAccess.isModerator && (
         <div className='flex flex-col gap-4 rounded-md border border-border p-4'>

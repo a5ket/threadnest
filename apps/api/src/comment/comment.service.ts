@@ -12,6 +12,7 @@ import { CommentPolicy } from './comment.policy'
 import { CommentPresenter } from './comment.presenter'
 import { CommentRepository } from './comment.repository'
 import { CommentVoteRepository } from './comment-vote.repository'
+import { CommentAuthorQueryDto } from './dto/comment-author.query.dto'
 import { CommentCreateDto } from './dto/comment.create.dto'
 import { CommentUpdateDto } from './dto/comment.update.dto'
 import { CommentAlreadyDeletedException } from './exceptions/comment-already-deleted.exception'
@@ -281,6 +282,12 @@ export class CommentService {
     })
 
     return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
+  }
+
+  async listByAuthor(authorId: string, viewerId: string | undefined, query: CommentAuthorQueryDto) {
+    const page = await this.repo.listByAuthor(authorId, viewerId, query)
+
+    return { items: await Promise.all(page.items.map((item) => this.commentPresenter.toAuthorItemView(item))), meta: page.meta }
   }
 
   private async getBlockFlags(viewerId: string | null, authorId: string): Promise<CommentBlockFlags> {
