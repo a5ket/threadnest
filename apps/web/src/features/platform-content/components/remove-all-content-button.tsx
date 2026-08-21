@@ -29,6 +29,7 @@ export function RemoveAllContentButton({ userId }: RemoveAllContentButtonProps) 
   return (
     <div className='flex flex-col gap-2'>
       <DeleteConfirmButton
+        variant='platform'
         label='Remove all content'
         confirmLabel='Remove all'
         title={'Remove all of this user\'s content?'}

@@ -1,5 +1,6 @@
 'use client'
 
+import { ModeratorIcon } from '@/common/components/authority-icons'
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { ImageCarousel } from '@/common/components/image-carousel'
 import { RoleBadge } from '@/common/components/role-badge'
@@ -146,8 +147,9 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
                   type='button'
                   disabled={unlockThread.isPending}
                   onClick={() => unlockThread.mutate({ nestSlug, threadSlug: thread.slug })}
-                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                  className='flex items-center gap-1 text-sm text-moderator hover:underline disabled:opacity-50'
                 >
+                  <ModeratorIcon />
                   {unlockThread.isPending ? 'Unlocking...' : 'Unlock'}
                 </button>
               )
@@ -156,8 +158,9 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
                   type='button'
                   disabled={lockThread.isPending}
                   onClick={() => lockThread.mutate({ nestSlug, threadSlug: thread.slug })}
-                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                  className='flex items-center gap-1 text-sm text-moderator hover:underline disabled:opacity-50'
                 >
+                  <ModeratorIcon />
                   {lockThread.isPending ? 'Locking...' : 'Lock'}
                 </button>
               )
@@ -170,8 +173,9 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
                   type='button'
                   disabled={unpinThread.isPending}
                   onClick={() => unpinThread.mutate({ nestSlug, threadSlug: thread.slug })}
-                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                  className='flex items-center gap-1 text-sm text-moderator hover:underline disabled:opacity-50'
                 >
+                  <ModeratorIcon />
                   {unpinThread.isPending ? 'Unpinning...' : 'Unpin'}
                 </button>
               )
@@ -180,8 +184,9 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
                   type='button'
                   disabled={pinThread.isPending}
                   onClick={() => pinThread.mutate({ nestSlug, threadSlug: thread.slug })}
-                  className='text-sm text-muted-foreground hover:underline disabled:opacity-50'
+                  className='flex items-center gap-1 text-sm text-moderator hover:underline disabled:opacity-50'
                 >
+                  <ModeratorIcon />
                   {pinThread.isPending ? 'Pinning...' : 'Pin'}
                 </button>
               )
@@ -189,7 +194,9 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
 
         {thread.access.canDeleteThread && (
           <DeleteConfirmButton
-            title='Delete this thread?'
+            variant={user?.id === thread.author.id ? 'default' : 'moderator'}
+            label={user?.id === thread.author.id ? 'Delete' : 'Remove'}
+            title={user?.id === thread.author.id ? 'Delete this thread?' : 'Remove this thread?'}
             description='This permanently deletes the thread and all its comments. This cannot be undone.'
             isPending={deleteThread.isPending}
             onConfirm={() => deleteThread.mutate({ nestSlug, threadSlug: thread.slug })}

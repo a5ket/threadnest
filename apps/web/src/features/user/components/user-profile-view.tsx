@@ -1,43 +1,22 @@
 'use client'
 
 import { Avatar } from '@/common/components/avatar'
-import { formatDateTime } from '@/common/format-date'
+import { formatMonthYear } from '@/common/format-date'
 import { StartChatButton } from '@/features/chat/components/start-chat-button'
-import { EditProfileForm } from '@/features/me/components/edit-profile-form'
 import { useUser } from '@/features/me/me.hooks'
 import { RemoveAllContentButton } from '@/features/platform-content/components/remove-all-content-button'
 import { PlatformRoleControl } from '@/features/platform-role-grant/components/platform-role-control'
 import { SuspendUserControl } from '@/features/platform-suspension/components/suspend-user-control'
 import type { UserProfileResponseDto } from '@/generated/api/models'
-import { useState } from 'react'
+import Link from 'next/link'
 
 interface UserProfileViewProps {
   profile: UserProfileResponseDto
 }
 
-export function UserProfileView({ profile: initialProfile }: UserProfileViewProps) {
+export function UserProfileView({ profile }: UserProfileViewProps) {
   const currentUser = useUser()
-  const [profile, setProfile] = useState(initialProfile)
-  const [editing, setEditing] = useState(false)
-
   const isOwnProfile = currentUser?.username === profile.username
-
-  if (editing) {
-    return (
-      <div className='flex flex-col gap-6 p-6'>
-        <h1 className='text-lg font-semibold'>Edit profile</h1>
-
-        <EditProfileForm
-          profile={profile}
-          onSaved={(updated) => {
-            setProfile(updated)
-            setEditing(false)
-          }}
-          onCancel={() => setEditing(false)}
-        />
-      </div>
-    )
-  }
 
   return (
     <div className='flex flex-col gap-6 p-6'>
@@ -56,13 +35,12 @@ export function UserProfileView({ profile: initialProfile }: UserProfileViewProp
 
         {isOwnProfile
           ? (
-              <button
-                type='button'
-                onClick={() => setEditing(true)}
+              <Link
+                href='/me/profile'
                 className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
               >
                 Edit profile
-              </button>
+              </Link>
             )
           : (
               currentUser && <StartChatButton userId={profile.userId} />
@@ -76,7 +54,7 @@ export function UserProfileView({ profile: initialProfile }: UserProfileViewProp
       <p className='text-xs text-muted-foreground'>
         Joined
         {' '}
-        {formatDateTime(profile.createdAt)}
+        {formatMonthYear(profile.createdAt)}
       </p>
 
       {!isOwnProfile && currentUser?.platformAccess.isModerator && (

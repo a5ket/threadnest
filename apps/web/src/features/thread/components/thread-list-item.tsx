@@ -32,6 +32,7 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
             score={thread.score}
             viewerVote={thread.viewerVote}
             disabled={voteThread.isPending || removeThreadVote.isPending}
+            orientation='vertical'
             onUpvote={() => voteThread.mutate({ nestSlug, threadSlug: thread.slug, type: 'UPVOTE' })}
             onDownvote={() => voteThread.mutate({ nestSlug, threadSlug: thread.slug, type: 'DOWNVOTE' })}
             onRemove={() => removeThreadVote.mutate({ nestSlug, threadSlug: thread.slug })}

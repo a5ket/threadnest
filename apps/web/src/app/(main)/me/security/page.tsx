@@ -3,7 +3,7 @@ import { ChangePasswordForm } from '@/features/me/components/change-password-for
 
 export default function AccountSecurityPage() {
   return (
-    <div className='flex flex-col gap-8 p-6'>
+    <div className='flex flex-col gap-8'>
       <h1 className='text-lg font-semibold'>Account security</h1>
 
       <div className='flex flex-col gap-3'>

@@ -1,7 +1,6 @@
 import { BanList } from '@/features/nest-ban/components/ban-list'
 import { getNestBansServer } from '@/features/nest-ban/nest-ban.server'
 import { getNestServer } from '@/features/nest/nest.server'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export default async function NestBansPage({
@@ -21,15 +20,8 @@ export default async function NestBansPage({
   }
 
   return (
-    <div className='flex flex-col gap-6 p-6'>
-      <Link href={`/n/${nestSlug}`} className='text-sm text-muted-foreground hover:underline'>
-        ← Back to nest
-      </Link>
-
-      <h1 className='text-lg font-semibold'>
-        {nest.name}
-        {' bans'}
-      </h1>
+    <div className='flex flex-col gap-6'>
+      <h2 className='text-lg font-semibold'>Bans</h2>
 
       <BanList nestSlug={nestSlug} bans={bans} />
     </div>

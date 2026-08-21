@@ -1,5 +1,9 @@
+import { NestAvatar } from '@/common/components/nest-avatar'
+import { SortTabLink } from '@/common/components/sort-tab-link'
 import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import { LeaveNestButton } from '@/features/nest/components/leave-nest-button'
+import { NestManageMenu } from '@/features/nest/components/nest-manage-menu'
+import { NestRightRail } from '@/features/nest/components/nest-right-rail'
 import { getNestServer } from '@/features/nest/nest.server'
 import { NestPreferenceToggle } from '@/features/nest-preference/components/nest-preference-toggle'
 import { ThreadList } from '@/features/thread/components/thread-list'
@@ -31,62 +35,47 @@ export default async function NestPage({
 
   return (
     <div className='flex flex-col gap-6 p-6'>
-      <div className='flex items-start justify-between gap-4'>
-        <div>
-          <h1 className='text-lg font-semibold'>{nest.name}</h1>
-          {nest.description && (
-            <p className='text-sm text-muted-foreground'>{nest.description}</p>
-          )}
-          <p className='mt-1 text-xs text-muted-foreground'>
-            {nest.memberCount ?? 0}
-            {' members · '}
-            {nest.threadCount ?? 0}
-            {' threads'}
-          </p>
+      <NestRightRail
+        name={nest.name}
+        slug={nest.slug}
+        description={nest.description}
+        iconUrl={nest.iconUrl}
+        visibility={nest.access.visibility}
+        memberCount={nest.memberCount}
+        threadCount={nest.threadCount}
+        createdAt={nest.createdAt}
+      />
+
+      <div className='flex flex-wrap items-start justify-between gap-4'>
+        <div className='flex items-start gap-3'>
+          <NestAvatar name={nest.name} slug={nest.slug} iconUrl={nest.iconUrl} size={44} />
+
+          <div>
+            <h1 className='text-lg font-semibold'>{nest.name}</h1>
+            {nest.description && (
+              <p className='text-sm text-muted-foreground'>{nest.description}</p>
+            )}
+            <p className='mt-1 text-xs text-muted-foreground'>
+              {nest.memberCount ?? 0}
+              {' members · '}
+              {nest.threadCount ?? 0}
+              {' threads'}
+            </p>
+          </div>
         </div>
 
-        <div className='flex items-center gap-4'>
-          {nest.access.canViewMembers && (
-            <Link href={`/n/${nestSlug}/members`} className='text-sm text-muted-foreground hover:underline'>
-              Members
-            </Link>
-          )}
-
-          {nest.access.canManageInvites && (
-            <Link href={`/n/${nestSlug}/invites`} className='text-sm text-muted-foreground hover:underline'>
-              Invites
-            </Link>
-          )}
-
-          {nest.access.canManageJoinRequests && (
-            <Link href={`/n/${nestSlug}/join-requests`} className='text-sm text-muted-foreground hover:underline'>
-              Join requests
-            </Link>
-          )}
-
-          {nest.access.canManageBans && (
-            <Link href={`/n/${nestSlug}/bans`} className='text-sm text-muted-foreground hover:underline'>
-              Bans
-            </Link>
-          )}
-
-          {nest.access.canModerateContent && (
-            <Link href={`/n/${nestSlug}/reports`} className='text-sm text-muted-foreground hover:underline'>
-              Reports
-            </Link>
-          )}
-
-          {nest.access.canViewActionLog && (
-            <Link href={`/n/${nestSlug}/action-logs`} className='text-sm text-muted-foreground hover:underline'>
-              Action log
-            </Link>
-          )}
-
-          {nest.access.canModerateContent && (
-            <Link href={`/n/${nestSlug}/settings`} className='text-sm text-muted-foreground hover:underline'>
-              Settings
-            </Link>
-          )}
+        <div className='flex flex-wrap items-center gap-2'>
+          <NestManageMenu
+            links={[
+              ...(nest.access.canViewMembers ? [{ href: `/n/${nestSlug}/members`, label: 'Members' }] : []),
+              ...(nest.access.canManageInvites ? [{ href: `/n/${nestSlug}/invites`, label: 'Invites' }] : []),
+              ...(nest.access.canManageJoinRequests ? [{ href: `/n/${nestSlug}/join-requests`, label: 'Join requests' }] : []),
+              ...(nest.access.canManageBans ? [{ href: `/n/${nestSlug}/bans`, label: 'Bans' }] : []),
+              ...(nest.access.canModerateContent ? [{ href: `/n/${nestSlug}/reports`, label: 'Reports' }] : []),
+              ...(nest.access.canViewActionLog ? [{ href: `/n/${nestSlug}/action-logs`, label: 'Action log' }] : []),
+              ...(nest.access.canModerateContent ? [{ href: `/n/${nestSlug}/settings`, label: 'Settings' }] : [])
+            ]}
+          />
 
           {!nest.access.isMember && (
             <JoinNestControl nestSlug={nestSlug} nestName={nest.name} joinPolicy={nest.access.joinPolicy} />
@@ -123,19 +112,13 @@ export default async function NestPage({
         </button>
       </form>
 
-      <div className='flex items-center gap-3 text-sm'>
-        <Link
-          href={q ? `/n/${nestSlug}?q=${encodeURIComponent(q)}` : `/n/${nestSlug}`}
-          className={sort === 'top' ? 'text-muted-foreground hover:underline' : 'font-medium text-foreground'}
-        >
+      <div className='flex items-center gap-2'>
+        <SortTabLink href={q ? `/n/${nestSlug}?q=${encodeURIComponent(q)}` : `/n/${nestSlug}`} active={sort !== 'top'}>
           New
-        </Link>
-        <Link
-          href={`/n/${nestSlug}?sort=top${q ? `&q=${encodeURIComponent(q)}` : ''}`}
-          className={sort === 'top' ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
-        >
+        </SortTabLink>
+        <SortTabLink href={`/n/${nestSlug}?sort=top${q ? `&q=${encodeURIComponent(q)}` : ''}`} active={sort === 'top'}>
           Top
-        </Link>
+        </SortTabLink>
       </div>
 
       <ThreadList nestSlug={nestSlug} sortBy={sortBy} search={search} initialPage={threadPage} />

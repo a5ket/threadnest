@@ -1,3 +1,4 @@
+import { NestAvatar } from '@/common/components/nest-avatar'
 import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import type { NestDiscoveryItem as NestDiscoveryItemType } from '@/features/nest/nest.types'
 import Link from 'next/link'
@@ -11,16 +12,7 @@ export function NestDiscoveryItem({ nest }: NestDiscoveryItemProps) {
     <li className='rounded-md border border-border p-3'>
       <div className='flex items-start justify-between gap-4'>
         <div className='flex items-start gap-3'>
-          <div className='flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted'>
-            {nest.iconUrl
-              ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={nest.iconUrl} alt='' className='h-full w-full object-cover' />
-                )
-              : (
-                  <span className='text-xs font-medium text-muted-foreground'>{nest.name.charAt(0).toUpperCase()}</span>
-                )}
-          </div>
+          <NestAvatar name={nest.name} slug={nest.slug} iconUrl={nest.iconUrl} size={32} />
 
           <div>
             <div className='flex items-center gap-2'>

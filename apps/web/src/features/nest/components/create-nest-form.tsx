@@ -1,6 +1,7 @@
 'use client'
 
 import { ImageUploadField } from '@/common/components/image-upload-field'
+import { Select } from '@/common/components/select'
 import { type GenericApiErrorCode } from '@/common/api-error'
 import { useAddNest } from '@/features/me/me.hooks'
 import { useCreateNest, useUploadNestIcon } from '@/features/nest/nest.hooks'
@@ -39,6 +40,7 @@ export function CreateNestForm({ onCreated }: CreateNestFormProps) {
     register,
     handleSubmit,
     setError,
+    setValue,
     watch,
     formState: {
       errors,
@@ -217,14 +219,15 @@ export function CreateNestForm({ onCreated }: CreateNestFormProps) {
           Visibility
         </label>
 
-        <select
+        <Select
           id='visibility'
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm'
-          {...register('visibility')}
-        >
-          <option value={NestCreateDtoVisibility.PUBLIC}>Public</option>
-          <option value={NestCreateDtoVisibility.PRIVATE}>Private</option>
-        </select>
+          value={watch('visibility') as NestCreateDtoVisibility}
+          onChange={(value) => setValue('visibility', value, { shouldDirty: true })}
+          options={[
+            { value: NestCreateDtoVisibility.PUBLIC, label: 'Public' },
+            { value: NestCreateDtoVisibility.PRIVATE, label: 'Private' }
+          ]}
+        />
       </div>
 
       <div className='flex flex-col gap-1.5'>
@@ -232,15 +235,16 @@ export function CreateNestForm({ onCreated }: CreateNestFormProps) {
           Join policy
         </label>
 
-        <select
+        <Select
           id='joinPolicy'
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm'
-          {...register('joinPolicy')}
-        >
-          <option value={NestCreateDtoJoinPolicy.OPEN}>Open</option>
-          <option value={NestCreateDtoJoinPolicy.BY_REQUEST}>By request</option>
-          <option value={NestCreateDtoJoinPolicy.BY_INVITE}>By invite</option>
-        </select>
+          value={watch('joinPolicy') as NestCreateDtoJoinPolicy}
+          onChange={(value) => setValue('joinPolicy', value, { shouldDirty: true })}
+          options={[
+            { value: NestCreateDtoJoinPolicy.OPEN, label: 'Open' },
+            { value: NestCreateDtoJoinPolicy.BY_REQUEST, label: 'By request' },
+            { value: NestCreateDtoJoinPolicy.BY_INVITE, label: 'By invite' }
+          ]}
+        />
       </div>
 
       {errors.root && (

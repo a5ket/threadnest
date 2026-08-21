@@ -5,7 +5,7 @@ export default async function SavedThreadsPage() {
   const page = await getSavedThreadsServer()
 
   return (
-    <div className='flex flex-col gap-6 p-6'>
+    <div className='flex flex-col gap-6'>
       <h1 className='text-lg font-semibold'>Saved threads</h1>
 
       <SavedThreadList initialPage={page} />

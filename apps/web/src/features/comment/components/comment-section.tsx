@@ -1,12 +1,12 @@
 'use client'
 
 import { InfiniteScrollSentinel } from '@/common/components/infinite-scroll-sentinel'
+import { SortTabLink } from '@/common/components/sort-tab-link'
 import { useRouter } from 'next/navigation'
 import { groupCommentsByParent } from '@/features/comment/comment.utils'
 import { useCommentTree, useInvalidateCommentTree } from '@/features/comment/comment.hooks'
 import type { CommentTreePage } from '@/features/comment/comment.types'
 import type { NestThreadCommentListSortBy } from '@/generated/api/models'
-import Link from 'next/link'
 import { CommentTree } from './comment-tree'
 import { CreateThreadCommentForm } from './create-thread-comment-form'
 
@@ -38,13 +38,9 @@ export function CommentSection({ nestSlug, threadSlug, sortBy, initialPage }: Co
         }}
       />
 
-      <div className='flex items-center gap-3 text-sm'>
-        <Link href={threadUrl} className={sort === 'top' ? 'text-muted-foreground hover:underline' : 'font-medium text-foreground'}>
-          New
-        </Link>
-        <Link href={`${threadUrl}?sort=top`} className={sort === 'top' ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}>
-          Top
-        </Link>
+      <div className='flex items-center gap-2'>
+        <SortTabLink href={threadUrl} active={sort !== 'top'}>New</SortTabLink>
+        <SortTabLink href={`${threadUrl}?sort=top`} active={sort === 'top'}>Top</SortTabLink>
       </div>
 
       <CommentTree childrenByParent={childrenByParent} parentId={null} nestSlug={nestSlug} threadSlug={threadSlug} />

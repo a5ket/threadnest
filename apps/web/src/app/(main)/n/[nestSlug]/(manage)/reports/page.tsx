@@ -1,8 +1,8 @@
+import { SortTabLink } from '@/common/components/sort-tab-link'
 import { ReportQueueList } from '@/features/report/components/report-queue-list'
 import { getNestReportsServer } from '@/features/report/report.server'
 import { getNestServer } from '@/features/nest/nest.server'
 import { NestReportListStatus } from '@/generated/api/models'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 const STATUS_TABS: { label: string, param: string, value: NestReportListStatus | undefined }[] = [
@@ -34,25 +34,14 @@ export default async function NestReportsPage({
   }
 
   return (
-    <div className='flex flex-col gap-6 p-6'>
-      <Link href={`/n/${nestSlug}`} className='text-sm text-muted-foreground hover:underline'>
-        ← Back to nest
-      </Link>
+    <div className='flex flex-col gap-6'>
+      <h2 className='text-lg font-semibold'>Reports</h2>
 
-      <h1 className='text-lg font-semibold'>
-        {nest.name}
-        {' reports'}
-      </h1>
-
-      <div className='flex items-center gap-3 text-sm'>
+      <div className='flex items-center gap-2'>
         {STATUS_TABS.map((tab) => (
-          <Link
-            key={tab.label}
-            href={`/n/${nestSlug}/reports?status=${tab.param}`}
-            className={activeTab.param === tab.param ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
-          >
+          <SortTabLink key={tab.label} href={`/n/${nestSlug}/reports?status=${tab.param}`} active={activeTab.param === tab.param}>
             {tab.label}
-          </Link>
+          </SortTabLink>
         ))}
       </div>
 

@@ -18,18 +18,18 @@ export function ChatList({ initialPage, onSelectChat }: ChatListProps) {
 
   return (
     <div className='flex flex-col'>
-      <div className='flex items-center gap-3 border-b border-border px-3 py-2 text-sm'>
+      <div className='flex items-center gap-2 border-b border-border px-3 py-2'>
         <button
           type='button'
           onClick={() => setArchived(false)}
-          className={!archived ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
+          className={`rounded-full border px-3 py-1 text-sm font-medium ${!archived ? 'border-foreground text-foreground' : 'border-border text-muted-foreground hover:bg-muted'}`}
         >
           Chats
         </button>
         <button
           type='button'
           onClick={() => setArchived(true)}
-          className={archived ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
+          className={`rounded-full border px-3 py-1 text-sm font-medium ${archived ? 'border-foreground text-foreground' : 'border-border text-muted-foreground hover:bg-muted'}`}
         >
           Archived
         </button>

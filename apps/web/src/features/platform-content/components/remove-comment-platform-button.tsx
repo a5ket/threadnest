@@ -37,6 +37,7 @@ export function RemoveCommentPlatformButton({ commentId, onRemoved }: RemoveComm
   return (
     <span className='flex items-center gap-2'>
       <DeleteConfirmButton
+        variant='platform'
         label='Remove (platform)'
         confirmLabel='Remove'
         title='Remove this comment under platform authority?'

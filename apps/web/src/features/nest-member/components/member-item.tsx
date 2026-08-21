@@ -3,6 +3,7 @@
 import { ConfirmDialog } from '@/common/components/confirm-dialog'
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { RoleBadge } from '@/common/components/role-badge'
+import { Select } from '@/common/components/select'
 import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
 import { getUserDisplayName } from '@/common/user-display-name'
@@ -136,19 +137,16 @@ export function MemberItem({ nestSlug, member, canRemoveMembers, canManageMember
 
       <div className='flex items-center gap-3'>
         {canManageMemberRoles && !isSelf && (
-          <select
+          <Select
             value={member.role}
             disabled={isPending}
-            onChange={(e) => {
+            onChange={(role) => {
               setError(null)
-              changeRole.mutate({ nestSlug, userId: member.user.id, role: e.target.value as NestMemberUpdateRoleDtoRole })
+              changeRole.mutate({ nestSlug, userId: member.user.id, role })
             }}
-            className='rounded-md border border-input bg-background px-2 py-1 text-sm disabled:opacity-50'
-          >
-            {ROLE_OPTIONS.map((role) => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
+            options={ROLE_OPTIONS.map((role) => ({ value: role, label: role }))}
+            className='w-32'
+          />
         )}
 
         {canTransferOwnership && !isSelf && member.role !== NestMemberUpdateRoleDtoRole.OWNER && (
@@ -179,6 +177,7 @@ export function MemberItem({ nestSlug, member, canRemoveMembers, canManageMember
 
         {canRemoveMembers && !isSelf && (
           <DeleteConfirmButton
+            variant='moderator'
             label='Remove'
             confirmLabel='Remove member'
             title={`Remove ${getUserDisplayName(member.user)}?`}

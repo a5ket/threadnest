@@ -1,7 +1,7 @@
+import { SortTabLink } from '@/common/components/sort-tab-link'
 import { NestDiscoveryList } from '@/features/nest/components/nest-discovery-list'
 import { getNestsServer } from '@/features/nest/nest.server'
 import { NestListSortBy } from '@/generated/api/models'
-import Link from 'next/link'
 
 export default async function DiscoverPage({
   searchParams
@@ -33,19 +33,13 @@ export default async function DiscoverPage({
         </button>
       </form>
 
-      <div className='flex items-center gap-3 text-sm'>
-        <Link
-          href={q ? `/discover?q=${encodeURIComponent(q)}` : '/discover'}
-          className={sort === 'members' ? 'text-muted-foreground hover:underline' : 'font-medium text-foreground'}
-        >
+      <div className='flex items-center gap-2'>
+        <SortTabLink href={q ? `/discover?q=${encodeURIComponent(q)}` : '/discover'} active={sort !== 'members'}>
           New
-        </Link>
-        <Link
-          href={`/discover?sort=members${sortQuery}`}
-          className={sort === 'members' ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
-        >
+        </SortTabLink>
+        <SortTabLink href={`/discover?sort=members${sortQuery}`} active={sort === 'members'}>
           Most members
-        </Link>
+        </SortTabLink>
       </div>
 
       <NestDiscoveryList sortBy={sortBy} search={search} initialPage={page} />

@@ -1,4 +1,4 @@
-import { Avatar } from '@/common/components/avatar'
+import { LogoMark } from '@/common/components/logo-mark'
 import { useAuthOverlayStore } from '@/features/auth/auth-overlay.store'
 import { useAuthSignOutHandler, useLogout } from '@/features/auth/auth.hooks'
 import { ChatButton } from '@/features/chat/components/chat-button'
@@ -7,6 +7,7 @@ import { NotificationBell } from '@/features/notification/components/notificatio
 import { SearchBar } from '@/features/search/components/search-bar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { AccountMenu } from './account-menu'
 
 export type AppHeaderProps = {
   onToggleSidebar?: () => void
@@ -32,7 +33,8 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
         </svg>
       </button>
 
-      <Link href='/' className='shrink-0 text-lg font-semibold text-foreground'>
+      <Link href='/' className='flex shrink-0 items-center gap-2 text-lg font-semibold text-foreground'>
+        <LogoMark size={26} />
         ThreadNest
       </Link>
 
@@ -41,49 +43,37 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
       </div>
 
       <div className='flex shrink-0 items-center gap-3'>
-        {isSignedIn
-          ? (
-              <>
-                <ChatButton />
-                <NotificationBell />
+        {isSignedIn && (
+          <>
+            <ChatButton />
+            <NotificationBell />
+          </>
+        )}
 
-                {user && (
-                  <Link href={`/users/${user.username}`} className='flex items-center gap-2 hover:opacity-80'>
-                    <Avatar avatarUrl={user.avatarUrl} label={user.username} size={28} />
-                    <span className='hidden text-sm font-medium sm:inline'>{user.username}</span>
-                  </Link>
-                )}
+        {!isSignedIn && (
+          <>
+            <button
+              onClick={() => openAuthOverlay('login')}
+              className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
+            >
+              Sign In
+            </button>
 
-                <Link href='/me/security' className='hidden text-sm text-muted-foreground hover:underline sm:inline'>
-                  Security
-                </Link>
+            <button
+              onClick={() => openAuthOverlay('register')}
+              className='rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover'
+            >
+              Sign Up
+            </button>
+          </>
+        )}
 
-                <button
-                  onClick={() => logout.mutate()}
-                  disabled={logout.isPending}
-                  className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted disabled:opacity-50'
-                >
-                  Sign Out
-                </button>
-              </>
-            )
-          : (
-              <>
-                <button
-                  onClick={() => openAuthOverlay('login')}
-                  className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
-                >
-                  Sign In
-                </button>
-
-                <button
-                  onClick={() => openAuthOverlay('register')}
-                  className='rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover'
-                >
-                  Sign Up
-                </button>
-              </>
-            )}
+        <AccountMenu
+          isSignedIn={isSignedIn}
+          user={user ? { username: user.username, avatarUrl: user.avatarUrl } : null}
+          onSignOut={() => logout.mutate()}
+          signOutPending={logout.isPending}
+        />
       </div>
     </header>
   )

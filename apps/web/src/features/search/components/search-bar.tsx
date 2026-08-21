@@ -66,12 +66,12 @@ export function SearchBar() {
               if (e.key === 'Escape') setDesktopOpen(false)
             }}
             placeholder='Search nests, threads, and users...'
-            className='w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm'
+            className='w-full rounded-full border border-input bg-muted px-4 py-1.5 text-sm'
           />
         </form>
 
         {desktopOpen && showDropdown && (
-          <div className='absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border bg-background shadow-lg'>
+          <div className='absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border border-border bg-background shadow-lg'>
             <SearchResultsDropdown
               term={debouncedTerm}
               nests={search.nests}

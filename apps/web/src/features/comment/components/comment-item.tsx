@@ -136,7 +136,9 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
 
         {canDelete && (
           <DeleteConfirmButton
-            title='Delete this comment?'
+            variant={isAuthor ? 'default' : 'moderator'}
+            label={isAuthor ? 'Delete' : 'Remove'}
+            title={isAuthor ? 'Delete this comment?' : 'Remove this comment?'}
             description={'This can\'t be undone. The comment will be permanently removed.'}
             isPending={deleteComment.isPending}
             onConfirm={() => deleteComment.mutate({ commentId: comment.id })}

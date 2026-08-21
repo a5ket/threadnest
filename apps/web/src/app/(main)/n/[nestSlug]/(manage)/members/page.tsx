@@ -1,7 +1,6 @@
 import { MemberList } from '@/features/nest-member/components/member-list'
 import { getNestMembersServer } from '@/features/nest-member/nest-member.server'
 import { getNestServer } from '@/features/nest/nest.server'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export default async function NestMembersPage({
@@ -21,15 +20,8 @@ export default async function NestMembersPage({
   }
 
   return (
-    <div className='flex flex-col gap-6 p-6'>
-      <Link href={`/n/${nestSlug}`} className='text-sm text-muted-foreground hover:underline'>
-        ← Back to nest
-      </Link>
-
-      <h1 className='text-lg font-semibold'>
-        {nest.name}
-        {' members'}
-      </h1>
+    <div className='flex flex-col gap-6'>
+      <h2 className='text-lg font-semibold'>Members</h2>
 
       <MemberList
         nestSlug={nestSlug}

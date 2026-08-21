@@ -68,6 +68,7 @@ export function BanItem({ nestSlug, ban }: BanItemProps) {
       </div>
 
       <DeleteConfirmButton
+        variant='moderator'
         label='Unban'
         confirmLabel='Unban'
         title={`Unban ${ban.user.displayName ?? ban.user.username ?? 'this user'}?`}

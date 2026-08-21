@@ -9,6 +9,10 @@ export function MainSidebar() {
 
   return (
     <div className='flex h-full flex-col gap-1 p-3'>
+      <Link href='/' className='rounded-md px-3 py-2 text-sm font-medium hover:bg-muted'>
+        Home
+      </Link>
+
       <Link href='/discover' className='rounded-md px-3 py-2 text-sm font-medium hover:bg-muted'>
         Discover
       </Link>
@@ -36,6 +40,13 @@ export function MainSidebar() {
         {userNests.length === 0 && (
           <p className='px-3 py-2 text-sm text-muted-foreground'>No nests yet.</p>
         )}
+      </div>
+
+      <div className='mt-5 flex flex-col gap-1.5 px-3'>
+        <Link href='/help' className='text-xs text-muted-foreground hover:underline'>Help Center</Link>
+        <Link href='/content-policy' className='text-xs text-muted-foreground hover:underline'>Content Policy</Link>
+        <Link href='/privacy' className='text-xs text-muted-foreground hover:underline'>Privacy Policy</Link>
+        <Link href='/terms' className='text-xs text-muted-foreground hover:underline'>Terms of Service</Link>
       </div>
     </div>
   )

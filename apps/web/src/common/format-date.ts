@@ -4,3 +4,8 @@ export function formatDateTime(value: string | Date): string {
   const date = typeof value === 'string' ? new Date(value) : value
   return date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
 }
+
+export function formatMonthYear(value: string | Date): string {
+  const date = typeof value === 'string' ? new Date(value) : value
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}

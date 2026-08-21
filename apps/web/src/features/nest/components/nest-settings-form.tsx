@@ -1,6 +1,7 @@
 'use client'
 
 import { ConfirmDialog } from '@/common/components/confirm-dialog'
+import { Select } from '@/common/components/select'
 import { useUpdateNestSettings } from '@/features/nest/nest-settings.hooks'
 import { updateNestSettingsSchema, type UpdateNestSettingsFormValues } from '@/features/nest/nest-settings.schemas'
 import type { NestSettings } from '@/features/nest/nest-settings.types'
@@ -53,7 +54,6 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
   const [confirmingPrivacy, setConfirmingPrivacy] = useState(false)
 
   const {
-    register,
     handleSubmit,
     setError,
     setValue,
@@ -68,7 +68,7 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
     defaultValues: settings
   })
 
-  const visibility = watch('visibility')
+  const visibility = watch('visibility') as NestSettingsUpdateDtoVisibility
   const isPrivate = visibility === NestSettingsUpdateDtoVisibility.PRIVATE
 
   const updateSettings = useUpdateNestSettings({
@@ -115,8 +115,7 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
     }
   }
 
-  const handleVisibilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextVisibility = e.target.value as NestSettingsUpdateDtoVisibility
+  const handleVisibilityChange = (nextVisibility: NestSettingsUpdateDtoVisibility) => {
     const opensParticipationToNonMembers = PARTICIPATION_FIELDS.some(({ name }) => getValues(name) === NON_MEMBER_LEVEL)
 
     if (nextVisibility === NestSettingsUpdateDtoVisibility.PRIVATE && opensParticipationToNonMembers) {
@@ -124,7 +123,7 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
       return
     }
 
-    setValue('visibility', nextVisibility)
+    setValue('visibility', nextVisibility, { shouldDirty: true })
   }
 
   const renderLevelField = (name: PermissionFieldName, label: string, levels: number[]) => (
@@ -133,16 +132,14 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
         {label}
       </label>
 
-      <select
+      <Select
         id={name}
+        value={watch(name) as number}
+        onChange={(value) => setValue(name, value, { shouldDirty: true })}
         disabled={readOnly}
-        className='rounded-md border border-input bg-background px-3 py-1.5 text-sm disabled:opacity-50'
-        {...register(name, { valueAsNumber: true })}
-      >
-        {levels.map((level) => (
-          <option key={level} value={level}>{LEVEL_LABELS[level]}</option>
-        ))}
-      </select>
+        options={levels.map((level) => ({ value: level, label: LEVEL_LABELS[level] }))}
+        className='w-36'
+      />
     </div>
   )
 
@@ -156,16 +153,16 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
             Visibility
           </label>
 
-          <select
+          <Select
             id='visibility'
-            disabled={readOnly}
-            className='rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50'
-            {...register('visibility')}
+            value={visibility}
             onChange={handleVisibilityChange}
-          >
-            <option value={NestSettingsUpdateDtoVisibility.PUBLIC}>Public</option>
-            <option value={NestSettingsUpdateDtoVisibility.PRIVATE}>Private</option>
-          </select>
+            disabled={readOnly}
+            options={[
+              { value: NestSettingsUpdateDtoVisibility.PUBLIC, label: 'Public' },
+              { value: NestSettingsUpdateDtoVisibility.PRIVATE, label: 'Private' }
+            ]}
+          />
         </div>
 
         <div className='flex flex-col gap-1.5'>
@@ -173,16 +170,17 @@ export function NestSettingsForm({ nestSlug, settings, readOnly }: NestSettingsF
             Join policy
           </label>
 
-          <select
+          <Select
             id='joinPolicy'
+            value={watch('joinPolicy') as NestSettingsUpdateDtoJoinPolicy}
+            onChange={(value) => setValue('joinPolicy', value, { shouldDirty: true })}
             disabled={readOnly}
-            className='rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50'
-            {...register('joinPolicy')}
-          >
-            <option value={NestSettingsUpdateDtoJoinPolicy.OPEN}>Open</option>
-            <option value={NestSettingsUpdateDtoJoinPolicy.BY_REQUEST}>By request</option>
-            <option value={NestSettingsUpdateDtoJoinPolicy.BY_INVITE}>By invite</option>
-          </select>
+            options={[
+              { value: NestSettingsUpdateDtoJoinPolicy.OPEN, label: 'Open' },
+              { value: NestSettingsUpdateDtoJoinPolicy.BY_REQUEST, label: 'By request' },
+              { value: NestSettingsUpdateDtoJoinPolicy.BY_INVITE, label: 'By invite' }
+            ]}
+          />
         </div>
       </div>
 

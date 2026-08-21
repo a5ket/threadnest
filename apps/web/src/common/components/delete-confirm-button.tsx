@@ -1,7 +1,10 @@
 'use client'
 
+import { ModeratorIcon, PlatformIcon } from '@/common/components/authority-icons'
 import { ConfirmDialog } from '@/common/components/confirm-dialog'
 import { useState } from 'react'
+
+type DeleteConfirmVariant = 'default' | 'moderator' | 'platform'
 
 interface DeleteConfirmButtonProps {
   onConfirm: () => void
@@ -10,6 +13,13 @@ interface DeleteConfirmButtonProps {
   description: string
   label?: string
   confirmLabel?: string
+  variant?: DeleteConfirmVariant
+}
+
+const VARIANT_STYLES: Record<DeleteConfirmVariant, string> = {
+  default: 'text-destructive',
+  moderator: 'text-moderator',
+  platform: 'text-destructive'
 }
 
 export function DeleteConfirmButton({
@@ -18,7 +28,8 @@ export function DeleteConfirmButton({
   title,
   description,
   label = 'Delete',
-  confirmLabel = 'Delete'
+  confirmLabel = 'Delete',
+  variant = 'default'
 }: DeleteConfirmButtonProps) {
   const [confirming, setConfirming] = useState(false)
 
@@ -28,8 +39,10 @@ export function DeleteConfirmButton({
         type='button'
         disabled={isPending}
         onClick={() => setConfirming(true)}
-        className='text-sm text-destructive hover:underline disabled:opacity-50'
+        className={`flex items-center gap-1 text-sm hover:underline disabled:opacity-50 ${VARIANT_STYLES[variant]}`}
       >
+        {variant === 'moderator' && <ModeratorIcon />}
+        {variant === 'platform' && <PlatformIcon />}
         {isPending ? 'Working...' : label}
       </button>
 

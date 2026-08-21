@@ -43,6 +43,7 @@ export function InviteItem({ nestSlug, invite }: InviteItemProps) {
 
       {invite.status === 'PENDING' && (
         <DeleteConfirmButton
+          variant='moderator'
           label='Revoke'
           confirmLabel='Revoke invite'
           title={`Revoke ${getUserDisplayName(invite.user)}'s invite?`}

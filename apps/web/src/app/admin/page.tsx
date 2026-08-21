@@ -1,7 +1,7 @@
+import { SortTabLink } from '@/common/components/sort-tab-link'
 import { PlatformReportQueueList } from '@/features/platform-report/components/platform-report-queue-list'
 import { getPlatformReportsServer } from '@/features/platform-report/platform-report.server'
 import { PlatformReportListStatus } from '@/generated/api/models'
-import Link from 'next/link'
 
 const STATUS_TABS: { label: string, param: string, value: PlatformReportListStatus | undefined }[] = [
   { label: 'Pending', param: 'pending', value: PlatformReportListStatus.PENDING },
@@ -25,15 +25,11 @@ export default async function AdminReportsPage({
     <div className='flex flex-col gap-6 p-6'>
       <h1 className='text-lg font-semibold'>Platform reports</h1>
 
-      <div className='flex items-center gap-3 text-sm'>
+      <div className='flex items-center gap-2'>
         {STATUS_TABS.map((tab) => (
-          <Link
-            key={tab.label}
-            href={`/admin?status=${tab.param}`}
-            className={activeTab.param === tab.param ? 'font-medium text-foreground' : 'text-muted-foreground hover:underline'}
-          >
+          <SortTabLink key={tab.label} href={`/admin?status=${tab.param}`} active={activeTab.param === tab.param}>
             {tab.label}
-          </Link>
+          </SortTabLink>
         ))}
       </div>
 
