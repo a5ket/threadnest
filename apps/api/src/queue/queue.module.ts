@@ -3,6 +3,7 @@ import { DynamicModule, Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DiscoveryModule } from '@nestjs/core'
 import { Job } from 'bullmq'
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino'
 import { QueueBullmqService } from './queue.bullmq.service'
 import { QueueConfig } from './queue.config'
 import { QueueDispatcher } from './queue.dispatcher'
@@ -10,18 +11,28 @@ import { QueueService } from './queue.service'
 import { queueDefinitionToken } from './queue.tokens'
 
 function createQueueProcessor(name: string) {
+  const context = `${name}QueueProcessor`
+
   @Processor(name)
   class GenericQueueProcessor extends WorkerHost {
-    constructor(private readonly dispatcher: QueueDispatcher) {
+    constructor(
+      private readonly dispatcher: QueueDispatcher,
+      @InjectPinoLogger(context) private readonly logger: PinoLogger
+    ) {
       super()
     }
 
     async process(job: Job) {
-      await this.dispatcher.dispatch(job.name, job.data)
+      try {
+        await this.dispatcher.dispatch(job.name, job.data)
+      } catch (error) {
+        this.logger.error({ err: error, jobType: job.name, jobId: job.id }, 'Job failed')
+        throw error
+      }
     }
   }
 
-  Object.defineProperty(GenericQueueProcessor, 'name', { value: `${name}QueueProcessor` })
+  Object.defineProperty(GenericQueueProcessor, 'name', { value: context })
 
   return GenericQueueProcessor
 }

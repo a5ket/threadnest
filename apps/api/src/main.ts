@@ -2,13 +2,15 @@ import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { ValidationPipe } from '@nestjs/common'
+import { Logger } from 'nestjs-pino'
 import { AppModule } from './app.module'
-import { HttpExceptionFilter } from './common/filters/http-exception.filter'
 import { ValidationException } from './common/exceptions/validation.exception'
 import { AppConfig } from './app.config'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, { bufferLogs: true })
+
+  app.useLogger(app.get(Logger))
 
   const configService = app.get(ConfigService<AppConfig>)
 
@@ -22,7 +24,6 @@ async function bootstrap() {
     whitelist: true,
     exceptionFactory: (errors) => new ValidationException(errors)
   }))
-  app.useGlobalFilters(new HttpExceptionFilter())
 
   const config = new DocumentBuilder()
     .setTitle('ThreadNest API')
