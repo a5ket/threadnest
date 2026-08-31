@@ -2,6 +2,7 @@ import { PlatformRole } from 'generated/prisma/enums'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { createMockUserService } from 'test/factories/user-service.mock-factory'
 import { createMockEventBus } from 'test/factories/event-bus.mock-factory'
+import { createMockLogger } from 'test/factories/logger.mock-factory'
 import { createMockPlatformRoleGrantPolicy } from 'test/factories/platform-role-grant-policy.mock-factory'
 import { createMockPlatformRoleGrantPresenter } from 'test/factories/platform-role-grant-presenter.mock-factory'
 import { createMockPlatformRoleGrantRepository } from 'test/factories/platform-role-grant-repository.mock-factory'
@@ -16,7 +17,8 @@ describe('PlatformRoleGrantService', () => {
   const presenter = createMockPlatformRoleGrantPresenter()
   const transactionManager = createMockTransactionManager()
   const eventBus = createMockEventBus()
-  const service = new PlatformRoleGrantService(user as any, roleGrant as any, policy as any, presenter, transactionManager as any, eventBus)
+  const logger = createMockLogger()
+  const service = new PlatformRoleGrantService(user as any, roleGrant as any, policy as any, presenter, transactionManager as any, eventBus, logger as any)
 
   const dto = { role: PlatformRole.MODERATOR }
 

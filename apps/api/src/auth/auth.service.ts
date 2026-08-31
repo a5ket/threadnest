@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import * as argon2 from 'argon2'
 import { createHash, randomBytes, randomUUID } from 'crypto'
+import { PinoLogger } from 'nestjs-pino'
 import { CacheService } from 'src/cache/cache.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EventBus } from 'src/event/event-bus'
@@ -58,8 +59,11 @@ export class AuthService {
     private readonly cache: CacheService,
     private readonly eventBus: EventBus,
     private readonly emailService: EmailService,
-    private readonly userSuspensions: UserSuspensionService
-  ) { }
+    private readonly userSuspensions: UserSuspensionService,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(AuthService.name)
+  }
 
   async register(dto: RegisterDto) {
     const exists = await this.userService.existsByEmail(dto.email)
@@ -72,6 +76,7 @@ export class AuthService {
     const user = await this.userService.create(dto.email, passwordHash)
     const tokens = await this.createSession(user.id, user.email, false)
 
+    this.logger.info({ userId: user.id }, 'User registered')
     void this.eventBus.publish(new UserRegisteredEvent({ userId: user.id, email: user.email }))
     void this.requestEmailVerification(user.id)
 
@@ -82,23 +87,27 @@ export class AuthService {
     const user = await this.userService.findByEmailWithCredentials(dto.email)
 
     if (!user?.passwordHash) {
+      this.logger.warn({ email: dto.email }, 'Login failed: unknown email')
       throw new InvalidCredentialsException()
     }
 
     const isPasswordValid = await this.verifyPassword(user.passwordHash, dto.password)
 
     if (!isPasswordValid) {
+      this.logger.warn({ userId: user.id }, 'Login failed: invalid password')
       throw new InvalidCredentialsException()
     }
 
     const activeSuspension = await this.userSuspensions.getActive(user.id)
 
     if (activeSuspension) {
+      this.logger.warn({ userId: user.id }, 'Login blocked: user suspended')
       throw new UserSuspendedException(activeSuspension.reason)
     }
 
     const tokens = await this.createSession(user.id, user.email, user.emailVerifiedAt !== null)
 
+    this.logger.info({ userId: user.id }, 'User logged in')
     void this.eventBus.publish(new UserLoggedInEvent({ userId: user.id, email: user.email }))
 
     return tokens
@@ -142,6 +151,7 @@ export class AuthService {
         return result
       }
 
+      this.logger.warn({ userId: currentSession.userId }, 'Refresh rejected: token already revoked')
       throw new InvalidRefreshTokenException()
     }
 
@@ -193,6 +203,7 @@ export class AuthService {
     const user = await this.userService.getByIdWithCredentials(userId)
 
     if (!user?.passwordHash || !(await this.verifyPassword(user.passwordHash, currentPassword))) {
+      this.logger.warn({ userId }, 'Change password failed: invalid current password')
       throw new InvalidCredentialsException()
     }
 
@@ -202,6 +213,8 @@ export class AuthService {
 
     const passwordHash = await this.hashPassword(newPassword)
     await this.userService.updatePassword(userId, passwordHash)
+
+    this.logger.info({ userId }, 'Password changed')
   }
 
   async requestEmailVerification(userId: string) {
@@ -260,6 +273,7 @@ export class AuthService {
 
     await this.refreshTokenRepo.revokeAll(token.userId)
 
+    this.logger.info({ userId: token.userId }, 'Password reset')
     void this.eventBus.publish(new PasswordResetEvent({ userId: token.userId }))
   }
 

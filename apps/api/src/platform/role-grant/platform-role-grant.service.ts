@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { PinoLogger } from 'nestjs-pino'
 import { EventBus } from 'src/event/event-bus'
 import { TransactionManager } from 'src/prisma/transaction-manager'
 import { UserService } from 'src/user/user.service'
@@ -18,8 +19,11 @@ export class PlatformRoleGrantService {
     private readonly policy: PlatformRoleGrantPolicy,
     private readonly presenter: PlatformRoleGrantPresenter,
     private readonly transactionManager: TransactionManager,
-    private readonly eventBus: EventBus
-  ) { }
+    private readonly eventBus: EventBus,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(PlatformRoleGrantService.name)
+  }
 
   async grantRole(userId: string, actorUserId: string, dto: PlatformRoleGrantCreateDto) {
     await this.policy.assertIsAdmin(actorUserId)
@@ -27,6 +31,7 @@ export class PlatformRoleGrantService {
 
     const grant = await this.roleGrant.create(userId, actorUserId, dto)
 
+    this.logger.info({ userId, actorUserId, role: dto.role }, 'Platform role granted')
     void this.eventBus.publish(new PlatformRoleGrantedEvent({ userId, role: dto.role, grantedById: actorUserId }))
 
     return this.presenter.toView(grant)
@@ -48,6 +53,7 @@ export class PlatformRoleGrantService {
       return this.roleGrant.create(userId, actorUserId, dto, tx)
     })
 
+    this.logger.info({ userId, actorUserId, newRole: dto.role }, 'Platform role changed')
     void this.eventBus.publish(new PlatformRoleChangedEvent({ userId, newRole: dto.role, changedById: actorUserId }))
 
     return this.presenter.toView(grant)
@@ -58,6 +64,7 @@ export class PlatformRoleGrantService {
 
     await this.roleGrant.revoke(userId, actorUserId)
 
+    this.logger.info({ userId, actorUserId }, 'Platform role revoked')
     void this.eventBus.publish(new PlatformRoleRevokedEvent({ userId, revokedById: actorUserId }))
   }
 

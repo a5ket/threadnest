@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { ReportStatus, ReportTargetType } from 'generated/prisma/enums'
+import { PinoLogger } from 'nestjs-pino'
 import { CommentRepository } from 'src/comment/comment.repository'
 import { EventBus } from 'src/event/event-bus'
 import { NestRepository } from 'src/nest/nest.repository'
@@ -23,7 +24,10 @@ export class ReportService {
     private readonly policy: ReportPolicy,
     private readonly presenter: ReportPresenter,
     private readonly eventBus: EventBus,
-  ) { }
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(ReportService.name)
+  }
 
   async reportThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ReportCreateDto) {
     const thread = await this.threadsService.getByNestSlug(nestSlug, threadSlug, actorUserId)
@@ -81,6 +85,8 @@ export class ReportService {
     await this.policy.assertCanReview(report, nest.id, actorUserId)
 
     await this.reportsRepo.updateStatus(reportId, status, actorUserId)
+
+    this.logger.info({ reportId, nestId: nest.id, actorUserId, status }, 'Report reviewed')
 
     // report.thread/report.comment are mutually exclusive based on targetType — see REPORT_SUMMARY_SELECT.
     const isThreadTarget = report.targetType === ReportTargetType.THREAD

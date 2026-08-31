@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { randomBytes } from 'crypto'
 import { NestMemberRole } from 'generated/prisma/enums'
+import { PinoLogger } from 'nestjs-pino'
 import { EventBus } from 'src/event/event-bus'
 import { TransactionManager } from 'src/prisma/transaction-manager'
 import { ImageProcessor } from 'src/storage/image-processor'
@@ -36,8 +37,11 @@ export class NestService {
     private readonly transactionManager: TransactionManager,
     private readonly eventBus: EventBus,
     private readonly storage: StorageService,
-    private readonly imageProcessor: ImageProcessor
-  ) { }
+    private readonly imageProcessor: ImageProcessor,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(NestService.name)
+  }
 
   async create(actorUserId: string, dto: NestCreateDto) {
     if (RESERVED_NEST_SLUGS.has(dto.slug)) {
@@ -57,6 +61,7 @@ export class NestService {
 
     const access = await this.nestAccess.getContext(nest.id, actorUserId)
 
+    this.logger.info({ nestId: nest.id, slug: nest.slug, ownerId: actorUserId }, 'Nest created')
     void this.eventBus.publish(new NestCreatedEvent({
       nestId: nest.id,
       ownerId: actorUserId,
@@ -148,6 +153,7 @@ export class NestService {
       await this.membersRepo.updateRole(nest.id, dto.userId, NestMemberRole.OWNER, tx)
     })
 
+    this.logger.info({ nestId: nest.id, previousOwnerId: actorUserId, newOwnerId: dto.userId }, 'Nest ownership transferred')
     void this.eventBus.publish(new OwnershipTransferredEvent({
       nestId: nest.id,
       nestSlug: nest.slug,
@@ -162,6 +168,8 @@ export class NestService {
 
     await this.nestsPolicy.assertCanDeleteNest(nest, actorUserId)
     await this.nestsRepo.delete(nest.id, actorUserId)
+
+    this.logger.info({ nestId: nest.id, actorUserId }, 'Nest deleted')
     void this.eventBus.publish(new NestDeletedEvent({ nestId: nest.id, userId: actorUserId }))
   }
 }

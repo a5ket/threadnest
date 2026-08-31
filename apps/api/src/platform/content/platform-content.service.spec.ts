@@ -1,6 +1,7 @@
 import { createComment } from 'test/factories/comment.factory'
 import { createMockCommentService } from 'test/factories/comment-service.mock-factory'
 import { createMockEventBus } from 'test/factories/event-bus.mock-factory'
+import { createMockLogger } from 'test/factories/logger.mock-factory'
 import { createMockPlatformAccess } from 'test/factories/platform-access.mock-factory'
 import { createPlatformAccessContext } from 'test/factories/platform-access-context.factory'
 import { createThreadPolicySubject } from 'test/factories/thread-policy-subject.factory'
@@ -15,8 +16,9 @@ describe('PlatformContentService', () => {
   const threads = createMockThreadService()
   const comments = createMockCommentService()
   const eventBus = createMockEventBus()
+  const logger = createMockLogger()
 
-  const service = new PlatformContentService(policy, threads as any, comments as any, eventBus)
+  const service = new PlatformContentService(policy, threads as any, comments as any, eventBus, logger as any)
 
   beforeEach(() => {
     jest.clearAllMocks()

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { PinoLogger } from 'nestjs-pino'
 import { EventBus } from 'src/event/event-bus'
 import { TransactionManager } from 'src/prisma/transaction-manager'
 import { NestMemberRepository } from '../member/nest-member.repository'
@@ -18,8 +19,11 @@ export class NestBanService {
     private readonly membersRepo: NestMemberRepository,
     private readonly presenter: NestBanPresenter,
     private readonly transactions: TransactionManager,
-    private readonly eventBus: EventBus
-  ) { }
+    private readonly eventBus: EventBus,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(NestBanService.name)
+  }
 
   async banUser(nestSlug: string, actorUserId: string, targetUserId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
@@ -34,6 +38,8 @@ export class NestBanService {
       }
       return result
     })
+
+    this.logger.info({ nestId: nest.id, targetUserId, actorUserId, reason: ban.reason }, 'User banned from nest')
     void this.eventBus.publish(new UserBannedEvent({
       nestId: nest.id,
       nestSlug: nest.slug,
@@ -52,6 +58,8 @@ export class NestBanService {
     await this.policy.assertCanUnbanUser(nest.id, actorUserId, targetUserId)
 
     await this.bansRepo.revoke(nest.id, targetUserId, actorUserId)
+
+    this.logger.info({ nestId: nest.id, targetUserId, actorUserId }, 'User unbanned from nest')
     void this.eventBus.publish(new UserUnbannedEvent({ nestId: nest.id, userId: targetUserId, unbannedById: actorUserId }))
   }
 

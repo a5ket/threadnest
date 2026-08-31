@@ -26,7 +26,7 @@ function createQueueProcessor(name: string) {
       try {
         await this.dispatcher.dispatch(job.name, job.data)
       } catch (error) {
-        this.logger.error({ err: error, jobType: job.name, jobId: job.id }, 'Job failed')
+        this.logger.error({ err: error as Error, jobType: job.name, jobId: job.id }, 'Job failed')
         throw error
       }
     }
@@ -45,8 +45,6 @@ const registeredQueues = new Set<string>()
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<QueueConfig>) => {
-        console.log('DEBUG queue factory config.get(port) =', (config as any).get('port'))
-        console.log('DEBUG queue factory config.get(redisHost) =', config.get('redisHost'))
         return {
           connection: {
             host: config.getOrThrow('redisHost', { infer: true }),

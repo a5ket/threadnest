@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { PinoLogger } from 'nestjs-pino'
 import { EventBus } from 'src/event/event-bus'
 import { TransactionManager } from 'src/prisma/transaction-manager'
 import { NestPresenter } from '../nest.presenter'
@@ -22,8 +23,11 @@ export class NestMemberService {
     private readonly presenter: NestPresenter,
     private readonly memberPresenter: NestMemberPresenter,
     private readonly transactionManager: TransactionManager,
-    private readonly eventBus: EventBus
-  ) { }
+    private readonly eventBus: EventBus,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(NestMemberService.name)
+  }
 
   async getMembershipByUser(nestSlug: string, userId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
@@ -80,6 +84,7 @@ export class NestMemberService {
       await this.nestsRepo.adjustMemberCount(nest.id, -1, tx)
     })
 
+    this.logger.info({ nestId: nest.id, actorUserId, targetUserId }, 'Member removed from nest')
     void this.eventBus.publish(new MemberRemovedEvent({ nestId: nest.id, actorUserId, targetUserId }))
   }
 
@@ -90,6 +95,7 @@ export class NestMemberService {
 
     const updated = await this.membersRepo.updateRole(nest.id, targetUserId, dto.role)
 
+    this.logger.info({ nestId: nest.id, actorUserId, targetUserId, newRole: dto.role }, 'Nest member role changed')
     void this.eventBus.publish(new MemberRoleChangedEvent({ nestId: nest.id, actorUserId, targetUserId, newRole: dto.role }))
 
     return this.memberPresenter.toView(updated)

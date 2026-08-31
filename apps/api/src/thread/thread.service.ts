@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { VoteType } from 'generated/prisma/enums'
+import { PinoLogger } from 'nestjs-pino'
 import { isAttachmentKeyOwnedBy } from 'src/attachment/attachment-key.util'
 import { InvalidAttachmentKeyException } from 'src/attachment/exceptions/invalid-attachment-key.exception'
 import { EventBus } from 'src/event/event-bus'
@@ -43,8 +44,11 @@ export class ThreadService {
     private readonly threadAccess: ThreadAccess,
     private readonly threadPresenter: ThreadPresenter,
     private readonly eventBus: EventBus,
-    private readonly storage: StorageService
-  ) { }
+    private readonly storage: StorageService,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(ThreadService.name)
+  }
 
   private assertOwnsAttachments(attachments: AttachmentInputDto[] | undefined, actorUserId: string) {
     if (attachments?.some((a) => !isAttachmentKeyOwnedBy(a.key, actorUserId))) {
@@ -185,6 +189,11 @@ export class ThreadService {
       await this.nestsRepo.adjustThreadCount(thread.nestId, -1, tx)
     })
 
+    // Platform removals are already logged one layer up, in PlatformContentService.
+    if (!deletedByPlatform && thread.authorId !== actorUserId) {
+      this.logger.info({ threadId: thread.id, actorUserId, authorId: thread.authorId }, 'Nest moderator removed thread')
+    }
+
     void this.eventBus.publish(new ThreadDeletedEvent({
       threadId: thread.id,
       title: thread.title,
@@ -205,6 +214,7 @@ export class ThreadService {
 
     const updated = await this.threadsRepo.lock(thread.id, thread.nestId, actorUserId)
 
+    this.logger.info({ threadId: thread.id, actorUserId }, 'Thread locked')
     void this.eventBus.publish(new ThreadLockedEvent({
       threadId: updated.id,
       nestId: updated.nestId,
@@ -223,6 +233,7 @@ export class ThreadService {
 
     const updated = await this.threadsRepo.unlock(thread.id, thread.nestId, actorUserId)
 
+    this.logger.info({ threadId: thread.id, actorUserId }, 'Thread unlocked')
     void this.eventBus.publish(new ThreadUnlockedEvent({
       threadId: updated.id,
       nestId: updated.nestId,
@@ -241,6 +252,7 @@ export class ThreadService {
 
     const updated = await this.threadsRepo.pin(thread.id, thread.nestId, actorUserId)
 
+    this.logger.info({ threadId: thread.id, actorUserId }, 'Thread pinned')
     void this.eventBus.publish(new ThreadPinnedEvent({
       threadId: updated.id,
       nestId: updated.nestId,
@@ -259,6 +271,7 @@ export class ThreadService {
 
     const updated = await this.threadsRepo.unpin(thread.id, thread.nestId, actorUserId)
 
+    this.logger.info({ threadId: thread.id, actorUserId }, 'Thread unpinned')
     void this.eventBus.publish(new ThreadUnpinnedEvent({
       threadId: updated.id,
       nestId: updated.nestId,

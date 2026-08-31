@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { NestVisibility } from 'generated/prisma/enums'
+import { PinoLogger } from 'nestjs-pino'
 import { EventBus } from 'src/event/event-bus'
 import { NEST_ACCESS_LEVEL } from '../constants/nest-access-level'
 import { NestRepository } from '../nest.repository'
@@ -21,7 +22,10 @@ export class NestSettingsService {
     private readonly settingsRepo: NestSettingsRepository,
     private readonly nestsRepo: NestRepository,
     private readonly eventBus: EventBus,
-  ) { }
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(NestSettingsService.name)
+  }
 
   async getSettings(nestSlug: string, actorUserId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
@@ -40,6 +44,10 @@ export class NestSettingsService {
     const clampedDto = this.clampParticipationForPrivacy(dto, currentSettings)
 
     const settings = await this.settingsRepo.update(nest.id, clampedDto)
+
+    if (clampedDto.visibility && clampedDto.visibility !== currentSettings.visibility) {
+      this.logger.info({ nestId: nest.id, actorUserId, visibility: clampedDto.visibility }, 'Nest visibility changed')
+    }
 
     void this.eventBus.publish(new NestSettingsUpdatedEvent({
       nestId: nest.id,

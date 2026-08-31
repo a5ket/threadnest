@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { VoteType } from 'generated/prisma/enums'
+import { PinoLogger } from 'nestjs-pino'
 import { isAttachmentKeyOwnedBy } from 'src/attachment/attachment-key.util'
 import { InvalidAttachmentKeyException } from 'src/attachment/exceptions/invalid-attachment-key.exception'
 import { BlockService } from 'src/block/block.service'
@@ -33,8 +34,11 @@ export class CommentService {
     private readonly commentPresenter: CommentPresenter,
     private readonly transactionManager: TransactionManager,
     private readonly blocks: BlockService,
-    private readonly eventBus: EventBus
-  ) { }
+    private readonly eventBus: EventBus,
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(CommentService.name)
+  }
 
   private assertOwnsAttachment(dto: CommentCreateDto, actorUserId: string) {
     if (dto.attachment && !isAttachmentKeyOwnedBy(dto.attachment.key, actorUserId)) {
@@ -234,6 +238,11 @@ export class CommentService {
       const latest = await this.repo.getLatestCommentByThreadId(thread.id, tx)
       await this.threads.updateLastCommentAt(thread.id, latest?.createdAt ?? thread.createdAt, tx)
     })
+
+    // Platform removals are already logged one layer up, in PlatformContentService.
+    if (!deletedByPlatform && comment.author.id !== actorUserId) {
+      this.logger.info({ commentId: comment.id, actorUserId, authorId: comment.author.id }, 'Nest moderator removed comment')
+    }
 
     void this.eventBus.publish(new CommentDeletedEvent({
       commentId: comment.id,

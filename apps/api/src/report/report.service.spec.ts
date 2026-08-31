@@ -3,6 +3,7 @@ import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.
 import { createComment } from 'test/factories/comment.factory'
 import { createMockCommentRepository } from 'test/factories/comment-repository.mock-factory'
 import { createMockEventBus } from 'test/factories/event-bus.mock-factory'
+import { createMockLogger } from 'test/factories/logger.mock-factory'
 import { createNestSummary } from 'test/factories/nest-summary.factory'
 import { createMockNestRepository } from 'test/factories/nest-repository.mock-factory'
 import { createMockReportPolicy } from 'test/factories/report-policy.mock-factory'
@@ -26,6 +27,7 @@ describe('ReportService', () => {
   const policy = createMockReportPolicy()
   const presenter = createMockReportPresenter()
   const eventBus = createMockEventBus()
+  const logger = createMockLogger()
 
   const service = new ReportService(
     reportsRepo as any,
@@ -36,6 +38,7 @@ describe('ReportService', () => {
     policy as any,
     presenter as any,
     eventBus,
+    logger as any,
   )
 
   const dto = { reason: ReportReason.SPAM, details: 'looks like spam' }

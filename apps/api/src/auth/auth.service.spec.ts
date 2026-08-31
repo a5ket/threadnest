@@ -1,4 +1,5 @@
 import { createHash } from 'crypto'
+import { createMockLogger } from 'test/factories/logger.mock-factory'
 import { InvalidRefreshTokenException } from './exceptions/invalid-refresh-token.exception'
 import { RefreshTokenExpiredException } from './exceptions/refresh-token-expired.exception'
 import { UserSuspendedException } from './exceptions/user-suspended.exception'
@@ -33,6 +34,7 @@ describe('AuthService refresh', () => {
   const eventBus = { publish: jest.fn() }
   const emailService = {}
   const userSuspensions = { getActive: jest.fn() }
+  const logger = createMockLogger()
 
   const service = new AuthService(
     userService as any,
@@ -44,7 +46,8 @@ describe('AuthService refresh', () => {
     cache as any,
     eventBus,
     emailService as any,
-    userSuspensions as any
+    userSuspensions as any,
+    logger as any
   )
 
   const session = (overrides: Record<string, unknown> = {}) => ({

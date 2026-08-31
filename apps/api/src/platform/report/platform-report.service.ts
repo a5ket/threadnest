@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PlatformReportStatus } from 'generated/prisma/enums'
+import { PinoLogger } from 'nestjs-pino'
 import { EventBus } from 'src/event/event-bus'
 import { PlatformReportCreateDto } from './dto/platform-report-create.dto'
 import { PlatformReportReviewedEvent } from '../events/platform-report-reviewed.event'
@@ -17,7 +18,10 @@ export class PlatformReportService {
     private readonly policy: PlatformReportPolicy,
     private readonly presenter: PlatformReportPresenter,
     private readonly eventBus: EventBus,
-  ) { }
+    private readonly logger: PinoLogger
+  ) {
+    this.logger.setContext(PlatformReportService.name)
+  }
 
   async report(actorUserId: string, dto: PlatformReportCreateDto) {
     if (!(await this.reportsRepo.targetExists(dto.targetType, dto.targetId))) {
@@ -58,6 +62,7 @@ export class PlatformReportService {
 
     await this.reportsRepo.updateStatus(reportId, status, actorUserId)
 
+    this.logger.info({ reportId, actorUserId, status }, 'Platform report reviewed')
     void this.eventBus.publish(new PlatformReportReviewedEvent({
       reportId,
       targetType: report.targetType,
