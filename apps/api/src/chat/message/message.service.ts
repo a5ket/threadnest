@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { EventBus } from 'src/event/event-bus'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { ChatPolicy } from '../chat.policy'
 import { ChatRepository } from '../chat.repository'
@@ -6,6 +7,7 @@ import { MessageNotFoundException } from '../exceptions/message-not-found.except
 import { ReplyTargetNotInChatException } from '../exceptions/reply-target-not-in-chat.exception'
 import { MessageCreateDto } from './dto/message-create.dto'
 import { MessageQueryDto } from './dto/message.query.dto'
+import { MessageCreatedEvent } from './events/message-created.event'
 import { MessagePresenter } from './message.presenter'
 import { MessageRepository } from './message.repository'
 
@@ -16,6 +18,7 @@ export class MessageService {
     private readonly chatsRepo: ChatRepository,
     private readonly chatPolicy: ChatPolicy,
     private readonly presenter: MessagePresenter,
+    private readonly eventBus: EventBus,
   ) { }
 
   async listMessages(actorUserId: string, chatId: string, query: MessageQueryDto) {
@@ -48,7 +51,11 @@ export class MessageService {
     await this.chatsRepo.touchLastMessageAt(chatId, message.createdAt)
     await this.chatsRepo.markRead(chatId, actorUserId, message.createdAt)
 
-    return this.presenter.toView(message)
+    const view = this.presenter.toView(message)
+
+    void this.eventBus.publish(new MessageCreatedEvent({ chatId, message: view }))
+
+    return view
   }
 
   async deleteMessage(actorUserId: string, chatId: string, messageId: string) {

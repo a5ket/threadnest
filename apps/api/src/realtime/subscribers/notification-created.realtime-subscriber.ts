@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { EventSubscriber } from 'src/event/event-subscriber'
-import { NotificationCreatedEvent } from '../events/notification-created.event'
+import { NotificationCreatedEvent } from 'src/notification/events/notification-created.event'
 import { RealtimeGateway, userRoom } from '../realtime.gateway'
 
 @Injectable()

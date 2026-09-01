@@ -4,6 +4,7 @@ import { Avatar } from '@/common/components/avatar'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { chatQueryKeys, useChat } from '../chat.hooks'
+import { useChatRoomSocket } from '../chat.socket'
 import { messageQueryKeys } from '../message.hooks'
 import type { MessageListPage } from '../chat.server'
 import type { Message } from '../chat.types'
@@ -20,6 +21,8 @@ export function ChatPanel({ chatId, initialMessages, onBack }: ChatPanelProps) {
   const { data: chat, isLoading } = useChat(chatId)
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)
   const queryClient = useQueryClient()
+
+  useChatRoomSocket(chatId)
 
   const handleSent = () => {
     queryClient.invalidateQueries({ queryKey: messageQueryKeys.list(chatId) })

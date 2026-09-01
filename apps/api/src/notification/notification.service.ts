@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { NotificationType } from 'generated/prisma/enums'
 import { EventBus } from 'src/event/event-bus'
-import { NotificationCreatedEvent } from 'src/realtime/events/notification-created.event'
+import { NotificationCreatedEvent } from './events/notification-created.event'
 import { NotificationQueryDto } from './dto/notification.query.dto'
 import { NotificationPresenter } from './notification.presenter'
 import { NotificationRepository } from './notification.repository'

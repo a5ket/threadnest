@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { BlockModule } from 'src/block/block.module'
+import { EventModule } from 'src/event/event.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { SecurityModule } from 'src/security/security.module'
 import { UserModule } from 'src/user/user.module'
@@ -20,6 +21,7 @@ import { MessageService } from './message/message.service'
     SecurityModule,
     UserModule,
     BlockModule,
+    EventModule,
   ],
   providers: [
     ChatRepository,

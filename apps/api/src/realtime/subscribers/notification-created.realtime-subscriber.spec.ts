@@ -1,6 +1,6 @@
 import { NotificationType } from 'generated/prisma/enums'
 import { NotificationResponseDto } from 'src/notification/dto/notification-response.dto'
-import { NotificationCreatedEvent } from '../events/notification-created.event'
+import { NotificationCreatedEvent } from 'src/notification/events/notification-created.event'
 import { userRoom } from '../realtime.gateway'
 import { NotificationCreatedRealtimeSubscriber } from './notification-created.realtime-subscriber'
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { getQueryClient } from '@/common/query-client'
+import { SocketProvider } from '@/common/realtime/socket-provider'
 import { MeStoreProvider } from '@/features/me/components/me-store-provider'
 import type { MeBootstrapResult } from '@/features/me/me.types'
 import { NotificationSocketListener } from '@/features/notification/components/notification-socket-listener'
@@ -21,8 +22,10 @@ export function Providers({
     <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
       <QueryClientProvider client={queryClient}>
         <MeStoreProvider initialMe={initialMe}>
-          <NotificationSocketListener />
-          {children}
+          <SocketProvider>
+            <NotificationSocketListener />
+            {children}
+          </SocketProvider>
         </MeStoreProvider>
       </QueryClientProvider>
     </ThemeProvider>
