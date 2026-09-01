@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { AuthField } from './auth-field'
 
 interface ConfirmPasswordResetFormProps {
   token: string
@@ -70,7 +71,7 @@ export function ConfirmPasswordResetForm({ token }: ConfirmPasswordResetFormProp
         <p role='alert' className='text-sm text-destructive'>
           This link is invalid or has expired.
         </p>
-        <Link href='/reset-password' className='text-sm text-primary hover:underline'>Request a new link</Link>
+        <Link href='/reset-password' className='text-sm font-medium text-primary hover:underline'>Request a new link</Link>
       </div>
     )
   }
@@ -79,70 +80,51 @@ export function ConfirmPasswordResetForm({ token }: ConfirmPasswordResetFormProp
     return (
       <div className='flex flex-col items-center gap-3 text-center'>
         <p className='text-sm'>Your password has been reset.</p>
-        <Link href='/login' className='text-sm text-primary hover:underline'>Log in</Link>
+        <Link href='/login' className='text-sm font-medium text-primary hover:underline'>Log in</Link>
       </div>
     )
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className='flex w-full max-w-sm flex-col gap-4'>
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='password' className='text-sm font-medium'>
-          New password
-        </label>
+    <div className='flex w-full flex-col gap-6'>
+      <div>
+        <h1 className='text-xl font-semibold'>Set a new password</h1>
+        <p className='text-sm text-muted-foreground'>Choose a new password for your account.</p>
+      </div>
 
-        <input
+      <form onSubmit={onSubmit} noValidate className='flex flex-col gap-4'>
+        <AuthField
           id='password'
+          label='New password'
           type='password'
           autoComplete='new-password'
-          aria-invalid={errors.password ? 'true' : 'false'}
-          aria-describedby={errors.password ? 'password-error' : undefined}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
-          {...register('password')}
+          error={errors.password?.message}
+          registration={register('password')}
         />
 
-        {errors.password && (
-          <p id='password-error' role='alert' className='text-sm text-destructive'>
-            {errors.password.message}
-          </p>
-        )}
-      </div>
-
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='confirmPassword' className='text-sm font-medium'>
-          Confirm new password
-        </label>
-
-        <input
+        <AuthField
           id='confirmPassword'
+          label='Confirm new password'
           type='password'
           autoComplete='new-password'
-          aria-invalid={errors.confirmPassword ? 'true' : 'false'}
-          aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
-          {...register('confirmPassword')}
+          error={errors.confirmPassword?.message}
+          registration={register('confirmPassword')}
         />
 
-        {errors.confirmPassword && (
-          <p id='confirmPassword-error' role='alert' className='text-sm text-destructive'>
-            {errors.confirmPassword.message}
+        {errors.root && (
+          <p role='alert' className='text-sm text-destructive'>
+            {errors.root.message}
           </p>
         )}
-      </div>
 
-      {errors.root && (
-        <p role='alert' className='text-sm text-destructive'>
-          {errors.root.message}
-        </p>
-      )}
-
-      <button
-        type='submit'
-        disabled={isPending}
-        className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
-      >
-        {isPending ? 'Resetting...' : 'Reset password'}
-      </button>
-    </form>
+        <button
+          type='submit'
+          disabled={isPending}
+          className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
+        >
+          {isPending ? 'Resetting...' : 'Reset password'}
+        </button>
+      </form>
+    </div>
   )
 }

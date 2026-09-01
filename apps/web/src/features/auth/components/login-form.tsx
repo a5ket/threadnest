@@ -3,14 +3,19 @@
 import { useAuthSuccessHandler, useLogin } from '@/features/auth/auth.hooks'
 import { loginSchema, type LoginFormValues } from '@/features/auth/auth.schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
-import Link from 'next/link'
 import { useForm } from 'react-hook-form'
+import { AuthDivider } from './auth-divider'
+import { AuthField } from './auth-field'
+import { AuthLinkOrAction } from './auth-link-or-action'
+import { GoogleSignInButton } from './google-sign-in-button'
 
 interface LoginFormProps {
   onAuthenticated: () => void
+  onSwitchToRegister?: () => void
+  onSwitchToResetPassword?: () => void
 }
 
-export function LoginForm({ onAuthenticated }: LoginFormProps) {
+export function LoginForm({ onAuthenticated, onSwitchToRegister, onSwitchToResetPassword }: LoginFormProps) {
   const handleAuthenticated = useAuthSuccessHandler(onAuthenticated)
 
   const {
@@ -72,68 +77,65 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
   const isPending = login.isPending || isSubmitting
 
   return (
-    <form onSubmit={onSubmit} noValidate className='flex w-full max-w-sm flex-col gap-4'>
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='email' className='text-sm font-medium'>
-          Email
-        </label>
+    <div className='flex w-full flex-col gap-6'>
+      <div>
+        <h1 className='text-xl font-semibold'>Welcome back</h1>
+        <p className='text-sm text-muted-foreground'>Log in to continue to ThreadNest.</p>
+      </div>
 
-        <input
+      <GoogleSignInButton />
+
+      <AuthDivider />
+
+      <form onSubmit={onSubmit} noValidate className='flex flex-col gap-4'>
+        <AuthField
           id='email'
+          label='Email'
           type='email'
           autoComplete='email'
-          aria-invalid={errors.email ? 'true' : 'false'}
-          aria-describedby={errors.email ? 'email-error' : undefined}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
-          {...register('email')}
+          error={errors.email?.message}
+          registration={register('email')}
         />
 
-        {errors.email && (
-          <p id='email-error' role='alert' className='text-sm text-destructive'>
-            {errors.email.message}
-          </p>
-        )}
-      </div>
-
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='password' className='text-sm font-medium'>
-          Password
-        </label>
-
-        <input
+        <AuthField
           id='password'
+          label='Password'
           type='password'
           autoComplete='current-password'
-          aria-invalid={errors.password ? 'true' : 'false'}
-          aria-describedby={errors.password ? 'password-error' : undefined}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
-          {...register('password')}
+          error={errors.password?.message}
+          registration={register('password')}
+          trailing={(
+            <AuthLinkOrAction
+              href='/reset-password'
+              onAction={onSwitchToResetPassword}
+              className='text-xs text-muted-foreground hover:underline'
+            >
+              Forgot password?
+            </AuthLinkOrAction>
+          )}
         />
 
-        {errors.password && (
-          <p id='password-error' role='alert' className='text-sm text-destructive'>
-            {errors.password.message}
+        {errors.root && (
+          <p role='alert' className='text-sm text-destructive'>
+            {errors.root.message}
           </p>
         )}
 
-        <Link href='/reset-password' className='self-end text-xs text-muted-foreground hover:underline'>
-          Forgot password?
-        </Link>
-      </div>
+        <button
+          type='submit'
+          disabled={isPending}
+          className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
+        >
+          {isPending ? 'Logging in...' : 'Log in'}
+        </button>
+      </form>
 
-      {errors.root && (
-        <p role='alert' className='text-sm text-destructive'>
-          {errors.root.message}
-        </p>
-      )}
-
-      <button
-        type='submit'
-        disabled={isPending}
-        className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
-      >
-        {isPending ? 'Logging in...' : 'Log in'}
-      </button>
-    </form>
+      <p className='text-center text-sm text-muted-foreground'>
+        {'Don\'t have an account? '}
+        <AuthLinkOrAction href='/register' onAction={onSwitchToRegister} className='font-medium text-primary hover:underline'>
+          Sign up
+        </AuthLinkOrAction>
+      </p>
+    </div>
   )
 }
