@@ -9,9 +9,10 @@ import type { ChatSummary } from '../chat.types'
 interface ChatListItemProps {
   chat: ChatSummary
   onSelect: (chatId: string) => void
+  isTyping: boolean
 }
 
-export function ChatListItem({ chat, onSelect }: ChatListItemProps) {
+export function ChatListItem({ chat, onSelect, isTyping }: ChatListItemProps) {
   const queryClient = useQueryClient()
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['chats', 'list'] })
 
@@ -39,8 +40,8 @@ export function ChatListItem({ chat, onSelect }: ChatListItemProps) {
             )}
           </div>
 
-          <p className={`truncate text-sm ${chat.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-            {preview}
+          <p className={isTyping ? 'truncate text-sm font-medium text-primary' : `truncate text-sm ${chat.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+            {isTyping ? 'typing...' : preview}
           </p>
         </div>
 

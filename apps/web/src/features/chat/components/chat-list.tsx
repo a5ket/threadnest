@@ -2,6 +2,7 @@
 
 import { InfiniteScrollSentinel } from '@/common/components/infinite-scroll-sentinel'
 import { useState } from 'react'
+import { useChatListTyping } from '../chat.socket'
 import { useChatList } from '../chat.hooks'
 import type { ChatListPage } from '../chat.server'
 import { ChatListItem } from './chat-list-item'
@@ -15,6 +16,7 @@ export function ChatList({ initialPage, onSelectChat }: ChatListProps) {
   const [archived, setArchived] = useState(false)
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useChatList(archived, archived ? undefined : initialPage)
   const chats = data?.pages.flatMap((page) => page.items) ?? []
+  const typingByChat = useChatListTyping(chats.map((chat) => chat.id))
 
   return (
     <div className='flex flex-col'>
@@ -37,7 +39,7 @@ export function ChatList({ initialPage, onSelectChat }: ChatListProps) {
 
       <ul className='flex flex-col divide-y divide-border'>
         {chats.map((chat) => (
-          <ChatListItem key={chat.id} chat={chat} onSelect={onSelectChat} />
+          <ChatListItem key={chat.id} chat={chat} onSelect={onSelectChat} isTyping={typingByChat.has(chat.id)} />
         ))}
 
         {chats.length === 0 && (

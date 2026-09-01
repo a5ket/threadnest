@@ -12,9 +12,10 @@ interface MessageComposerProps {
   replyingTo: Message | null
   onCancelReply: () => void
   onSent: () => void
+  onTyping: () => void
 }
 
-export function MessageComposer({ chat, replyingTo, onCancelReply, onSent }: MessageComposerProps) {
+export function MessageComposer({ chat, replyingTo, onCancelReply, onSent, onTyping }: MessageComposerProps) {
   const [content, setContent] = useState('')
   const queryClient = useQueryClient()
 
@@ -89,7 +90,10 @@ export function MessageComposer({ chat, replyingTo, onCancelReply, onSent }: Mes
       <div className='flex items-end gap-2'>
         <textarea
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => {
+            setContent(e.target.value)
+            onTyping()
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault()

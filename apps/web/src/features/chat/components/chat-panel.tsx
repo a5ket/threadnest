@@ -4,7 +4,7 @@ import { Avatar } from '@/common/components/avatar'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { chatQueryKeys, useChat } from '../chat.hooks'
-import { useChatRoomSocket } from '../chat.socket'
+import { useChatRoomSocket, useChatTyping } from '../chat.socket'
 import { messageQueryKeys } from '../message.hooks'
 import type { MessageListPage } from '../chat.server'
 import type { Message } from '../chat.types'
@@ -23,8 +23,10 @@ export function ChatPanel({ chatId, initialMessages, onBack }: ChatPanelProps) {
   const queryClient = useQueryClient()
 
   useChatRoomSocket(chatId)
+  const { typingUserIds, notifyTyping, stopTyping } = useChatTyping(chatId)
 
   const handleSent = () => {
+    stopTyping()
     queryClient.invalidateQueries({ queryKey: messageQueryKeys.list(chatId) })
     queryClient.invalidateQueries({ queryKey: ['chats', 'list'] })
     queryClient.invalidateQueries({ queryKey: chatQueryKeys.unreadCount })
@@ -46,7 +48,12 @@ export function ChatPanel({ chatId, initialMessages, onBack }: ChatPanelProps) {
         {chat && (
           <>
             <Avatar avatarUrl={chat.otherParticipant?.profile?.avatarUrl ?? null} label={name} size={32} />
-            <span className='text-sm font-semibold'>{name}</span>
+            <div className='flex min-w-0 flex-col'>
+              <span className='truncate text-sm font-semibold'>{name}</span>
+              <span className={`text-xs font-medium text-primary ${typingUserIds.size > 0 ? '' : 'invisible'}`}>
+                typing...
+              </span>
+            </div>
           </>
         )}
       </div>
@@ -56,7 +63,7 @@ export function ChatPanel({ chatId, initialMessages, onBack }: ChatPanelProps) {
       {chat && (
         <>
           <MessageList chatId={chatId} initialPage={initialMessages} onReply={setReplyingTo} />
-          <MessageComposer chat={chat} replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} onSent={handleSent} />
+          <MessageComposer chat={chat} replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} onSent={handleSent} onTyping={notifyTyping} />
         </>
       )}
     </div>

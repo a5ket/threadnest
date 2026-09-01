@@ -17,13 +17,8 @@ export function chatRoom(chatId: string) {
   return `chat:${chatId}`
 }
 
-// Socket's 4th type param is exactly the `.data` property's type — use it instead of an
-// intersection (Socket.data is itself typed `any`, and `any & T` collapses back to `any`).
 type RealtimeSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, { userId: string }>
 
-// CORS is configured in RedisIoAdapter.createIOServer() instead of here — decorator options are
-// evaluated at class-definition time, before ConfigModule has loaded .env, so webAppUrl isn't
-// available yet at this point.
 @WebSocketGateway()
 export class RealtimeGateway implements OnGatewayConnection {
   private readonly logger = new Logger(RealtimeGateway.name)
@@ -85,5 +80,23 @@ export class RealtimeGateway implements OnGatewayConnection {
     }
 
     return { ok: true }
+  }
+
+  @SubscribeMessage('chat:typing:start')
+  onTypingStart(@ConnectedSocket() client: RealtimeSocket, @MessageBody() body: { chatId?: string }) {
+    this.broadcastTyping(client, body?.chatId, 'chat:typing:start')
+  }
+
+  @SubscribeMessage('chat:typing:stop')
+  onTypingStop(@ConnectedSocket() client: RealtimeSocket, @MessageBody() body: { chatId?: string }) {
+    this.broadcastTyping(client, body?.chatId, 'chat:typing:stop')
+  }
+
+  private broadcastTyping(client: RealtimeSocket, chatId: string | undefined, event: 'chat:typing:start' | 'chat:typing:stop') {
+    if (!chatId || !client.rooms.has(chatRoom(chatId))) {
+      return
+    }
+
+    client.to(chatRoom(chatId)).emit(event, { chatId, userId: client.data.userId })
   }
 }

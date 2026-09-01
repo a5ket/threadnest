@@ -10,10 +10,14 @@ describe('RealtimeGateway', () => {
 
   const join = jest.fn()
   const leave = jest.fn()
-  const client: any = { data: { userId: 'user-1' }, join, leave }
+  const emit = jest.fn()
+  const to = jest.fn(() => ({ emit }))
+  const rooms = new Set<string>()
+  const client: any = { data: { userId: 'user-1' }, join, leave, to, rooms }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    rooms.clear()
   })
 
   describe('onChatJoin', () => {
@@ -54,6 +58,41 @@ describe('RealtimeGateway', () => {
 
       expect(leave).toHaveBeenCalledWith(chatRoom('chat-1'))
       expect(result).toEqual({ ok: true })
+    })
+  })
+
+  describe('typing indicators', () => {
+    it('broadcasts chat:typing:start to the room, excluding the sender, when the socket has joined it', () => {
+      rooms.add(chatRoom('chat-1'))
+
+      gateway.onTypingStart(client, { chatId: 'chat-1' })
+
+      expect(to).toHaveBeenCalledWith(chatRoom('chat-1'))
+      expect(emit).toHaveBeenCalledWith('chat:typing:start', { chatId: 'chat-1', userId: 'user-1' })
+    })
+
+    it('broadcasts chat:typing:stop to the room when the socket has joined it', () => {
+      rooms.add(chatRoom('chat-1'))
+
+      gateway.onTypingStop(client, { chatId: 'chat-1' })
+
+      expect(to).toHaveBeenCalledWith(chatRoom('chat-1'))
+      expect(emit).toHaveBeenCalledWith('chat:typing:stop', { chatId: 'chat-1', userId: 'user-1' })
+    })
+
+    it('does not broadcast typing events for a room the socket never joined', () => {
+      gateway.onTypingStart(client, { chatId: 'chat-1' })
+      gateway.onTypingStop(client, { chatId: 'chat-1' })
+
+      expect(to).not.toHaveBeenCalled()
+    })
+
+    it('does not broadcast without a chatId', () => {
+      rooms.add(chatRoom('chat-1'))
+
+      gateway.onTypingStart(client, {})
+
+      expect(to).not.toHaveBeenCalled()
     })
   })
 })
