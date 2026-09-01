@@ -83,8 +83,9 @@ jobs:
       - working-directory: apps/web
         run: npx tsc --noEmit -p tsconfig.json
 
-      # No API is reachable in CI — this only needs to satisfy env.ts's startup check so the build doesn't fail before ever making a request.
+      # No API or Stripe account is reachable in CI — these only need to satisfy env.ts's startup check so the build doesn't fail before ever making a request.
       - working-directory: apps/web
         run: pnpm build
         env:
           NEXT_PUBLIC_API_URL: https://example.com
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
