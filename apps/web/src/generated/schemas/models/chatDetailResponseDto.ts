@@ -32,4 +32,9 @@ export interface ChatDetailResponseDto {
   createdAt: string
   /** The current user's access and permissions for this chat */
   access: ChatAccessContextDto
+  /**
+     * When the other participant last read this chat
+     * @nullable
+     */
+  otherParticipantLastReadAt: string | null
 }

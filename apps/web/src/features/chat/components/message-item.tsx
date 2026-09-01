@@ -10,9 +10,10 @@ interface MessageItemProps {
   chatId: string
   isOwn: boolean
   onReply: (message: Message) => void
+  seen: boolean
 }
 
-export function MessageItem({ message, chatId, isOwn, onReply }: MessageItemProps) {
+export function MessageItem({ message, chatId, isOwn, onReply, seen }: MessageItemProps) {
   const deleteMessage = useDeleteMessage()
 
   return (
@@ -60,7 +61,10 @@ export function MessageItem({ message, chatId, isOwn, onReply }: MessageItemProp
         )}
       </div>
 
-      <span className='text-[10px] text-muted-foreground'>{formatDateTime(message.createdAt)}</span>
+      <span className='text-[10px] text-muted-foreground'>
+        {formatDateTime(message.createdAt)}
+        {seen && ' · Seen'}
+      </span>
     </div>
   )
 }

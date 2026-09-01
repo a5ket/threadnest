@@ -11,12 +11,14 @@ interface MessageListProps {
   chatId: string
   initialPage?: MessageListPage
   onReply: (message: Message) => void
+  otherReadAt: string | null
 }
 
-export function MessageList({ chatId, initialPage, onReply }: MessageListProps) {
+export function MessageList({ chatId, initialPage, onReply, otherReadAt }: MessageListProps) {
   const user = useUser()
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useMessageList(chatId, initialPage)
   const messages = data?.pages.flatMap((page) => page.items) ?? []
+  const lastOwnMessageId = messages.find((message) => message.sender.id === user?.id)?.id
 
   return (
     <div className='flex min-h-0 flex-1 flex-col-reverse gap-3 overflow-y-auto p-4'>
@@ -31,7 +33,14 @@ export function MessageList({ chatId, initialPage, onReply }: MessageListProps) 
       )}
 
       {messages.map((message) => (
-        <MessageItem key={message.id} message={message} chatId={chatId} isOwn={message.sender.id === user?.id} onReply={onReply} />
+        <MessageItem
+          key={message.id}
+          message={message}
+          chatId={chatId}
+          isOwn={message.sender.id === user?.id}
+          onReply={onReply}
+          seen={message.id === lastOwnMessageId && !!otherReadAt && otherReadAt >= message.createdAt}
+        />
       ))}
     </div>
   )

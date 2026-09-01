@@ -145,10 +145,24 @@ export class ChatRepository {
     })
   }
 
-  async markRead(chatId: string, userId: string, at: Date = new Date()) {
+  // Returns whether this call actually caught the participant up on unread content, so callers
+  // can decide whether a read receipt is worth publishing - most calls are no-op re-reads.
+  async markRead(chatId: string, userId: string, at: Date = new Date()): Promise<boolean> {
+    const participant = await this.prisma.chatParticipant.findUnique({
+      where: { chatId_userId: { chatId, userId } },
+      select: { lastReadAt: true, chat: { select: { lastMessageAt: true } } }
+    })
+
+    const hadUnread = Boolean(
+      participant?.chat.lastMessageAt
+      && (!participant.lastReadAt || participant.lastReadAt < participant.chat.lastMessageAt)
+    )
+
     await this.prisma.chatParticipant.update({
       where: { chatId_userId: { chatId, userId } },
       data: { lastReadAt: at }
     })
+
+    return hadUnread
   }
 }

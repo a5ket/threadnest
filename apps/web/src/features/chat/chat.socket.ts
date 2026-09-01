@@ -3,6 +3,7 @@
 import { useSocket } from '@/common/realtime/socket-provider'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { joinChatRoom, leaveChatRoom } from './chat-room-membership'
 import { chatQueryKeys } from './chat.hooks'
 import { messageQueryKeys } from './message.hooks'
 
@@ -16,7 +17,7 @@ export function useChatRoomSocket(chatId: string) {
   useEffect(() => {
     if (!socket) return
 
-    socket.emit('chat:join', { chatId })
+    joinChatRoom(socket, chatId)
 
     const handleCreated = () => {
       void queryClient.invalidateQueries({ queryKey: messageQueryKeys.list(chatId) })
@@ -28,7 +29,7 @@ export function useChatRoomSocket(chatId: string) {
 
     return () => {
       socket.off('message:created', handleCreated)
-      socket.emit('chat:leave', { chatId })
+      leaveChatRoom(socket, chatId)
     }
   }, [socket, chatId, queryClient])
 }
@@ -156,21 +157,77 @@ export function useChatTyping(chatId: string) {
   return { typingUserIds, notifyTyping, stopTyping }
 }
 
-// Joins every listed chat's room so typing shows up in a list of chats, not just an open one.
-export function useChatListTyping(chatIds: string[]) {
+// Joins every listed chat's room and keeps the chat list (preview, order, unread badge) in sync
+// with messages arriving in chats that aren't the one currently open.
+export function useChatListRoomsSocket(chatIds: string[]) {
   const socket = useSocket()
+  const queryClient = useQueryClient()
   const key = chatIds.join(',')
 
   useEffect(() => {
     if (!socket) return
 
     const ids = key ? key.split(',') : []
-    ids.forEach((id) => socket.emit('chat:join', { chatId: id }))
+    ids.forEach((id) => joinChatRoom(socket, id))
+
+    const handleCreated = () => {
+      void queryClient.invalidateQueries({ queryKey: ['chats', 'list'] })
+      void queryClient.invalidateQueries({ queryKey: chatQueryKeys.unreadCount })
+    }
+
+    socket.on('message:created', handleCreated)
 
     return () => {
-      ids.forEach((id) => socket.emit('chat:leave', { chatId: id }))
+      socket.off('message:created', handleCreated)
+      ids.forEach((id) => leaveChatRoom(socket, id))
     }
-  }, [socket, key])
+  }, [socket, key, queryClient])
+}
 
+// Typing state only - room membership for the list is owned by useChatListRoomsSocket.
+export function useChatListTyping(chatIds: string[]) {
   return useTypingTracker(chatIds)
+}
+
+interface ChatReadPayload {
+  chatId: string
+  userId: string
+  at: string
+}
+
+// Keyed by chatId (like the typing tracker) rather than reset-on-change, so switching chats never
+// needs a setState-in-effect just to clear stale state - each chat simply reads its own key.
+// restReadAt is the initial value from the chat detail response; live events only ever move it
+// forward from there, so the two are combined by taking whichever is more recent.
+export function useOtherParticipantReadAt(chatId: string, otherParticipantId: string | undefined, restReadAt: string | null): string | null {
+  const socket = useSocket()
+  const [liveReadAtByChat, setLiveReadAtByChat] = useState<Map<string, string>>(new Map())
+
+  useEffect(() => {
+    if (!socket || !otherParticipantId) return
+
+    const handleRead = (payload: ChatReadPayload) => {
+      if (payload.chatId !== chatId || payload.userId !== otherParticipantId) return
+
+      setLiveReadAtByChat((prev) => {
+        const current = prev.get(chatId)
+        if (current && current >= payload.at) return prev
+
+        const next = new Map(prev)
+        next.set(chatId, payload.at)
+        return next
+      })
+    }
+
+    socket.on('chat:read', handleRead)
+
+    return () => {
+      socket.off('chat:read', handleRead)
+    }
+  }, [socket, chatId, otherParticipantId])
+
+  const liveReadAt = liveReadAtByChat.get(chatId) ?? null
+
+  if (liveReadAt && (!restReadAt || liveReadAt > restReadAt)) return liveReadAt
+  return restReadAt
 }

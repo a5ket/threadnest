@@ -32,9 +32,12 @@ export class ChatPresenter {
   }
 
   toDetailView(chat: ChatSummaryRaw, viewerId: string, ctx: ChatAccessContext) {
+    const other = chat.participants.find((p) => p.userId !== viewerId)
+
     return {
       ...this.toSummaryView(chat, viewerId),
       access: ctx,
+      otherParticipantLastReadAt: other?.lastReadAt ?? null,
     }
   }
 }

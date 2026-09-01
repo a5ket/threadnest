@@ -3,6 +3,7 @@ import { EventBus } from 'src/event/event-bus'
 import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
 import { ChatPolicy } from '../chat.policy'
 import { ChatRepository } from '../chat.repository'
+import { ChatReadEvent } from '../events/chat-read.event'
 import { MessageNotFoundException } from '../exceptions/message-not-found.exception'
 import { ReplyTargetNotInChatException } from '../exceptions/reply-target-not-in-chat.exception'
 import { MessageCreateDto } from './dto/message-create.dto'
@@ -27,7 +28,12 @@ export class MessageService {
 
     const me = subject.participants.find((p) => p.userId === actorUserId)
 
-    await this.chatsRepo.markRead(chatId, actorUserId)
+    const at = new Date()
+    const hadUnread = await this.chatsRepo.markRead(chatId, actorUserId, at)
+
+    if (hadUnread) {
+      void this.eventBus.publish(new ChatReadEvent({ chatId, userId: actorUserId, at }))
+    }
 
     const page = await this.messagesRepo.list(chatId, me?.clearedAt ?? null, query)
 
@@ -49,11 +55,15 @@ export class MessageService {
     const message = await this.messagesRepo.create(chatId, actorUserId, dto)
 
     await this.chatsRepo.touchLastMessageAt(chatId, message.createdAt)
-    await this.chatsRepo.markRead(chatId, actorUserId, message.createdAt)
+    const hadUnread = await this.chatsRepo.markRead(chatId, actorUserId, message.createdAt)
 
     const view = this.presenter.toView(message)
 
     void this.eventBus.publish(new MessageCreatedEvent({ chatId, message: view }))
+
+    if (hadUnread) {
+      void this.eventBus.publish(new ChatReadEvent({ chatId, userId: actorUserId, at: message.createdAt }))
+    }
 
     return view
   }

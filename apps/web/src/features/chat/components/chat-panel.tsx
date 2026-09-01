@@ -4,7 +4,7 @@ import { Avatar } from '@/common/components/avatar'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { chatQueryKeys, useChat } from '../chat.hooks'
-import { useChatRoomSocket, useChatTyping } from '../chat.socket'
+import { useChatRoomSocket, useChatTyping, useOtherParticipantReadAt } from '../chat.socket'
 import { messageQueryKeys } from '../message.hooks'
 import type { MessageListPage } from '../chat.server'
 import type { Message } from '../chat.types'
@@ -24,6 +24,7 @@ export function ChatPanel({ chatId, initialMessages, onBack }: ChatPanelProps) {
 
   useChatRoomSocket(chatId)
   const { typingUserIds, notifyTyping, stopTyping } = useChatTyping(chatId)
+  const otherReadAt = useOtherParticipantReadAt(chatId, chat?.otherParticipant?.id, chat?.otherParticipantLastReadAt ?? null)
 
   const handleSent = () => {
     stopTyping()
@@ -62,7 +63,7 @@ export function ChatPanel({ chatId, initialMessages, onBack }: ChatPanelProps) {
 
       {chat && (
         <>
-          <MessageList chatId={chatId} initialPage={initialMessages} onReply={setReplyingTo} />
+          <MessageList chatId={chatId} initialPage={initialMessages} onReply={setReplyingTo} otherReadAt={otherReadAt} />
           <MessageComposer chat={chat} replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} onSent={handleSent} onTyping={notifyTyping} />
         </>
       )}

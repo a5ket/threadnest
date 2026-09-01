@@ -86,7 +86,8 @@ export const ChatStartResponse = zod.object({
       canSendMessage: zod.boolean().describe('Whether the current user can send a message in this chat'),
       youBlockedThem: zod.boolean().describe('Whether the current user has blocked the other participant'),
       blockedByThem: zod.boolean().describe('Whether the other participant has blocked the current user')
-    }).describe('The current user\'s access and permissions for this chat')
+    }).describe('The current user\'s access and permissions for this chat'),
+    otherParticipantLastReadAt: zod.string().nullable().describe('When the other participant last read this chat')
   })
 })
 
@@ -134,7 +135,8 @@ export const ChatGetResponse = zod.object({
       canSendMessage: zod.boolean().describe('Whether the current user can send a message in this chat'),
       youBlockedThem: zod.boolean().describe('Whether the current user has blocked the other participant'),
       blockedByThem: zod.boolean().describe('Whether the other participant has blocked the current user')
-    }).describe('The current user\'s access and permissions for this chat')
+    }).describe('The current user\'s access and permissions for this chat'),
+    otherParticipantLastReadAt: zod.string().nullable().describe('When the other participant last read this chat')
   })
 })
 
