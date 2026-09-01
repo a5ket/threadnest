@@ -20,7 +20,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
 
   return (
     <div className='flex h-full flex-col'>
-      <Link href='/chats' className='border-b border-border p-3 text-sm text-muted-foreground hover:underline'>
+      <Link href='/chats' className='border-b border-border p-3 text-sm text-muted-foreground hover:underline lg:hidden'>
         ← Back to chats
       </Link>
 

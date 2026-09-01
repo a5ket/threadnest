@@ -1,13 +1,7 @@
-import { ChatListPageComponent } from '@/features/chat/components/chat-list-page'
-import { getChatsServer } from '@/features/chat/chat.server'
-
-export default async function ChatsPage() {
-  const page = await getChatsServer()
-
+export default function ChatsPage() {
   return (
-    <div className='flex h-full flex-col'>
-      <h1 className='border-b border-border p-4 text-lg font-semibold'>Chats</h1>
-      <ChatListPageComponent initialPage={page} />
+    <div className='flex h-full items-center justify-center p-8 text-center text-sm text-muted-foreground'>
+      Select a chat to start messaging.
     </div>
   )
 }

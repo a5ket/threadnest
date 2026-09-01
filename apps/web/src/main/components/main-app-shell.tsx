@@ -7,7 +7,6 @@ import { AppRightrail } from '../../common/components/app-rightrail'
 import { AppShell } from '../../common/components/app-shell'
 import { RightRailProvider } from '../../common/components/right-rail-context'
 import { SidebarDrawer } from '../../common/components/sidebar-drawer'
-import { SiteFooter } from '../../common/components/site-footer'
 import { MainHeader } from './main-header'
 import { MainSidebar } from './main-sidebar'
 
@@ -41,14 +40,7 @@ export function MainAppShell({ children, popularNests }: MainAppShellProps) {
                 {sidebar}
               </aside>
             )}
-            rightRail={(
-              <aside className='hidden w-80 shrink-0 overflow-y-auto border-l lg:flex lg:flex-col'>
-                <div className='flex-1'>
-                  <AppRightrail popularNests={popularNests} />
-                </div>
-                <SiteFooter />
-              </aside>
-            )}
+            rightRail={<AppRightrail popularNests={popularNests} />}
           >
             {children}
           </AppShell>
