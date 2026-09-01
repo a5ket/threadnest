@@ -29,7 +29,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
         })
       }
 
-      // Any field beyond code/message (e.g. ValidationException's `fields`, UserSuspendedException's `reason`) passes through as-is.
+      // Any field beyond code/message (e.g. ValidationException's `fields`,
+      // UserSuspendedException's `reason`) passes through as-is.
       const { code, message, ...extra } = body as Record<string, unknown>
 
       return response.status(status).json({

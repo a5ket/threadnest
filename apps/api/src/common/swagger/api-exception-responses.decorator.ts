@@ -10,17 +10,14 @@ type ExceptionExample = {
   response: Record<string, unknown>
 }
 
-// @nestjs/swagger's own @ApiResponse concatenates description/examples every time it's called for
-// the same status on the same route instead of overwriting, so composing decorators that each add
-// exceptions (e.g. @Authenticated() plus a route's own @ApiExceptionResponses) ended up repeating
-// the same text. We keep our own de-duped state per route and write the merged @ApiResponse metadata
-// directly, replacing each status entry instead of concatenating into it.
+// @nestjs/swagger's @ApiResponse concatenates repeated calls for the same status instead of
+// overwriting, so we track de-duped state per route and replace each status entry ourselves.
 const EXCEPTION_RESPONSES_METADATA = Symbol('apiExceptionResponses')
 
 export function ApiExceptionResponses(...exceptionTypes: ExceptionConstructor[]) {
   return (target: object, key?: string | symbol, descriptor?: PropertyDescriptor) => {
-    const container: object = descriptor?.value ?? target
-    const responses: Map<number, Map<string, ExceptionExample>> = Reflect.getMetadata(EXCEPTION_RESPONSES_METADATA, container) ?? new Map()
+    const container = (descriptor?.value ?? target) as object
+    const responses: Map<number, Map<string, ExceptionExample>> = (Reflect.getMetadata(EXCEPTION_RESPONSES_METADATA, container) as Map<number, Map<string, ExceptionExample>> | undefined) ?? new Map<number, Map<string, ExceptionExample>>()
 
     for (const ExceptionType of exceptionTypes) {
       const exception = new ExceptionType()
@@ -38,7 +35,8 @@ export function ApiExceptionResponses(...exceptionTypes: ExceptionConstructor[])
 
     Reflect.defineMetadata(EXCEPTION_RESPONSES_METADATA, responses, container)
 
-    const apiResponses = { ...Reflect.getMetadata(DECORATORS.API_RESPONSE, container) }
+    const existingApiResponses = Reflect.getMetadata(DECORATORS.API_RESPONSE, container) as Record<string, unknown> | undefined
+    const apiResponses: Record<string, unknown> = { ...existingApiResponses }
 
     for (const [status, examplesByCode] of responses) {
       const examples = Array.from(examplesByCode.values())

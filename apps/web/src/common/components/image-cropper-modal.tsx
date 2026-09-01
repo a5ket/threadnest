@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface ImageCropperModalProps {
   file: File
@@ -20,18 +20,17 @@ export function ImageCropperModal({ file, outputSize, shape = 'circle', viewport
   const imgRef = useRef<HTMLImageElement>(null)
   const dragState = useRef<{ startX: number, startY: number, centerFracX: number, centerFracY: number } | null>(null)
 
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [natural, setNatural] = useState<{ width: number, height: number } | null>(null)
   const [zoom, setZoom] = useState(1)
   const [centerFrac, setCenterFrac] = useState({ x: 0.5, y: 0.5 })
   const [isExporting, setIsExporting] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
 
+  const imageUrl = useMemo(() => URL.createObjectURL(file), [file])
+
   useEffect(() => {
-    const url = URL.createObjectURL(file)
-    setImageUrl(url)
-    return () => URL.revokeObjectURL(url)
-  }, [file])
+    return () => URL.revokeObjectURL(imageUrl)
+  }, [imageUrl])
 
   const stageSize = viewportSize * STAGE_RATIO
   const stageOffset = (stageSize - viewportSize) / 2
@@ -42,7 +41,7 @@ export function ImageCropperModal({ file, outputSize, shape = 'circle', viewport
   // the image's own natural aspect ratio, so the image itself can never appear stretched.
   const dispSizeAt = (z: number) => ({
     w: natural ? natural.width * baseScale * z : 0,
-    h: natural ? natural.height * baseScale * z : 0,
+    h: natural ? natural.height * baseScale * z : 0
   })
 
   const { w: dispW, h: dispH } = dispSizeAt(zoom)
@@ -53,7 +52,7 @@ export function ImageCropperModal({ file, outputSize, shape = 'circle', viewport
     const marginY = h > 0 ? viewportSize / (2 * h) : 0.5
     return {
       x: Math.min(1 - marginX, Math.max(marginX, frac.x)),
-      y: Math.min(1 - marginY, Math.max(marginY, frac.y)),
+      y: Math.min(1 - marginY, Math.max(marginY, frac.y))
     }
   }
 
@@ -81,7 +80,7 @@ export function ImageCropperModal({ file, outputSize, shape = 'circle', viewport
 
     setCenterFrac(clampFrac({
       x: dragState.current.centerFracX - dx / dispW,
-      y: dragState.current.centerFracY - dy / dispH,
+      y: dragState.current.centerFracY - dy / dispH
     }, dispW, dispH))
   }
 
@@ -160,7 +159,7 @@ export function ImageCropperModal({ file, outputSize, shape = 'circle', viewport
               top: `${stageOffset}px`,
               borderRadius: shape === 'circle' ? '9999px' : '8px',
               boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
-              outline: '1px solid rgba(255, 255, 255, 0.7)',
+              outline: '1px solid rgba(255, 255, 255, 0.7)'
             }}
           />
         </div>

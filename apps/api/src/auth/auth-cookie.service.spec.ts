@@ -23,7 +23,9 @@ describe('AuthCookieService', () => {
       path: '/'
     }
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(response.cookie).toHaveBeenCalledWith(ACCESS_TOKEN_COOKIE, 'access-token', options)
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(response.cookie).toHaveBeenCalledWith(REFRESH_TOKEN_COOKIE, 'refresh-token', options)
   })
 
@@ -48,7 +50,9 @@ describe('AuthCookieService', () => {
   it('clears access and refresh cookies', () => {
     service.clearTokens(response)
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(response.clearCookie).toHaveBeenCalledWith(ACCESS_TOKEN_COOKIE, expect.any(Object))
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(response.clearCookie).toHaveBeenCalledWith(REFRESH_TOKEN_COOKIE, expect.any(Object))
   })
 })

@@ -4,7 +4,8 @@ import { UserSuspensionCreateDto } from './dto/user-suspension-create.dto'
 import { CannotSuspendYourselfException } from './exceptions/cannot-suspend-yourself.exception'
 import { UserSuspensionRepository } from './user-suspension.repository'
 
-// Pure user-domain CRUD — no awareness of platform roles. Callers (the platform controller, auth login/refresh) are responsible for their own authorization.
+// Pure user-domain CRUD — no awareness of platform roles. Callers (the platform
+// controller, auth login/refresh) are responsible for their own authorization.
 @Injectable()
 export class UserSuspensionService {
   constructor(

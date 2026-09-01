@@ -26,7 +26,6 @@ export class NestPolicy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async assertCanViewNestByAccessContext(accessContext: NestAccessContext) {
     if (!accessContext.canViewNest) {
       throw new InsufficientPermissionsException()

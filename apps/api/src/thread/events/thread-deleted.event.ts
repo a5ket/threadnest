@@ -11,7 +11,8 @@ export class ThreadDeletedEvent extends BaseEvent {
       nestName: string
       authorId: string
       deletedById: string
-      // Null on self-delete (authorId === deletedById) — no "your content was removed" notification for removing your own thread.
+      // Null on self-delete (authorId === deletedById) — no "your content was removed"
+      // notification for removing your own thread.
       recipientId: string | null
     }
   ) { super() }

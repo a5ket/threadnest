@@ -43,7 +43,8 @@ export class PlatformRoleGrantService {
     return this.roleGrant.createWithoutActor(user.id, dto)
   }
 
-  // Revokes the current active grant and creates the new one atomically, so a failure never leaves the user with no role at all.
+  // Revokes the current active grant and creates the new one atomically, so a failure
+  // never leaves the user with no role at all.
   async changeRole(userId: string, actorUserId: string, dto: PlatformRoleGrantCreateDto) {
     await this.policy.assertIsAdmin(actorUserId)
     await this.user.assertUserExists(userId)

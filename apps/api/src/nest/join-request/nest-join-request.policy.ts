@@ -55,7 +55,6 @@ export class NestJoinRequestPolicy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async assertCanCancel(request: NestJoinRequestPolicySubject, actorUserId: string) {
     if (request.userId !== actorUserId) {
       throw new NestJoinRequestNotFoundException()
@@ -70,7 +69,6 @@ export class NestJoinRequestPolicy {
     await this.assertCanManageNestJoinRequests(nest.id, actorUserId)
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async assertCanGetAsUser(request: NestJoinRequestPolicySubject, actorUserId: string) {
     if (request.userId !== actorUserId) {
       throw new NestJoinRequestNotFoundException()

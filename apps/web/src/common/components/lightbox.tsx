@@ -50,7 +50,10 @@ export function Lightbox({ images, index, onIndexChange, onClose }: LightboxProp
       <div className='absolute inset-0 flex items-center justify-center'>
         <button
           type='button'
-          onClick={(e) => { e.stopPropagation(); onClose() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            onClose()
+          }}
           aria-label='Close'
           className='absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20'
         >
@@ -70,7 +73,10 @@ export function Lightbox({ images, index, onIndexChange, onClose }: LightboxProp
         {hasMultiple && (
           <button
             type='button'
-            onClick={(e) => { e.stopPropagation(); onIndexChange((index - 1 + images.length) % images.length) }}
+            onClick={(e) => {
+              e.stopPropagation()
+              onIndexChange((index - 1 + images.length) % images.length)
+            }}
             aria-label='Previous image'
             className='absolute left-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 sm:left-4'
           >
@@ -91,7 +97,10 @@ export function Lightbox({ images, index, onIndexChange, onClose }: LightboxProp
         {hasMultiple && (
           <button
             type='button'
-            onClick={(e) => { e.stopPropagation(); onIndexChange((index + 1) % images.length) }}
+            onClick={(e) => {
+              e.stopPropagation()
+              onIndexChange((index + 1) % images.length)
+            }}
             aria-label='Next image'
             className='absolute right-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 sm:right-4'
           >

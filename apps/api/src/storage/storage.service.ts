@@ -19,9 +19,8 @@ import { StorageConfig } from './storage.config'
 // attachments, which can live inside private nests) stays private and must go through getPresignedUrl.
 const PUBLIC_READ_PREFIXES = ['avatars/*', 'nests/*']
 
-// Signed with an hour-aligned timestamp (not "now") so repeated calls for the same key within the
-// same hour produce a byte-identical URL — that lets the browser's HTTP cache actually work, instead
-// of treating every re-fetch of the same image as a new resource because the signature changed.
+// Signed with an hour-aligned timestamp so repeated calls within the hour reuse the same URL,
+// letting the browser cache it instead of re-fetching on every signature change.
 const PRESIGN_EXPIRES_IN_SECONDS = 25 * 60 * 60
 
 @Injectable()

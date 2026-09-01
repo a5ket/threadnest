@@ -74,7 +74,6 @@ export class NestInvitePolicy {
     await this.assertCanManageNestInvites(invite.nestId, actorUserId)
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async assertCanGetAsUser(invite: NestInvitePolicySubject, actorUserId: string) {
     if (invite.userId !== actorUserId) {
       throw new NestInviteNotFoundException()
@@ -105,7 +104,6 @@ export class NestInvitePolicy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async assertCanDecline(invite: NestInvitePolicySubject, actorUserId: string) {
     if (invite.userId !== actorUserId) {
       throw new NestInviteNotFoundException()

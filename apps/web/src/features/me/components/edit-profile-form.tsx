@@ -7,7 +7,7 @@ import { updateProfileSchema, type UpdateProfileFormValues } from '@/features/me
 import { useRemoveAvatar, useUpdateMeUser, useUpdateProfile, useUploadAvatar } from '@/features/me/me.hooks'
 import type { UserProfileResponseDto } from '@/generated/api/models'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 interface EditProfileFormProps {
@@ -35,18 +35,16 @@ export function EditProfileForm({ profile, onSaved, onCancel }: EditProfileFormP
   // Avatar changes are staged locally and only committed to the server when the whole form is saved.
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null)
   const [pendingAvatarRemoved, setPendingAvatarRemoved] = useState(false)
-  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null)
+
+  const pendingPreviewUrl = useMemo(
+    () => pendingAvatarFile ? URL.createObjectURL(pendingAvatarFile) : null,
+    [pendingAvatarFile]
+  )
 
   useEffect(() => {
-    if (!pendingAvatarFile) {
-      setPendingPreviewUrl(null)
-      return
-    }
-
-    const url = URL.createObjectURL(pendingAvatarFile)
-    setPendingPreviewUrl(url)
-    return () => URL.revokeObjectURL(url)
-  }, [pendingAvatarFile])
+    if (!pendingPreviewUrl) return
+    return () => URL.revokeObjectURL(pendingPreviewUrl)
+  }, [pendingPreviewUrl])
 
   const previewUrl = pendingAvatarFile
     ? pendingPreviewUrl

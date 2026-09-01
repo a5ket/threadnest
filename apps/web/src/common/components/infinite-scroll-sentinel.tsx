@@ -7,10 +7,8 @@ interface InfiniteScrollSentinelProps {
   disabled?: boolean
 }
 
-// IntersectionObserver's default root (the viewport) doesn't account for clipping by an
-// intermediate `overflow-hidden` ancestor above the actual scroll container, so it can
-// report the sentinel as never intersecting even while it's visibly on screen. Walk up
-// to the nearest scrollable ancestor and use that as root instead.
+// IntersectionObserver's default root (the viewport) misses intersections clipped by an
+// overflow-hidden ancestor, so walk up to the nearest scrollable ancestor and use that instead.
 function findScrollParent(node: HTMLElement | null): HTMLElement | null {
   let current = node?.parentElement ?? null
 

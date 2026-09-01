@@ -138,7 +138,8 @@ describe('NestAccess', () => {
   })
 
   describe('level-gated permissions', () => {
-    // Each flag must read its own settings field — a copy-paste mix-up between two similarly-named min*Level fields wouldn't be caught by testing just one.
+    // Each flag must read its own settings field — a copy-paste mix-up between two
+    // similarly-named min*Level fields wouldn't be caught by testing just one.
     const LEVEL_GATED_FLAGS: [keyof NestAccessContext, keyof NestSettingsRecord][] = [
       ['canCreateThread', 'minThreadCreationLevel'],
       ['canCreateComment', 'minCommentCreationLevel'],
