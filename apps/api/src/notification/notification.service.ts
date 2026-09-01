@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { NotificationType } from 'generated/prisma/enums'
+import { EventBus } from 'src/event/event-bus'
+import { NotificationCreatedEvent } from 'src/realtime/events/notification-created.event'
 import { NotificationQueryDto } from './dto/notification.query.dto'
 import { NotificationPresenter } from './notification.presenter'
 import { NotificationRepository } from './notification.repository'
@@ -9,7 +11,8 @@ import { NotificationDataByType } from './types/notification-data'
 export class NotificationService {
   constructor(
     private readonly notifications: NotificationRepository,
-    private readonly presenter: NotificationPresenter
+    private readonly presenter: NotificationPresenter,
+    private readonly eventBus: EventBus
   ) { }
 
   async create<T extends NotificationType>(
@@ -20,7 +23,11 @@ export class NotificationService {
     data: NotificationDataByType[T]
   ) {
     const notification = await this.notifications.create(userId, actorUserId, nestId, type, data)
-    return this.presenter.toResponseView(notification)
+    const view = this.presenter.toResponseView(notification)
+
+    void this.eventBus.publish(new NotificationCreatedEvent({ userId, notification: view }))
+
+    return view
   }
 
   async listForUser(userId: string, query: NotificationQueryDto) {

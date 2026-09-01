@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { EventModule } from 'src/event/event.module'
 import { PrismaModule } from 'src/prisma/prisma.module'
 import { UserModule } from 'src/user/user.module'
 import { NotificationPresenter } from './notification.presenter'
@@ -13,7 +14,7 @@ import { ReportResolvedNotificationSubscriber } from './subscribers/report-resol
 import { UserBannedNotificationSubscriber } from './subscribers/user-banned.subscriber'
 
 @Module({
-  imports: [PrismaModule, UserModule],
+  imports: [PrismaModule, UserModule, EventModule],
   providers: [
     NotificationRepository,
     NotificationPresenter,

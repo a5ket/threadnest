@@ -1,4 +1,5 @@
 import { NotificationType } from 'generated/prisma/enums'
+import { createMockEventBus } from 'test/factories/event-bus.mock-factory'
 import { createMockNotificationPresenter } from 'test/factories/notification-presenter.mock-factory'
 import { createMockNotificationRepository } from 'test/factories/notification-repository.mock-factory'
 import { createNotificationSummary } from 'test/factories/notification-summary.factory'
@@ -7,10 +8,12 @@ import { NotificationService } from './notification.service'
 describe('NotificationService', () => {
   const notificationsRepo = createMockNotificationRepository()
   const presenter = createMockNotificationPresenter()
+  const eventBus = createMockEventBus()
 
   const service = new NotificationService(
     notificationsRepo as any,
     presenter as any,
+    eventBus,
   )
 
   beforeEach(() => {
@@ -31,6 +34,22 @@ describe('NotificationService', () => {
       expect(notificationsRepo.create).toHaveBeenCalledWith('user-1', 'actor-1', 'nest-1', NotificationType.THREAD_REPLY, data)
       expect(presenter.toResponseView).toHaveBeenCalledWith(notification)
       expect(result).toBe(view)
+    })
+
+    it('publishes a NotificationCreatedEvent for the recipient', async () => {
+      const notification = createNotificationSummary()
+      const view = { id: 'view-1' }
+      const data = { nestSlug: 'nest-slug', nestName: 'Nest', threadSlug: 'thread-slug', threadTitle: 'Thread title', commentId: 'comment-1', commentExcerpt: 'hello' }
+
+      notificationsRepo.create.mockResolvedValue(notification)
+      presenter.toResponseView.mockReturnValue(view as any)
+
+      await service.create('user-1', 'actor-1', 'nest-1', NotificationType.THREAD_REPLY, data)
+
+      expect(eventBus.publish).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'notification:created',
+        props: { userId: 'user-1', notification: view }
+      }))
     })
   })
 

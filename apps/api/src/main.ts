@@ -6,6 +6,7 @@ import { Logger } from 'nestjs-pino'
 import { AppModule } from './app.module'
 import { ValidationException } from './common/exceptions/validation.exception'
 import { AppConfig } from './app.config'
+import { RedisIoAdapter } from './realtime/redis-io.adapter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true })
@@ -31,6 +32,10 @@ async function bootstrap() {
     .build()
   const documentFactory = () => SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('docs', app, documentFactory)
+
+  const redisIoAdapter = new RedisIoAdapter(app)
+  await redisIoAdapter.connectToRedis()
+  app.useWebSocketAdapter(redisIoAdapter)
 
   const port = configService.getOrThrow('port', { infer: true })
 
