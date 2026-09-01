@@ -1,0 +1,63 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy-api:
+    needs: test
+    if: needs.test.result == 'success' && (needs.test.outputs.api-changed == 'true' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/threadnest/apps/api
+            git pull origin main
+            pnpm install --frozen-lockfile
+            npx prisma generate
+            npx prisma db push
+            pnpm build
+            pm2 restart threadnest-api
+
+  deploy-web:
+    needs: [test, deploy-api]
+    # deploy-api may legitimately be "skipped" (api didn't change) — that must still count as green here, so the default implicit success() check is overridden.
+    if: |
+      always() &&
+      needs.test.result == 'success' &&
+      (needs.test.outputs.web-changed == 'true' || github.event_name == 'workflow_dispatch') &&
+      (needs.deploy-api.result == 'success' || needs.deploy-api.result == 'skipped')
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install -g vercel
+
+      - name: Pull Vercel environment
+        working-directory: apps/web
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        working-directory: apps/web
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        working-directory: apps/web
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

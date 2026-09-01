@@ -1,0 +1,90 @@
+name: Test
+
+on:
+  workflow_call:
+    outputs:
+      api-changed:
+        value: ${{ jobs.changes.outputs.api }}
+      web-changed:
+        value: ${{ jobs.changes.outputs.web }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+            web:
+              - 'apps/web/**'
+
+  test-api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/api/pnpm-lock.yaml
+
+      - working-directory: apps/api
+        run: pnpm install --frozen-lockfile
+
+      - working-directory: apps/api
+        run: npx prisma generate
+
+      - working-directory: apps/api
+        run: pnpm lint
+
+      - working-directory: apps/api
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - working-directory: apps/api
+        run: pnpm test
+
+  test-web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+
+      - working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+
+      - working-directory: apps/web
+        run: pnpm lint
+
+      - working-directory: apps/web
+        run: npx tsc --noEmit -p tsconfig.json
+
+      # No API is reachable in CI — this only needs to satisfy env.ts's startup check so the build doesn't fail before ever making a request.
+      - working-directory: apps/web
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: https://example.com
