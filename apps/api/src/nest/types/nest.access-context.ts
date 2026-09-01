@@ -10,7 +10,12 @@ export interface NestAccessContext {
   visibility: NestVisibility
   joinPolicy: NestJoinPolicy
 
+  isPaywalled: boolean
+  paywallPriceAmountCents: number | null
+  hasActiveSubscription: boolean
+
   canViewNest: boolean
+  canViewNestMetadata: boolean
 
   canCreateThread: boolean
   canCreateComment: boolean

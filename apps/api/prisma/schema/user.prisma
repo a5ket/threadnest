@@ -67,6 +67,8 @@ model User {
   chatParticipants ChatParticipant[]
   sentMessages     Message[]         @relation("MessageSender")
   deletedMessages  Message[]         @relation("MessageDeletedBy")
+
+  nestSubscriptions NestSubscription[]
 }
 
 model UserProfile {

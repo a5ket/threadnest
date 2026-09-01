@@ -1,0 +1,18 @@
+import { Injectable } from '@nestjs/common'
+import { InsufficientPermissionsException } from 'src/common/exceptions/insufficient-permissions.exception'
+import { NestAccess } from '../nest.access'
+
+@Injectable()
+export class NestPaywallPolicy {
+  constructor(
+    private readonly nestAccess: NestAccess
+  ) { }
+
+  async assertCanManage(nestId: string, actorUserId: string) {
+    const access = await this.nestAccess.getContext(nestId, actorUserId)
+
+    if (!access.isOwner) {
+      throw new InsufficientPermissionsException()
+    }
+  }
+}

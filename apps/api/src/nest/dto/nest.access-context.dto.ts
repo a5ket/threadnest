@@ -23,8 +23,20 @@ export class NestAccessContextDto {
   @ApiProperty({ description: 'Nest join policy', enum: NestJoinPolicy })
   joinPolicy!: NestJoinPolicy
 
+  @ApiProperty({ description: 'Whether the nest requires a subscription to view' })
+  isPaywalled!: boolean
+
+  @ApiProperty({ description: 'Subscription price in cents, if the nest is paywalled', nullable: true })
+  paywallPriceAmountCents!: number | null
+
+  @ApiProperty({ description: 'Whether the current user has an active subscription to this nest' })
+  hasActiveSubscription!: boolean
+
   @ApiProperty({ description: 'Whether the current user can view the nest' })
   canViewNest!: boolean
+
+  @ApiProperty({ description: 'Whether the current user can view the nest\'s basic info (description, member/thread counts) even if they can\'t view its content' })
+  canViewNestMetadata!: boolean
 
   @ApiProperty({ description: 'Whether the current user can create a thread' })
   canCreateThread!: boolean

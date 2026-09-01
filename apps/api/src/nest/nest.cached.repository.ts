@@ -40,6 +40,14 @@ export class NestCachedRepository extends NestRepository {
     return this.inner.adjustMemberCount(nestId, delta, db)
   }
 
+  adjustBalanceCents(nestId: string, delta: number, db?: Database) {
+    return this.inner.adjustBalanceCents(nestId, delta, db)
+  }
+
+  getBalanceCents(nestId: string) {
+    return this.inner.getBalanceCents(nestId)
+  }
+
   async delete(nestId: string, actorUserId: string) {
     await this.inner.delete(nestId, actorUserId)
     await this.cache.delete(this.deletedAtCacheKey(nestId))

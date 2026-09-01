@@ -26,8 +26,19 @@ export interface NestAccessContextDto {
   visibility: NestAccessContextDtoVisibility
   /** Nest join policy */
   joinPolicy: NestAccessContextDtoJoinPolicy
+  /** Whether the nest requires a subscription to view */
+  isPaywalled: boolean
+  /**
+     * Subscription price in cents, if the nest is paywalled
+     * @nullable
+     */
+  paywallPriceAmountCents: number | null
+  /** Whether the current user has an active subscription to this nest */
+  hasActiveSubscription: boolean
   /** Whether the current user can view the nest */
   canViewNest: boolean
+  /** Whether the current user can view the nest's basic info (description, member/thread counts) even if they can't view its content */
+  canViewNestMetadata: boolean
   /** Whether the current user can create a thread */
   canCreateThread: boolean
   /** Whether the current user can create a comment */

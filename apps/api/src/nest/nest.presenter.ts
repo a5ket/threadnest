@@ -50,7 +50,7 @@ export class NestPresenter {
       slug: nest.slug,
       access,
       isDeleted: Boolean(nest.deletedAt),
-      ...(access.canViewNest && {
+      ...(access.canViewNestMetadata && {
         description: nest.description,
         iconUrl: this.resolveIconUrl(nest.iconKey),
         memberCount: nest.memberCount,

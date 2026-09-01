@@ -7,8 +7,9 @@ model Nest {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  memberCount Int @default(0)
-  threadCount Int @default(0)
+  memberCount  Int @default(0)
+  threadCount  Int @default(0)
+  balanceCents Int @default(0)
 
   deletedAt         DateTime?
   deletedById       String?
@@ -27,6 +28,11 @@ model Nest {
   actionLogs          NestActionLog[]
   platformReports     PlatformReport[]
   platformActionLogs  PlatformActionLog[]
+
+  paywall       NestPaywall?
+  subscriptions NestSubscription[]
+  ledgerEntries NestLedgerEntry[]
+  payoutAccount NestPayoutAccount?
 
   deletedBy User? @relation(fields: [deletedById], references: [id], onDelete: SetNull)
 }
@@ -213,4 +219,73 @@ enum NestActionType {
   REPORT_RESOLVED
   SETTINGS_UPDATED
   OWNERSHIP_TRANSFERRED
+}
+
+model NestPaywall {
+  nestId    String   @id
+  updatedAt DateTime @updatedAt
+
+  isPaywalled      Boolean @default(false)
+  stripePriceId    String?
+  priceAmountCents Int?
+
+  nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
+}
+
+model NestSubscription {
+  id        String   @id @default(uuid(7))
+  nestId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  stripeSubscriptionId String                 @unique
+  stripeCustomerId     String
+  status               NestSubscriptionStatus
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean                @default(false)
+
+  nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([nestId, userId])
+  @@index([userId, status])
+  @@index([nestId, status])
+}
+
+enum NestSubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+model NestLedgerEntry {
+  id          String              @id @default(uuid(7))
+  nestId      String
+  type        NestLedgerEntryType
+  amountCents Int
+  createdAt   DateTime            @default(now())
+
+  stripeReference String? @unique
+
+  nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
+
+  @@index([nestId, createdAt])
+}
+
+enum NestLedgerEntryType {
+  CHARGE
+  WITHDRAWAL
+}
+
+model NestPayoutAccount {
+  nestId    String   @id
+  createdAt DateTime @default(now())
+
+  stripeAccountId String  @unique
+  chargesEnabled  Boolean @default(false)
+  payoutsEnabled  Boolean @default(false)
+
+  nest Nest @relation(fields: [nestId], references: [id], onDelete: Cascade)
 }

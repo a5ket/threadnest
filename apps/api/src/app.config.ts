@@ -1,4 +1,5 @@
 import { AuthConfig } from './auth/auth.config'
+import { BillingConfig } from './billing/billing.config'
 import { CacheConfig } from './cache/cache.config'
 import { EmailConfig } from './email/email.config'
 import { EventConfig } from './event/event.config'
@@ -18,6 +19,7 @@ export type AppConfig =
   UrlConfig &
   EmailConfig &
   StorageConfig &
+  BillingConfig &
   {
     port: number
     databaseUrl: string
@@ -79,6 +81,11 @@ export default (): AppConfig => {
     storageForcePathStyle: process.env.STORAGE_FORCE_PATH_STYLE === 'true'
   }
 
+  const billing: BillingConfig = {
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY!,
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!
+  }
+
   return {
     port: parseInt(process.env.PORT!),
     databaseUrl: process.env.DATABASE_URL!,
@@ -90,6 +97,7 @@ export default (): AppConfig => {
     ...event,
     ...url,
     ...email,
-    ...storage
+    ...storage,
+    ...billing
   }
 }

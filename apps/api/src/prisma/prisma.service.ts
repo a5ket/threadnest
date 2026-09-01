@@ -24,12 +24,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     }
 
     const target = error.meta?.target
+    if (typeof target === 'string') return target === field
+    if (Array.isArray(target)) return target.includes(field)
 
-    if (typeof target === 'string') {
-      return target === field
-    }
+    const driverAdapterError = error.meta?.driverAdapterError as { cause?: { constraint?: { fields?: unknown } } } | undefined
+    const fields = driverAdapterError?.cause?.constraint?.fields
 
-    return Array.isArray(target) && target.includes(field)
+    return Array.isArray(fields) && fields.some((f) => typeof f === 'string' && f.replace(/"/g, '') === field)
   }
 
   isRecordNotFoundError(error: unknown) {

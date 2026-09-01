@@ -9,7 +9,7 @@ import { AppConfig } from './app.config'
 import { RedisIoAdapter } from './realtime/redis-io.adapter'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true })
+  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true })
 
   app.useLogger(app.get(Logger))
 

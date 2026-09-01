@@ -21,4 +21,16 @@ export class UrlBuilder {
   changeEmail(token: string) {
     return `${this.base()}/change-email?token=${token}`
   }
+
+  nestCheckoutReturn(nestSlug: string) {
+    return `${this.base()}/n/${nestSlug}/subscribe?checkout=complete`
+  }
+
+  nestPayoutOnboardingReturn(nestSlug: string) {
+    return `${this.base()}/n/${nestSlug}/settings?payout=onboarded`
+  }
+
+  nestPayoutOnboardingRefresh(nestSlug: string) {
+    return `${this.base()}/n/${nestSlug}/settings?payout=refresh`
+  }
 }

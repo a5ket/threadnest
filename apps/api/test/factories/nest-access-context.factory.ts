@@ -18,7 +18,12 @@ export const createNestAccessContext = (
   visibility: NestVisibility.PUBLIC,
   joinPolicy: NestJoinPolicy.OPEN,
 
+  isPaywalled: false,
+  paywallPriceAmountCents: null,
+  hasActiveSubscription: false,
+
   canViewNest: true,
+  canViewNestMetadata: true,
 
   canCreateThread: true,
   canCreateComment: true,

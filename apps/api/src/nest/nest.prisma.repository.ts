@@ -114,6 +114,30 @@ export class NestPrismaRepository extends NestRepository {
     })
   }
 
+  async adjustBalanceCents(
+    nestId: string,
+    delta: number,
+    db: Database = this.prisma,
+  ) {
+    await db.nest.update({
+      where: { id: nestId },
+      data: {
+        balanceCents: {
+          increment: delta,
+        },
+      },
+    })
+  }
+
+  async getBalanceCents(nestId: string) {
+    const nest = await this.prisma.nest.findUniqueOrThrow({
+      where: { id: nestId },
+      select: { balanceCents: true },
+    })
+
+    return nest.balanceCents
+  }
+
   async delete(nestId: string, actorUserId: string) {
     try {
       await this.prisma.nest.update({

@@ -5,8 +5,10 @@ import { NEST_ACCESS_LEVEL, NON_MEMBER_LEVEL } from './constants/nest-access-lev
 import { NestNotFoundException } from './exceptions/nest-not-found.exception'
 import { NestMemberRepository } from './member/nest-member.repository'
 import { NestRepository } from './nest.repository'
+import { NestPaywallRepository } from './paywall/nest-paywall.repository'
 import { NestSettingsNotFoundException } from './settings/exceptions/nest-settings-not-found.exception'
 import { NestSettingsRepository } from './settings/nest-settings.repository'
+import { NestSubscriptionRepository } from './subscription/nest-subscription.repository'
 import { NestAccessContext } from './types/nest.access-context'
 
 @Injectable()
@@ -15,7 +17,9 @@ export class NestAccess {
     private readonly settingsRepo: NestSettingsRepository,
     private readonly bansRepo: NestBanRepository,
     private readonly membersRepo: NestMemberRepository,
-    private readonly nestsRepo: NestRepository
+    private readonly nestsRepo: NestRepository,
+    private readonly paywallRepo: NestPaywallRepository,
+    private readonly subscriptionsRepo: NestSubscriptionRepository
   ) { }
 
   isHigherRole(actorRole: NestMemberRole, targetRole: NestMemberRole) {
@@ -38,11 +42,12 @@ export class NestAccess {
     nestId: string,
     userId?: string
   ): Promise<NestAccessContext> {
-    const [settingsResult, membershipResult, banResult, deletedAtResult] = await Promise.allSettled([
+    const [settingsResult, membershipResult, banResult, deletedAtResult, paywallResult] = await Promise.allSettled([
       this.settingsRepo.get(nestId),
       userId ? this.membersRepo.findByUser(nestId, userId) : Promise.resolve(null),
       userId ? this.bansRepo.existsActive(nestId, userId) : Promise.resolve(null),
-      this.nestsRepo.getDeletedAt(nestId)
+      this.nestsRepo.getDeletedAt(nestId),
+      this.paywallRepo.get(nestId)
     ])
 
     if (settingsResult.status === 'rejected') {
@@ -63,6 +68,10 @@ export class NestAccess {
       throw deletedAtResult.reason
     }
 
+    if (paywallResult.status === 'rejected') {
+      throw paywallResult.reason
+    }
+
     const settings = settingsResult.value
     const membership = membershipResult.value
 
@@ -71,7 +80,12 @@ export class NestAccess {
     const isMember = membership !== null
     const isBanned = Boolean(banResult.value)
     const isDeleted = Boolean(deletedAtResult.value)
-    const canViewNest = !isDeleted && (settings.visibility === NestVisibility.PUBLIC || isMember)
+    const isPaywalled = paywallResult.value?.isPaywalled ?? false
+    const paywallPriceAmountCents = paywallResult.value?.priceAmountCents ?? null
+    const hasActiveSubscription = userId && isPaywalled ? await this.subscriptionsRepo.existsActiveForUser(nestId, userId) : false
+    const isPublic = settings.visibility === NestVisibility.PUBLIC
+    const canViewNestMetadata = !isDeleted && (isMember || isPublic)
+    const canViewNest = !isDeleted && (isMember || (isPublic && (!isPaywalled || hasActiveSubscription)))
     const canParticipate = canViewNest && !isBanned
     const isOwner = role === NestMemberRole.OWNER
 
@@ -87,7 +101,12 @@ export class NestAccess {
       visibility: settings.visibility,
       joinPolicy: settings.joinPolicy,
 
+      isPaywalled,
+      paywallPriceAmountCents,
+      hasActiveSubscription,
+
       canViewNest,
+      canViewNestMetadata,
 
       canCreateThread: hasAccess(settings.minThreadCreationLevel),
       canCreateComment: hasAccess(settings.minCommentCreationLevel),

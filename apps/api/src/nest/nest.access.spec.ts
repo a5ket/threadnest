@@ -16,7 +16,16 @@ describe('NestAccess', () => {
   const bansRepo = createMockNestBanRepository()
   const membersRepo = createMockNestMemberRepository()
   const nestsRepo = createMockNestRepository()
-  const nestAccess = new NestAccess(settingsRepo as any, bansRepo as any, membersRepo as any, nestsRepo as any)
+  const paywallRepo = { get: jest.fn() }
+  const subscriptionsRepo = { existsActiveForUser: jest.fn() }
+  const nestAccess = new NestAccess(
+    settingsRepo as any,
+    bansRepo as any,
+    membersRepo as any,
+    nestsRepo as any,
+    paywallRepo as any,
+    subscriptionsRepo as any,
+  )
 
   const givenSettings = (overrides: Parameters<typeof createNestSettings>[0] = {}) =>
     settingsRepo.get.mockResolvedValue(createNestSettings(overrides))
@@ -33,9 +42,16 @@ describe('NestAccess', () => {
   const givenDeleted = (deleted: boolean) =>
     nestsRepo.getDeletedAt.mockResolvedValue(deleted ? new Date('2024-01-01T00:00:00.000Z') : null)
 
+  const givenPaywalled = (paywalled: boolean) =>
+    paywallRepo.get.mockResolvedValue(paywalled ? { isPaywalled: true, stripePriceId: 'price-1', priceAmountCents: 500 } : null)
+
+  const givenActiveSubscription = (active: boolean) =>
+    subscriptionsRepo.existsActiveForUser.mockResolvedValue(active)
+
   beforeEach(() => {
     jest.clearAllMocks()
     nestsRepo.getDeletedAt.mockResolvedValue(null)
+    paywallRepo.get.mockResolvedValue(null)
   })
 
   describe('visibility', () => {
@@ -60,6 +76,7 @@ describe('NestAccess', () => {
       const ctx = await nestAccess.getContext('nest-1', 'user-1')
 
       expect(ctx.canViewNest).toBe(false)
+      expect(ctx.canViewNestMetadata).toBe(false)
     })
 
     it('allows a member to view a private nest', async () => {
@@ -70,6 +87,95 @@ describe('NestAccess', () => {
       const ctx = await nestAccess.getContext('nest-1', 'user-1')
 
       expect(ctx.canViewNest).toBe(true)
+    })
+  })
+
+  describe('paywall', () => {
+    it('blocks a non-member from a paywalled public nest without an active subscription', async () => {
+      givenSettings({ visibility: NestVisibility.PUBLIC })
+      givenNonMember()
+      givenBanned(false)
+      givenPaywalled(true)
+      givenActiveSubscription(false)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canViewNest).toBe(false)
+      expect(ctx.isPaywalled).toBe(true)
+      expect(ctx.hasActiveSubscription).toBe(false)
+    })
+
+    it('still exposes basic nest metadata to a non-subscriber, since paywall is not the same as private', async () => {
+      givenSettings({ visibility: NestVisibility.PUBLIC })
+      givenNonMember()
+      givenBanned(false)
+      givenPaywalled(true)
+      givenActiveSubscription(false)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canViewNest).toBe(false)
+      expect(ctx.canViewNestMetadata).toBe(true)
+    })
+
+    it('hides metadata for a private paywalled nest from a non-member', async () => {
+      givenSettings({ visibility: NestVisibility.PRIVATE })
+      givenNonMember()
+      givenBanned(false)
+      givenPaywalled(true)
+      givenActiveSubscription(false)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canViewNest).toBe(false)
+      expect(ctx.canViewNestMetadata).toBe(false)
+    })
+
+    it('allows a non-member with an active subscription to view a paywalled public nest', async () => {
+      givenSettings({ visibility: NestVisibility.PUBLIC })
+      givenNonMember()
+      givenBanned(false)
+      givenPaywalled(true)
+      givenActiveSubscription(true)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canViewNest).toBe(true)
+      expect(ctx.hasActiveSubscription).toBe(true)
+    })
+
+    it('does not gate an existing member behind the paywall', async () => {
+      givenSettings({ visibility: NestVisibility.PUBLIC })
+      givenMember({ role: NestMemberRole.MEMBER })
+      givenBanned(false)
+      givenPaywalled(true)
+      givenActiveSubscription(false)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canViewNest).toBe(true)
+    })
+
+    it('does not check for a subscription when the nest is not paywalled', async () => {
+      givenSettings({ visibility: NestVisibility.PUBLIC })
+      givenNonMember()
+      givenBanned(false)
+      givenPaywalled(false)
+
+      const ctx = await nestAccess.getContext('nest-1', 'user-1')
+
+      expect(ctx.canViewNest).toBe(true)
+      expect(subscriptionsRepo.existsActiveForUser).not.toHaveBeenCalled()
+    })
+
+    it('does not check for a subscription for an anonymous viewer', async () => {
+      givenSettings({ visibility: NestVisibility.PUBLIC })
+      givenPaywalled(true)
+
+      const ctx = await nestAccess.getContext('nest-1')
+
+      expect(ctx.canViewNest).toBe(false)
+      expect(subscriptionsRepo.existsActiveForUser).not.toHaveBeenCalled()
     })
   })
 
