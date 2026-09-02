@@ -1,18 +1,23 @@
 'use client'
 
 import { Badge } from '@/common/components/badge'
+import { NestAvatar } from '@/common/components/nest-avatar'
 import { useCreateJoinRequest } from '@/features/join-request/join-request.hooks'
 import { useIsSignedIn } from '@/features/me/me.hooks'
+import { RecommendedNestItem } from '@/features/nest/components/recommended-nest-item'
+import type { NestDiscoveryItem as NestDiscoveryItemType } from '@/features/nest/nest.types'
 import { NestAccessContextDtoJoinPolicy } from '@/generated/api/models'
 import { useState } from 'react'
 
 interface PrivateNestScreenProps {
   nestSlug: string
   name: string
+  nestIconUrl: string | null
   joinPolicy: NestAccessContextDtoJoinPolicy
+  recommendedNests: NestDiscoveryItemType[]
 }
 
-export function PrivateNestScreen({ nestSlug, name, joinPolicy }: PrivateNestScreenProps) {
+export function PrivateNestScreen({ nestSlug, name, nestIconUrl, joinPolicy, recommendedNests }: PrivateNestScreenProps) {
   const isSignedIn = useIsSignedIn()
   const [message, setMessage] = useState<string | null>(null)
 
@@ -51,7 +56,9 @@ export function PrivateNestScreen({ nestSlug, name, joinPolicy }: PrivateNestScr
   })
 
   return (
-    <div className='flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center'>
+    <div className='mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center gap-3 p-6 text-center'>
+      <NestAvatar name={name} slug={nestSlug} iconUrl={nestIconUrl} size={72} />
+
       <div className='flex items-center gap-2'>
         <h1 className='text-lg font-semibold'>{name}</h1>
         <Badge>Private</Badge>
@@ -86,6 +93,18 @@ export function PrivateNestScreen({ nestSlug, name, joinPolicy }: PrivateNestScr
           : (
               <p className='text-sm text-muted-foreground'>Sign in to request to join.</p>
             )
+      )}
+
+      {recommendedNests.length > 0 && (
+        <div className='mt-6 flex w-full max-w-sm flex-col gap-2 text-left'>
+          <h2 className='text-sm font-semibold text-foreground'>Other nests you might like</h2>
+
+          <ul className='divide-y divide-divider'>
+            {recommendedNests.map((nest) => (
+              <RecommendedNestItem key={nest.slug} nest={nest} />
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   )

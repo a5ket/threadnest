@@ -1,11 +1,10 @@
 import Link from 'next/link'
 
 const LINKS = [
-  { href: '/about', label: 'About' },
-  { href: '/careers', label: 'Careers' },
-  { href: '/press', label: 'Press' },
-  { href: '/guidelines', label: 'Guidelines' },
-  { href: '/advertise', label: 'Advertise' }
+  { href: '/help', label: 'Help Center' },
+  { href: '/content-policy', label: 'Content Policy' },
+  { href: '/privacy', label: 'Privacy Policy' },
+  { href: '/terms', label: 'Terms of Service' }
 ]
 
 export function SiteFooter() {

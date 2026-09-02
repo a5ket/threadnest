@@ -8,11 +8,11 @@
 export type PlatformReportCreateDtoReason = typeof PlatformReportCreateDtoReason[keyof typeof PlatformReportCreateDtoReason]
 
 export const PlatformReportCreateDtoReason = {
-  HARASSMENT: 'HARASSMENT',
-  OTHER: 'OTHER',
   ILLEGAL_CONTENT: 'ILLEGAL_CONTENT',
   BAN_EVASION: 'BAN_EVASION',
   SPAM_NETWORK: 'SPAM_NETWORK',
+  HARASSMENT: 'HARASSMENT',
   IMPERSONATION: 'IMPERSONATION',
-  PLATFORM_RULE_VIOLATION: 'PLATFORM_RULE_VIOLATION'
+  PLATFORM_RULE_VIOLATION: 'PLATFORM_RULE_VIOLATION',
+  OTHER: 'OTHER'
 } as const

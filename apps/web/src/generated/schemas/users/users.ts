@@ -97,7 +97,8 @@ export const UserActivityListResponse = zod.object({
         }).describe('Thread author'),
         nest: zod.object({
           name: zod.string().describe('Nest display name'),
-          slug: zod.string().describe('Unique nest slug')
+          slug: zod.string().describe('Unique nest slug'),
+          iconUrl: zod.string().nullable().describe('Nest icon URL')
         }).describe('The nest this thread belongs to'),
         attachments: zod.array(zod.object({
           id: zod.string().describe('Attachment ID'),
@@ -117,7 +118,8 @@ export const UserActivityListResponse = zod.object({
         }).describe('The thread this comment was posted in'),
         nest: zod.object({
           name: zod.string().describe('Nest display name'),
-          slug: zod.string().describe('Unique nest slug')
+          slug: zod.string().describe('Unique nest slug'),
+          iconUrl: zod.string().nullable().describe('Nest icon URL')
         }).describe('The nest this comment belongs to'),
         attachment: zod.object({
           url: zod.string().describe('Presigned, time-limited URL — refetch the comment once it expires rather than caching this indefinitely'),

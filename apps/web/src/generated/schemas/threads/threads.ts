@@ -830,7 +830,8 @@ export const ThreadSearchResponse = zod.object({
       }).describe('Thread author'),
       nest: zod.object({
         name: zod.string().describe('Nest display name'),
-        slug: zod.string().describe('Unique nest slug')
+        slug: zod.string().describe('Unique nest slug'),
+        iconUrl: zod.string().nullable().describe('Nest icon URL')
       }).describe('The nest this thread belongs to'),
       attachments: zod.array(zod.object({
         id: zod.string().describe('Attachment ID'),
@@ -884,7 +885,8 @@ export const ThreadDiscoverResponse = zod.object({
       }).describe('Thread author'),
       nest: zod.object({
         name: zod.string().describe('Nest display name'),
-        slug: zod.string().describe('Unique nest slug')
+        slug: zod.string().describe('Unique nest slug'),
+        iconUrl: zod.string().nullable().describe('Nest icon URL')
       }).describe('The nest this thread belongs to'),
       attachments: zod.array(zod.object({
         id: zod.string().describe('Attachment ID'),

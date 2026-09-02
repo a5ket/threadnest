@@ -1,4 +1,3 @@
-import { LogoMark } from '@/common/components/logo-mark'
 import { useAuthOverlayStore } from '@/features/auth/auth-overlay.store'
 import { useAuthSignOutHandler, useLogout } from '@/features/auth/auth.hooks'
 import { ChatButton } from '@/features/chat/components/chat-button'
@@ -34,7 +33,6 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
       </button>
 
       <Link href='/' className='flex shrink-0 items-center gap-2 text-lg font-semibold text-foreground'>
-        <LogoMark size={26} />
         ThreadNest
       </Link>
 

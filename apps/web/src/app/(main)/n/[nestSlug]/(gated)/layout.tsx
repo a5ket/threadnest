@@ -1,7 +1,8 @@
 import { NestStoreProvider } from '@/features/nest/components/nest-store-provider'
 import { PrivateNestScreen } from '@/features/nest/components/private-nest-screen'
-import { getNestServer } from '@/features/nest/nest.server'
+import { getNestServer, getNestsServer } from '@/features/nest/nest.server'
 import { NestPaywallGate } from '@/features/paywall/components/nest-paywall-gate'
+import { NestListSortBy } from '@/generated/api/models'
 import { notFound } from 'next/navigation'
 
 export default async function NestGatedLayout({
@@ -19,6 +20,9 @@ export default async function NestGatedLayout({
   }
 
   if (!nest.access.canViewNest) {
+    const otherNests = await getNestsServer(NestListSortBy.memberCount)
+    const recommendedNests = otherNests.items.filter((item) => item.slug !== nestSlug && !item.isMember).slice(0, 4)
+
     if (nest.access.isPaywalled) {
       return (
         <NestPaywallGate
@@ -29,11 +33,20 @@ export default async function NestGatedLayout({
           memberCount={nest.memberCount ?? null}
           threadCount={nest.threadCount ?? null}
           priceAmountCents={nest.access.paywallPriceAmountCents}
+          recommendedNests={recommendedNests}
         />
       )
     }
 
-    return <PrivateNestScreen nestSlug={nestSlug} name={nest.name} joinPolicy={nest.access.joinPolicy} />
+    return (
+      <PrivateNestScreen
+        nestSlug={nestSlug}
+        name={nest.name}
+        nestIconUrl={nest.iconUrl ?? null}
+        joinPolicy={nest.access.joinPolicy}
+        recommendedNests={recommendedNests}
+      />
+    )
   }
 
   return (

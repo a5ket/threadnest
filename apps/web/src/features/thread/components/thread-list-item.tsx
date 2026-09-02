@@ -1,10 +1,11 @@
 'use client'
 
-import { Badge } from '@/common/components/badge'
 import { RoleBadge } from '@/common/components/role-badge'
 import { SaveThreadButton } from '@/common/components/save-thread-button'
+import { LockIcon, PinIcon } from '@/common/components/thread-status-icons'
 import { UserLink } from '@/common/components/user-link'
 import { VoteButtons } from '@/common/components/vote-buttons'
+import { formatDateTime, formatRelativeTime } from '@/common/format-date'
 import { useUser } from '@/features/me/me.hooks'
 import { useRemoveThreadVote, useSaveThread, useUnsaveThread, useVoteThread } from '@/features/thread/thread.hooks'
 import type { ThreadSummary } from '@/features/thread/thread.types'
@@ -25,10 +26,8 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
   const saveThread = useSaveThread({ onSuccess: setThread })
   const unsaveThread = useUnsaveThread({ onSuccess: setThread })
 
-  const accent = thread.pinnedAt ? 'border-l-4 border-l-primary' : thread.lockedAt ? 'border-l-4 border-l-warning' : ''
-
   return (
-    <li className={`rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm ${accent}`}>
+    <li className='p-3 transition-colors hover:bg-muted/50'>
       <div className='flex items-start gap-3'>
         {user && (
           <VoteButtons
@@ -42,10 +41,20 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
           />
         )}
 
-        <div>
+        <div className='min-w-0 flex-1'>
           <div className='flex items-center gap-2'>
-            {thread.pinnedAt && <Badge variant='brand'>Pinned</Badge>}
-            {thread.lockedAt && <Badge variant='warning'>Locked</Badge>}
+            {thread.pinnedAt && (
+              <span className='inline-flex items-center gap-1 text-xs font-medium text-muted-foreground'>
+                <PinIcon />
+                Pinned
+              </span>
+            )}
+            {thread.lockedAt && (
+              <span className='inline-flex items-center gap-1 text-xs font-medium text-muted-foreground'>
+                <LockIcon />
+                Locked
+              </span>
+            )}
             <Link href={`/n/${nestSlug}/t/${thread.slug}`} className='font-medium hover:underline'>
               {thread.title}
             </Link>
@@ -55,6 +64,8 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
             <UserLink user={thread.author} />
             <RoleBadge role={thread.author.role} />
             <span>
+              {' · '}
+              <span title={formatDateTime(thread.createdAt)}>{formatRelativeTime(thread.createdAt)}</span>
               {' · '}
               {thread.commentCount}
               {' comments'}
@@ -68,18 +79,22 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
               />
             )}
           </p>
-        </div>
 
-        {thread.attachments[0] && (
-          <Link href={`/n/${nestSlug}/t/${thread.slug}`} className='ml-auto shrink-0'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={thread.attachments[0].url}
-              alt=''
-              className='h-16 w-16 rounded-md object-cover'
-            />
-          </Link>
-        )}
+          {thread.attachments[0] && (
+            <Link
+              href={`/n/${nestSlug}/t/${thread.slug}`}
+              className='mt-3 block overflow-hidden rounded-md border border-border bg-background'
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={thread.attachments[0].url}
+                alt=''
+                className='max-h-[480px] w-full object-cover'
+                style={{ aspectRatio: `${thread.attachments[0].width} / ${thread.attachments[0].height}` }}
+              />
+            </Link>
+          )}
+        </div>
       </div>
     </li>
   )

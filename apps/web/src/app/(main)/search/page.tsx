@@ -65,7 +65,7 @@ export default async function SearchPage({
               <p className='text-sm text-muted-foreground'>No threads found.</p>
             )}
             {threads!.length > 0 && (
-              <ul className='flex flex-col gap-3'>
+              <ul className='divide-y divide-divider'>
                 {threads!.map((thread) => (
                   <ThreadSearchResultItem key={thread.id} thread={thread} />
                 ))}

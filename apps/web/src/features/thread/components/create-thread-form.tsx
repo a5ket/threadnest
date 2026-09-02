@@ -1,5 +1,6 @@
 'use client'
 
+import { AutoResizeTextarea } from '@/common/components/auto-resize-textarea'
 import { type AttachmentItem, MultiImageUploadField } from '@/common/components/multi-image-upload-field'
 import { useUploadAttachment } from '@/features/attachment/attachment.hooks'
 import { useCreateThread } from '@/features/thread/thread.hooks'
@@ -90,61 +91,50 @@ export function CreateThreadForm({ nestSlug, onCreated }: CreateThreadFormProps)
   const isPending = createThread.isPending || isSubmitting || isUploadingAttachment
 
   return (
-    <form onSubmit={onSubmit} noValidate className='flex w-full max-w-sm flex-col gap-4'>
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='title' className='text-sm font-medium'>
-          Title
-        </label>
-
+    <form onSubmit={onSubmit} noValidate className='flex w-full max-w-lg flex-col gap-3'>
+      <div className='flex flex-col rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring'>
         <input
           id='title'
           type='text'
           autoComplete='off'
+          placeholder='Title'
+          aria-label='Title'
           aria-invalid={errors.title ? 'true' : 'false'}
           aria-describedby={errors.title ? 'title-error' : undefined}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
+          className='border-0 border-b border-border bg-transparent px-3 py-2.5 text-base font-medium outline-none placeholder:font-normal placeholder:text-muted-foreground'
           {...register('title')}
         />
 
-        {errors.title && (
-          <p id='title-error' role='alert' className='text-sm text-destructive'>
-            {errors.title.message}
-          </p>
-        )}
-      </div>
-
-      <div className='flex flex-col gap-1.5'>
-        <span className='text-sm font-medium'>Images</span>
-
-        <MultiImageUploadField
-          items={attachments}
-          onItemsChange={setAttachments}
-          onUploadingChange={setIsUploadingAttachment}
-          maxFiles={MAX_ATTACHMENTS}
-          onUpload={(file) => uploadAttachment.mutateAsync(file)}
-        />
-      </div>
-
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='content' className='text-sm font-medium'>
-          Content
-        </label>
-
-        <textarea
+        <AutoResizeTextarea
           id='content'
-          rows={6}
+          placeholder='Text'
+          aria-label='Text'
           aria-invalid={errors.content ? 'true' : 'false'}
           aria-describedby={errors.content ? 'content-error' : undefined}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
+          className='min-h-[100px] border-0 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground'
           {...register('content')}
         />
-
-        {errors.content && (
-          <p id='content-error' role='alert' className='text-sm text-destructive'>
-            {errors.content.message}
-          </p>
-        )}
       </div>
+
+      {errors.title && (
+        <p id='title-error' role='alert' className='text-sm text-destructive'>
+          {errors.title.message}
+        </p>
+      )}
+
+      {errors.content && (
+        <p id='content-error' role='alert' className='text-sm text-destructive'>
+          {errors.content.message}
+        </p>
+      )}
+
+      <MultiImageUploadField
+        items={attachments}
+        onItemsChange={setAttachments}
+        onUploadingChange={setIsUploadingAttachment}
+        maxFiles={MAX_ATTACHMENTS}
+        onUpload={(file) => uploadAttachment.mutateAsync(file)}
+      />
 
       {errors.root && (
         <p role='alert' className='text-sm text-destructive'>

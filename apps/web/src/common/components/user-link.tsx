@@ -11,11 +11,13 @@ import { useRef, useState } from 'react'
 interface UserLinkProps {
   user: UserReferenceDto | null
   className?: string
+  showAvatar?: boolean
+  avatarSize?: number
 }
 
 const HOVER_OPEN_DELAY_MS = 300
 
-export function UserLink({ user, className }: UserLinkProps) {
+export function UserLink({ user, className, showAvatar = true, avatarSize = 20 }: UserLinkProps) {
   const [showPreview, setShowPreview] = useState(false)
   const openTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -45,7 +47,9 @@ export function UserLink({ user, className }: UserLinkProps) {
   }
 
   return (
-    <span className='relative inline-block' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <span className='relative inline-flex items-center gap-1.5' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {showAvatar && <Avatar avatarUrl={user.profile.avatarUrl} label={getUserDisplayName(user)} size={avatarSize} />}
+
       <Link href={`/users/${user.profile.username}`} className={className ? `${className} hover:underline` : 'hover:underline'}>
         {getUserDisplayName(user)}
       </Link>

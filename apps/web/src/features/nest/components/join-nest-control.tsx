@@ -23,7 +23,7 @@ export function JoinNestControl({ nestSlug, nestName, joinPolicy }: JoinNestCont
 
   const joinNest = useJoinNest({
     onSuccess: () => {
-      addNest({ name: nestName, slug: nestSlug })
+      addNest({ name: nestName, slug: nestSlug, iconUrl: null })
       invalidateNestList()
       router.refresh()
     },

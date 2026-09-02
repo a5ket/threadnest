@@ -2,6 +2,7 @@
 
 import { SaveThreadButton } from '@/common/components/save-thread-button'
 import { UserLink } from '@/common/components/user-link'
+import { formatDateTime, formatRelativeTime } from '@/common/format-date'
 import { useUser } from '@/features/me/me.hooks'
 import { useSaveThread, useUnsaveThread } from '@/features/thread/thread.hooks'
 import type { ThreadSearchResult } from '@/features/thread/thread.types'
@@ -20,7 +21,7 @@ export function ThreadSearchResultItem({ thread: initialThread }: ThreadSearchRe
   const unsaveThread = useUnsaveThread({ onSuccess: (updated) => setThread((prev) => ({ ...prev, viewerSaved: updated.viewerSaved })) })
 
   return (
-    <li className='rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm'>
+    <li className='p-3 transition-colors hover:bg-muted/50'>
       <div className='flex items-start gap-3'>
         <div className='min-w-0 flex-1'>
           <div className='flex items-center gap-2 text-xs text-muted-foreground'>
@@ -37,6 +38,8 @@ export function ThreadSearchResultItem({ thread: initialThread }: ThreadSearchRe
             <UserLink user={thread.author} />
             <span>
               {' · '}
+              <span title={formatDateTime(thread.createdAt)}>{formatRelativeTime(thread.createdAt)}</span>
+              {' · '}
               {thread.score}
               {' points · '}
               {thread.commentCount}
@@ -51,18 +54,22 @@ export function ThreadSearchResultItem({ thread: initialThread }: ThreadSearchRe
               />
             )}
           </p>
-        </div>
 
-        {thread.attachments[0] && (
-          <Link href={`/n/${thread.nest.slug}/t/${thread.slug}`} className='shrink-0'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={thread.attachments[0].url}
-              alt=''
-              className='h-16 w-16 rounded-md object-cover'
-            />
-          </Link>
-        )}
+          {thread.attachments[0] && (
+            <Link
+              href={`/n/${thread.nest.slug}/t/${thread.slug}`}
+              className='mt-3 block overflow-hidden rounded-md border border-border bg-background'
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={thread.attachments[0].url}
+                alt=''
+                className='max-h-[480px] w-full object-cover'
+                style={{ aspectRatio: `${thread.attachments[0].width} / ${thread.attachments[0].height}` }}
+              />
+            </Link>
+          )}
+        </div>
       </div>
     </li>
   )

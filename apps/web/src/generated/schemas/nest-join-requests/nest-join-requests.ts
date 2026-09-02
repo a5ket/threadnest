@@ -53,7 +53,8 @@ export const NestJoinRequestCreateResponse = zod.object({
     id: zod.string().describe('Join request ID'),
     nest: zod.object({
       name: zod.string().describe('Nest display name'),
-      slug: zod.string().describe('Unique nest slug')
+      slug: zod.string().describe('Unique nest slug'),
+      iconUrl: zod.string().nullable().describe('Nest icon URL')
     }).describe('The nest this request is for'),
     resolvedBy: zod.object({
       id: zod.string().describe('User ID'),
@@ -135,7 +136,8 @@ export const MeNestJoinRequestListResponse = zod.object({
     id: zod.string().describe('Join request ID'),
     nest: zod.object({
       name: zod.string().describe('Nest display name'),
-      slug: zod.string().describe('Unique nest slug')
+      slug: zod.string().describe('Unique nest slug'),
+      iconUrl: zod.string().nullable().describe('Nest icon URL')
     }).describe('The nest this request is for'),
     resolvedBy: zod.object({
       id: zod.string().describe('User ID'),
@@ -165,7 +167,8 @@ export const MeNestJoinRequestGetResponse = zod.object({
     id: zod.string().describe('Join request ID'),
     nest: zod.object({
       name: zod.string().describe('Nest display name'),
-      slug: zod.string().describe('Unique nest slug')
+      slug: zod.string().describe('Unique nest slug'),
+      iconUrl: zod.string().nullable().describe('Nest icon URL')
     }).describe('The nest this request is for'),
     resolvedBy: zod.object({
       id: zod.string().describe('User ID'),

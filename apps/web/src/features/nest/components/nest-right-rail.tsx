@@ -2,6 +2,7 @@
 
 import { Badge } from '@/common/components/badge'
 import { NestAvatar } from '@/common/components/nest-avatar'
+import { MembersIcon, ThreadsIcon } from '@/common/components/nest-stat-icons'
 import { useSetRightRail } from '@/common/components/right-rail-context'
 import { formatMonthYear } from '@/common/format-date'
 import { NestAccessContextDtoVisibility } from '@/generated/api/models'
@@ -33,18 +34,24 @@ export function NestRightRail({ name, slug, description, iconUrl, visibility, me
       {description && <p className='text-sm text-muted-foreground'>{description}</p>}
 
       {(memberCount !== undefined || threadCount !== undefined) && (
-        <div className='flex gap-2 border-t border-border pt-3'>
+        <div className='flex flex-col gap-1.5 border-t border-border pt-3 text-sm text-muted-foreground'>
           {memberCount !== undefined && (
-            <div className='flex-1 rounded-md bg-muted p-2 text-center'>
-              <div className='text-base font-semibold'>{memberCount}</div>
-              <div className='text-xs text-muted-foreground'>Members</div>
+            <div className='flex items-center gap-2'>
+              <MembersIcon />
+              <span>
+                <span className='font-medium text-foreground'>{memberCount}</span>
+                {' members'}
+              </span>
             </div>
           )}
 
           {threadCount !== undefined && (
-            <div className='flex-1 rounded-md bg-muted p-2 text-center'>
-              <div className='text-base font-semibold'>{threadCount}</div>
-              <div className='text-xs text-muted-foreground'>Threads</div>
+            <div className='flex items-center gap-2'>
+              <ThreadsIcon />
+              <span>
+                <span className='font-medium text-foreground'>{threadCount}</span>
+                {' threads'}
+              </span>
             </div>
           )}
         </div>

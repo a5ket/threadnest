@@ -5,7 +5,7 @@ import { Lightbox } from '@/common/components/lightbox'
 import { RoleBadge } from '@/common/components/role-badge'
 import { UserLink } from '@/common/components/user-link'
 import { VoteButtons } from '@/common/components/vote-buttons'
-import { formatDateTime } from '@/common/format-date'
+import { formatDateTime, formatRelativeTime } from '@/common/format-date'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useThreadStore } from '@/features/thread/components/thread-store-provider'
 import { useDeleteComment, useInvalidateCommentTree, useRemoveCommentVote, useVoteComment } from '@/features/comment/comment.hooks'
@@ -34,6 +34,7 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
   const user = useUser()
   const canModerateContent = useThreadStore((state) => state.thread.access.canModerateContent)
   const canVoteComment = useThreadStore((state) => state.thread.access.canVoteComment)
+  const canCommentThread = useThreadStore((state) => state.thread.access.canCommentThread)
   const invalidate = useInvalidateCommentTree(nestSlug, threadSlug)
 
   const deleteComment = useDeleteComment({
@@ -54,7 +55,7 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
   const hiddenReplyCount = comment.replyCount - childrenCount
   const isDeleted = comment.deletedAt !== null
   const isAuthor = user !== null && comment.author?.id === user.id
-  const canReply = !isDeleted
+  const canReply = !isDeleted && canCommentThread
   const canEdit = !isDeleted && isAuthor
   const canDelete = !isDeleted && (isAuthor || canModerateContent)
   const canVote = !isDeleted && canVoteComment
@@ -79,7 +80,7 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
       <div className='flex items-center gap-2 text-sm'>
         <UserLink user={comment.author} className='font-medium' />
         {comment.author?.role && <RoleBadge role={comment.author.role} />}
-        <span className='text-xs text-muted-foreground'>{formatDateTime(comment.createdAt)}</span>
+        <span className='text-xs text-muted-foreground' title={formatDateTime(comment.createdAt)}>{formatRelativeTime(comment.createdAt)}</span>
       </div>
 
       {comment.content !== null
@@ -91,12 +92,17 @@ export function CommentItem({ comment, nestSlug, threadSlug, childrenCount }: Co
           )}
 
       {comment.attachment && (
-        <button type='button' onClick={() => setLightboxOpen(true)} className='block w-fit cursor-zoom-in'>
+        <button
+          type='button'
+          onClick={() => setLightboxOpen(true)}
+          className='block max-w-md cursor-zoom-in overflow-hidden rounded-md border border-border bg-background'
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={comment.attachment.url}
             alt=''
-            className='max-h-64 max-w-xs rounded-md object-contain'
+            className='max-h-80 w-full object-cover'
+            style={{ aspectRatio: `${comment.attachment.width} / ${comment.attachment.height}` }}
           />
         </button>
       )}

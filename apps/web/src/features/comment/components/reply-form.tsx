@@ -1,5 +1,6 @@
 'use client'
 
+import { AutoResizeTextarea } from '@/common/components/auto-resize-textarea'
 import { type AttachmentItem, MultiImageUploadField } from '@/common/components/multi-image-upload-field'
 import { useUploadAttachment } from '@/features/attachment/attachment.hooks'
 import { useReplyToComment } from '@/features/comment/comment.hooks'
@@ -80,22 +81,43 @@ export function ReplyForm({ commentId, onCreated, onCancel }: ReplyFormProps) {
 
   return (
     <form onSubmit={onSubmit} noValidate className='flex flex-col gap-2'>
-      <textarea
-        rows={2}
-        placeholder='Write a reply...'
-        autoFocus
-        aria-invalid={errors.content ? 'true' : 'false'}
-        className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
-        {...register('content')}
-      />
+      <div className='flex flex-col rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring'>
+        <AutoResizeTextarea
+          placeholder='Write a reply...'
+          autoFocus
+          aria-invalid={errors.content ? 'true' : 'false'}
+          className='min-h-[40px] border-0 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground'
+          {...register('content')}
+        />
 
-      <MultiImageUploadField
-        items={attachments}
-        onItemsChange={setAttachments}
-        onUploadingChange={setIsUploadingAttachment}
-        maxFiles={1}
-        onUpload={(file) => uploadAttachment.mutateAsync(file)}
-      />
+        <div className='flex items-end justify-between gap-2 px-2 pb-2'>
+          <MultiImageUploadField
+            items={attachments}
+            onItemsChange={setAttachments}
+            onUploadingChange={setIsUploadingAttachment}
+            maxFiles={1}
+            onUpload={(file) => uploadAttachment.mutateAsync(file)}
+          />
+
+          <div className='flex shrink-0 gap-2'>
+            <button
+              type='button'
+              onClick={onCancel}
+              className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
+            >
+              Cancel
+            </button>
+
+            <button
+              type='submit'
+              disabled={isPending}
+              className='rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
+            >
+              {isPending ? 'Posting...' : 'Reply'}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {errors.content && (
         <p role='alert' className='text-sm text-destructive'>
@@ -108,24 +130,6 @@ export function ReplyForm({ commentId, onCreated, onCancel }: ReplyFormProps) {
           {errors.root.message}
         </p>
       )}
-
-      <div className='flex gap-2'>
-        <button
-          type='submit'
-          disabled={isPending}
-          className='rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
-        >
-          {isPending ? 'Posting...' : 'Reply'}
-        </button>
-
-        <button
-          type='button'
-          onClick={onCancel}
-          className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
-        >
-          Cancel
-        </button>
-      </div>
     </form>
   )
 }

@@ -6,4 +6,7 @@ export class NestReferencetDto {
 
   @ApiProperty({ description: 'Unique nest slug' })
   slug!: string
+
+  @ApiProperty({ description: 'Nest icon URL', nullable: true })
+  iconUrl!: string | null
 }

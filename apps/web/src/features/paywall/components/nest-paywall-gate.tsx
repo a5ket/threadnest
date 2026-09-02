@@ -1,5 +1,8 @@
 import { Badge } from '@/common/components/badge'
 import { NestAvatar } from '@/common/components/nest-avatar'
+import { MembersIcon, ThreadsIcon } from '@/common/components/nest-stat-icons'
+import { RecommendedNestItem } from '@/features/nest/components/recommended-nest-item'
+import type { NestDiscoveryItem as NestDiscoveryItemType } from '@/features/nest/nest.types'
 import Link from 'next/link'
 
 interface NestPaywallGateProps {
@@ -10,6 +13,7 @@ interface NestPaywallGateProps {
   memberCount: number | null
   threadCount: number | null
   priceAmountCents: number | null
+  recommendedNests: NestDiscoveryItemType[]
 }
 
 export function NestPaywallGate({
@@ -19,11 +23,12 @@ export function NestPaywallGate({
   description,
   memberCount,
   threadCount,
-  priceAmountCents
+  priceAmountCents,
+  recommendedNests
 }: NestPaywallGateProps) {
   return (
-    <div className='flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center'>
-      <NestAvatar name={nestName} slug={nestSlug} iconUrl={nestIconUrl} size={56} />
+    <div className='mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center gap-4 p-6 text-center'>
+      <NestAvatar name={nestName} slug={nestSlug} iconUrl={nestIconUrl} size={72} />
 
       <div className='flex items-center gap-2'>
         <h1 className='text-lg font-semibold'>{nestName}</h1>
@@ -35,19 +40,21 @@ export function NestPaywallGate({
       )}
 
       {(memberCount !== null || threadCount !== null) && (
-        <div className='flex gap-2'>
+        <div className='flex items-center gap-4 text-sm text-muted-foreground'>
           {memberCount !== null && (
-            <div className='min-w-20 rounded-md bg-muted px-3 py-2 text-center'>
-              <div className='text-base font-semibold'>{memberCount}</div>
-              <div className='text-xs text-muted-foreground'>Members</div>
-            </div>
+            <span className='flex items-center gap-1.5'>
+              <MembersIcon />
+              <span className='font-medium text-foreground'>{memberCount}</span>
+              {' members'}
+            </span>
           )}
 
           {threadCount !== null && (
-            <div className='min-w-20 rounded-md bg-muted px-3 py-2 text-center'>
-              <div className='text-base font-semibold'>{threadCount}</div>
-              <div className='text-xs text-muted-foreground'>Threads</div>
-            </div>
+            <span className='flex items-center gap-1.5'>
+              <ThreadsIcon />
+              <span className='font-medium text-foreground'>{threadCount}</span>
+              {' threads'}
+            </span>
           )}
         </div>
       )}
@@ -64,6 +71,18 @@ export function NestPaywallGate({
       >
         Subscribe
       </Link>
+
+      {recommendedNests.length > 0 && (
+        <div className='mt-6 flex w-full max-w-sm flex-col gap-2 text-left'>
+          <h2 className='text-sm font-semibold text-foreground'>Other nests you might like</h2>
+
+          <ul className='divide-y divide-divider'>
+            {recommendedNests.map((nest) => (
+              <RecommendedNestItem key={nest.slug} nest={nest} />
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

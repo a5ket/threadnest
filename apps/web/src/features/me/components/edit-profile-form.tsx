@@ -203,20 +203,20 @@ export function EditProfileForm({ profile, onSaved, onCancel }: EditProfileFormP
 
       <div className='flex items-center gap-3'>
         <button
-          type='submit'
-          disabled={isPending}
-          className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
-        >
-          {isPending ? 'Saving...' : 'Save profile'}
-        </button>
-
-        <button
           type='button'
           disabled={isPending}
           onClick={onCancel}
           className='rounded-md px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted disabled:opacity-50'
         >
           Cancel
+        </button>
+
+        <button
+          type='submit'
+          disabled={isPending}
+          className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
+        >
+          {isPending ? 'Saving...' : 'Save profile'}
         </button>
       </div>
     </form>

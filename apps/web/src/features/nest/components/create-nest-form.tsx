@@ -104,7 +104,7 @@ export function CreateNestForm({ onCreated }: CreateNestFormProps) {
 
     // The nest now exists — treat creation as done regardless of what happens next, so a
     // failed icon upload doesn't strand the user on a form for a nest that already exists.
-    addNest({ name: nest.name, slug: nest.slug })
+    addNest({ name: nest.name, slug: nest.slug, iconUrl: nest.iconUrl ?? null })
 
     if (pendingIconFile) {
       try {

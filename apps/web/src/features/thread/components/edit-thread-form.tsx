@@ -1,5 +1,6 @@
 'use client'
 
+import { AutoResizeTextarea } from '@/common/components/auto-resize-textarea'
 import { type AttachmentItem, MultiImageUploadField } from '@/common/components/multi-image-upload-field'
 import { useUploadAttachment } from '@/features/attachment/attachment.hooks'
 import { useUpdateThread } from '@/features/thread/thread.hooks'
@@ -84,59 +85,48 @@ export function EditThreadForm({ nestSlug, threadSlug, thread, onSaved, onCancel
   const isPending = updateThread.isPending || isSubmitting || isUploadingAttachment
 
   return (
-    <form onSubmit={onSubmit} noValidate className='flex flex-col gap-4'>
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='edit-title' className='text-sm font-medium'>
-          Title
-        </label>
-
+    <form onSubmit={onSubmit} noValidate className='flex flex-col gap-3'>
+      <div className='flex flex-col rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring'>
         <input
           id='edit-title'
           type='text'
           autoComplete='off'
+          placeholder='Title'
+          aria-label='Title'
           aria-invalid={errors.title ? 'true' : 'false'}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
+          className='border-0 border-b border-border bg-transparent px-3 py-2.5 text-base font-medium outline-none placeholder:font-normal placeholder:text-muted-foreground'
           {...register('title')}
         />
 
-        {errors.title && (
-          <p role='alert' className='text-sm text-destructive'>
-            {errors.title.message}
-          </p>
-        )}
-      </div>
-
-      <div className='flex flex-col gap-1.5'>
-        <span className='text-sm font-medium'>Images</span>
-
-        <MultiImageUploadField
-          items={attachments}
-          onItemsChange={setAttachments}
-          onUploadingChange={setIsUploadingAttachment}
-          maxFiles={MAX_ATTACHMENTS}
-          onUpload={(file) => uploadAttachment.mutateAsync(file)}
-        />
-      </div>
-
-      <div className='flex flex-col gap-1.5'>
-        <label htmlFor='edit-content' className='text-sm font-medium'>
-          Content
-        </label>
-
-        <textarea
+        <AutoResizeTextarea
           id='edit-content'
-          rows={6}
+          placeholder='Text'
+          aria-label='Text'
           aria-invalid={errors.content ? 'true' : 'false'}
-          className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
+          className='min-h-[100px] border-0 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground'
           {...register('content')}
         />
-
-        {errors.content && (
-          <p role='alert' className='text-sm text-destructive'>
-            {errors.content.message}
-          </p>
-        )}
       </div>
+
+      {errors.title && (
+        <p role='alert' className='text-sm text-destructive'>
+          {errors.title.message}
+        </p>
+      )}
+
+      {errors.content && (
+        <p role='alert' className='text-sm text-destructive'>
+          {errors.content.message}
+        </p>
+      )}
+
+      <MultiImageUploadField
+        items={attachments}
+        onItemsChange={setAttachments}
+        onUploadingChange={setIsUploadingAttachment}
+        maxFiles={MAX_ATTACHMENTS}
+        onUpload={(file) => uploadAttachment.mutateAsync(file)}
+      />
 
       {errors.root && (
         <p role='alert' className='text-sm text-destructive'>
@@ -146,19 +136,19 @@ export function EditThreadForm({ nestSlug, threadSlug, thread, onSaved, onCancel
 
       <div className='flex gap-2'>
         <button
-          type='submit'
-          disabled={isPending}
-          className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
-        >
-          {isPending ? 'Saving...' : 'Save'}
-        </button>
-
-        <button
           type='button'
           onClick={onCancel}
           className='rounded-md px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted'
         >
           Cancel
+        </button>
+
+        <button
+          type='submit'
+          disabled={isPending}
+          className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
+        >
+          {isPending ? 'Saving...' : 'Save'}
         </button>
       </div>
     </form>

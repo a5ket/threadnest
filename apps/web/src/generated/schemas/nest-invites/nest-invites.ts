@@ -161,7 +161,8 @@ export const MeNestInviteListResponse = zod.object({
     id: zod.string().describe('Invite ID'),
     nest: zod.object({
       name: zod.string().describe('Nest display name'),
-      slug: zod.string().describe('Unique nest slug')
+      slug: zod.string().describe('Unique nest slug'),
+      iconUrl: zod.string().nullable().describe('Nest icon URL')
     }).describe('The nest this invite is for'),
     invitedBy: zod.object({
       id: zod.string().describe('User ID'),
@@ -200,7 +201,8 @@ export const MeNestInviteGetResponse = zod.object({
     id: zod.string().describe('Invite ID'),
     nest: zod.object({
       name: zod.string().describe('Nest display name'),
-      slug: zod.string().describe('Unique nest slug')
+      slug: zod.string().describe('Unique nest slug'),
+      iconUrl: zod.string().nullable().describe('Nest icon URL')
     }).describe('The nest this invite is for'),
     invitedBy: zod.object({
       id: zod.string().describe('User ID'),

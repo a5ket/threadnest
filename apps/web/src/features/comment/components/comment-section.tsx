@@ -6,19 +6,23 @@ import { useRouter } from 'next/navigation'
 import { groupCommentsByParent } from '@/features/comment/comment.utils'
 import { useCommentTree, useInvalidateCommentTree } from '@/features/comment/comment.hooks'
 import type { CommentTreePage } from '@/features/comment/comment.types'
+import type { NestDetail } from '@/features/nest/nest.types'
+import { useThreadStore } from '@/features/thread/components/thread-store-provider'
 import type { NestThreadCommentListSortBy } from '@/generated/api/models'
+import { CommentComposer } from './comment-composer'
 import { CommentTree } from './comment-tree'
-import { CreateThreadCommentForm } from './create-thread-comment-form'
 
 interface CommentSectionProps {
   nestSlug: string
   threadSlug: string
   sortBy: NestThreadCommentListSortBy
   initialPage: CommentTreePage
+  nest: NestDetail | null
 }
 
-export function CommentSection({ nestSlug, threadSlug, sortBy, initialPage }: CommentSectionProps) {
+export function CommentSection({ nestSlug, threadSlug, sortBy, initialPage, nest }: CommentSectionProps) {
   const router = useRouter()
+  const thread = useThreadStore((state) => state.thread)
   const invalidate = useInvalidateCommentTree(nestSlug, threadSlug)
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useCommentTree(nestSlug, threadSlug, sortBy, initialPage)
 
@@ -28,10 +32,12 @@ export function CommentSection({ nestSlug, threadSlug, sortBy, initialPage }: Co
   const sort = sortBy === 'score' ? 'top' : 'new'
 
   return (
-    <div className='flex flex-col gap-4 pb-6'>
-      <CreateThreadCommentForm
+    <div id='comment-section' className='flex scroll-mt-4 flex-col gap-4 pb-6'>
+      <CommentComposer
         nestSlug={nestSlug}
         threadSlug={threadSlug}
+        thread={thread}
+        nest={nest}
         onCreated={() => {
           invalidate()
           router.refresh()

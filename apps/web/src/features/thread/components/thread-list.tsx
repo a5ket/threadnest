@@ -18,10 +18,12 @@ export function ThreadList({ nestSlug, sortBy, search, initialPage }: ThreadList
   const threads = data.pages.flatMap((page) => page.items)
 
   return (
-    <ul className='flex flex-col gap-3 pb-6'>
-      {threads.map((thread) => (
-        <ThreadListItem key={thread.id} nestSlug={nestSlug} thread={thread} />
-      ))}
+    <div className='flex flex-col gap-3 pb-6'>
+      <ul className='divide-y divide-divider'>
+        {threads.map((thread) => (
+          <ThreadListItem key={thread.id} nestSlug={nestSlug} thread={thread} />
+        ))}
+      </ul>
 
       {threads.length === 0 && (
         <p className='text-sm text-muted-foreground'>{search ? 'No threads found.' : 'No threads yet.'}</p>
@@ -36,6 +38,6 @@ export function ThreadList({ nestSlug, sortBy, search, initialPage }: ThreadList
       {!hasNextPage && !isFetchingNextPage && threads.length > 0 && (
         <p className='text-center text-sm text-muted-foreground'>{'You\'ve reached the end.'}</p>
       )}
-    </ul>
+    </div>
   )
 }

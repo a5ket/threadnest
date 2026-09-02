@@ -14,10 +14,12 @@ export function SavedThreadList({ initialPage }: SavedThreadListProps) {
   const threads = data.pages.flatMap((page) => page.items)
 
   return (
-    <ul className='flex flex-col gap-3'>
-      {threads.map((thread) => (
-        <ThreadSearchResultItem key={thread.id} thread={thread} />
-      ))}
+    <div className='flex flex-col gap-3'>
+      <ul className='divide-y divide-divider'>
+        {threads.map((thread) => (
+          <ThreadSearchResultItem key={thread.id} thread={thread} />
+        ))}
+      </ul>
 
       {threads.length === 0 && (
         <p className='py-6 text-center text-sm text-muted-foreground'>No saved threads yet.</p>
@@ -32,6 +34,6 @@ export function SavedThreadList({ initialPage }: SavedThreadListProps) {
       {!hasNextPage && !isFetchingNextPage && threads.length > 0 && (
         <p className='py-4 text-center text-sm text-muted-foreground'>{'You\'ve reached the end.'}</p>
       )}
-    </ul>
+    </div>
   )
 }

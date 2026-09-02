@@ -5,6 +5,16 @@ import { useEffect, useRef, useState } from 'react'
 const MAX_SIZE_MB = 5
 const ACCEPTED_TYPES = 'image/jpeg,image/png,image/webp,image/gif'
 
+function ImageIcon() {
+  return (
+    <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
+      <rect x='2.5' y='3.5' width='15' height='13' rx='1.5' />
+      <circle cx='6.5' cy='7.5' r='1.25' />
+      <path d='M3 14l4.5-4.5a1.5 1.5 0 012.1 0L14 14M11.5 11.5l1-1a1.5 1.5 0 012.1 0L17 13' strokeLinecap='round' strokeLinejoin='round' />
+    </svg>
+  )
+}
+
 export interface UploadedAttachment {
   key: string
   width: number
@@ -118,9 +128,11 @@ export function MultiImageUploadField({ items, onItemsChange, onUploadingChange,
           <button
             type='button'
             onClick={() => inputRef.current?.click()}
-            className='flex h-20 w-20 items-center justify-center rounded-md border border-dashed border-input text-sm text-muted-foreground hover:bg-muted'
+            aria-label='Add image'
+            title='Add image'
+            className='flex h-9 w-9 items-center justify-center rounded-md border border-input text-muted-foreground hover:bg-muted'
           >
-            +
+            <ImageIcon />
           </button>
         )}
       </div>

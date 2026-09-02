@@ -14,10 +14,12 @@ export function FeedList({ initialPage }: FeedListProps) {
   const threads = data.pages.flatMap((page) => page.items)
 
   return (
-    <ul className='flex flex-col gap-3'>
-      {threads.map((thread) => (
-        <ThreadSearchResultItem key={thread.id} thread={thread} />
-      ))}
+    <div className='flex flex-col gap-3'>
+      <ul className='divide-y divide-divider'>
+        {threads.map((thread) => (
+          <ThreadSearchResultItem key={thread.id} thread={thread} />
+        ))}
+      </ul>
 
       {hasNextPage && <InfiniteScrollSentinel onVisible={fetchNextPage} disabled={isFetchingNextPage} />}
 
@@ -28,6 +30,6 @@ export function FeedList({ initialPage }: FeedListProps) {
       {!hasNextPage && !isFetchingNextPage && threads.length > 0 && (
         <p className='py-4 text-center text-sm text-muted-foreground'>{'You\'ve reached the end.'}</p>
       )}
-    </ul>
+    </div>
   )
 }

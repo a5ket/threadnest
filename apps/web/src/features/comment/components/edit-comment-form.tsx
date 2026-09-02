@@ -1,5 +1,6 @@
 'use client'
 
+import { AutoResizeTextarea } from '@/common/components/auto-resize-textarea'
 import { useUpdateComment } from '@/features/comment/comment.hooks'
 import { updateCommentSchema, type UpdateCommentFormValues } from '@/features/comment/comment.schemas'
 import { useForm } from 'react-hook-form'
@@ -65,11 +66,10 @@ export function EditCommentForm({ commentId, content, onSaved, onCancel }: EditC
 
   return (
     <form onSubmit={onSubmit} noValidate className='flex flex-col gap-2'>
-      <textarea
-        rows={2}
+      <AutoResizeTextarea
         autoFocus
         aria-invalid={errors.content ? 'true' : 'false'}
-        className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
+        className='min-h-[40px] rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
         {...register('content')}
       />
 
@@ -87,19 +87,19 @@ export function EditCommentForm({ commentId, content, onSaved, onCancel }: EditC
 
       <div className='flex gap-2'>
         <button
-          type='submit'
-          disabled={isPending}
-          className='rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
-        >
-          {isPending ? 'Saving...' : 'Save'}
-        </button>
-
-        <button
           type='button'
           onClick={onCancel}
           className='rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted'
         >
           Cancel
+        </button>
+
+        <button
+          type='submit'
+          disabled={isPending}
+          className='rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
+        >
+          {isPending ? 'Saving...' : 'Save'}
         </button>
       </div>
     </form>

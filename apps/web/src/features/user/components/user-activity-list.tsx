@@ -17,12 +17,14 @@ export function UserActivityList({ username, initialPage }: UserActivityListProp
   const items = data.pages.flatMap((page) => page.items)
 
   return (
-    <ul className='flex flex-col gap-3'>
-      {items.map((item) => (
-        item.type === UserActivityItemResponseDtoType.THREAD && item.thread
-          ? <ThreadSearchResultItem key={`thread-${item.thread.id}`} thread={item.thread} />
-          : item.comment && <UserActivityCommentItem key={`comment-${item.comment.id}`} comment={item.comment} />
-      ))}
+    <div className='flex flex-col gap-3'>
+      <ul className='divide-y divide-divider'>
+        {items.map((item) => (
+          item.type === UserActivityItemResponseDtoType.THREAD && item.thread
+            ? <ThreadSearchResultItem key={`thread-${item.thread.id}`} thread={item.thread} />
+            : item.comment && <UserActivityCommentItem key={`comment-${item.comment.id}`} comment={item.comment} />
+        ))}
+      </ul>
 
       {items.length === 0 && (
         <p className='py-6 text-center text-sm text-muted-foreground'>No activity yet.</p>
@@ -33,6 +35,6 @@ export function UserActivityList({ username, initialPage }: UserActivityListProp
       {isFetchingNextPage && (
         <p className='py-4 text-center text-sm text-muted-foreground'>Loading more...</p>
       )}
-    </ul>
+    </div>
   )
 }

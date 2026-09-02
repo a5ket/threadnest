@@ -16,13 +16,11 @@ export function AppRightrail({ popularNests }: AppRightrailProps) {
   if (hidden) return null
 
   return (
-    <aside className='hidden w-80 shrink-0 bg-canvas p-4 lg:flex lg:flex-col'>
-      <div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-background'>
-        <div className='min-h-0 flex-1 overflow-y-auto'>
-          {content ?? <PopularNestsWidget nests={popularNests} />}
-        </div>
-        <SiteFooter />
+    <aside className='hidden w-80 shrink-0 flex-col bg-background p-4 lg:flex'>
+      <div className='min-h-0 flex-1 overflow-y-auto rounded-lg bg-card'>
+        {content ?? <PopularNestsWidget nests={popularNests} />}
       </div>
+      <SiteFooter />
     </aside>
   )
 }

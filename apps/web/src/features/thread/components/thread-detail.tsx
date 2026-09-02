@@ -1,30 +1,42 @@
 'use client'
 
 import { ModeratorIcon } from '@/common/components/authority-icons'
-import { Badge } from '@/common/components/badge'
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { ImageCarousel } from '@/common/components/image-carousel'
 import { RoleBadge } from '@/common/components/role-badge'
 import { SaveThreadButton } from '@/common/components/save-thread-button'
+import { LockIcon, PinIcon } from '@/common/components/thread-status-icons'
 import { UserLink } from '@/common/components/user-link'
 import { VoteButtons } from '@/common/components/vote-buttons'
-import { formatDateTime } from '@/common/format-date'
+import { formatDateTime, formatRelativeTime } from '@/common/format-date'
 import { BlockButton } from '@/features/block/components/block-button'
 import { useUser } from '@/features/me/me.hooks'
+import type { NestDetail } from '@/features/nest/nest.types'
 import { RemoveThreadPlatformButton } from '@/features/platform-content/components/remove-thread-platform-button'
 import { ReportButton } from '@/features/report/components/report-button'
 import { useThreadStore, useThreadStoreApi } from '@/features/thread/components/thread-store-provider'
 import { useDeleteThread, useLockThread, usePinThread, useRemoveThreadVote, useSaveThread, useUnlockThread, useUnpinThread, useUnsaveThread, useVoteThread } from '@/features/thread/thread.hooks'
+import { NestAccessContextDtoVisibility } from '@/generated/api/models'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { EditThreadForm } from './edit-thread-form'
+import { ShareThreadButton } from './share-thread-button'
+
+function CommentIcon() {
+  return (
+    <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
+      <path d='M3 5.5A1.5 1.5 0 014.5 4h11A1.5 1.5 0 0117 5.5v6A1.5 1.5 0 0115.5 13H8l-3.5 3v-3H4.5A1.5 1.5 0 013 11.5v-6z' strokeLinejoin='round' />
+    </svg>
+  )
+}
 
 interface ThreadDetailProps {
   nestSlug: string
+  nest: NestDetail | null
 }
 
-export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
+export function ThreadDetail({ nestSlug, nest }: ThreadDetailProps) {
   const thread = useThreadStore((state) => state.thread)
   const threadStore = useThreadStoreApi()
   const router = useRouter()
@@ -45,6 +57,15 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
   const removeThreadVote = useRemoveThreadVote({ onSuccess: setThread })
   const saveThread = useSaveThread({ onSuccess: setThread })
   const unsaveThread = useUnsaveThread({ onSuccess: setThread })
+
+  const isPrivate = nest?.access.visibility === NestAccessContextDtoVisibility.PRIVATE
+  const isPaywalled = nest?.access.isPaywalled ?? false
+  const isWalled = isPrivate || isPaywalled
+  const walledMessage = isPrivate && isPaywalled
+    ? 'This nest is private and paywalled — only members with an active subscription will be able to open this link.'
+    : isPrivate
+      ? 'This nest is private — only members will be able to open this link.'
+      : 'This nest requires a paid subscription — people without one won\'t be able to open this link.'
 
   if (isEditing) {
     return (
@@ -74,32 +95,40 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
       </Link>
 
       <div className='flex flex-col gap-2'>
-        <div className='flex items-center gap-2'>
-          {thread.pinnedAt && <Badge variant='brand'>Pinned</Badge>}
-          {thread.lockedAt && <Badge variant='warning'>Locked</Badge>}
-          <h1 className='text-lg font-semibold'>{thread.title}</h1>
-        </div>
-
         <p className='flex items-center gap-2 text-sm text-muted-foreground'>
           <UserLink user={thread.author} />
           <RoleBadge role={thread.author.role} />
           <span>
             {' · '}
-            {formatDateTime(thread.createdAt)}
+            <span title={formatDateTime(thread.createdAt)}>{formatRelativeTime(thread.createdAt)}</span>
           </span>
           <BlockButton userId={thread.author.id} />
         </p>
+
+        <div className='flex items-center gap-2'>
+          {thread.pinnedAt && (
+            <span className='inline-flex items-center gap-1 text-xs font-medium text-muted-foreground'>
+              <PinIcon />
+              Pinned
+            </span>
+          )}
+          {thread.lockedAt && (
+            <span className='inline-flex items-center gap-1 text-xs font-medium text-muted-foreground'>
+              <LockIcon />
+              Locked
+            </span>
+          )}
+          <h1 className='text-lg font-semibold'>{thread.title}</h1>
+        </div>
       </div>
 
       {thread.attachments.length > 0 && (
         <ImageCarousel images={thread.attachments} />
       )}
 
-      <div className='rounded-md border border-border p-4'>
-        {thread.content !== null
-          ? <p className='whitespace-pre-wrap text-sm'>{thread.content}</p>
-          : <p className='text-sm italic text-muted-foreground'>Content unavailable.</p>}
-      </div>
+      {thread.content !== null
+        ? <p className='whitespace-pre-wrap text-sm'>{thread.content}</p>
+        : <p className='text-sm italic text-muted-foreground'>Content unavailable.</p>}
 
       <div className='flex items-center gap-4'>
         {thread.access.canVoteThread && (
@@ -113,10 +142,14 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
           />
         )}
 
-        <p className='text-sm text-muted-foreground'>
+        <a
+          href='#comment-section'
+          className='flex items-center gap-1 text-sm text-muted-foreground hover:underline'
+        >
+          <CommentIcon />
           {thread.commentCount}
           {' comments'}
-        </p>
+        </a>
 
         {thread.access.canSaveThread && (
           <SaveThreadButton
@@ -126,6 +159,13 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
             onUnsave={() => unsaveThread.mutate({ nestSlug, threadSlug: thread.slug })}
           />
         )}
+
+        <ShareThreadButton
+          nestSlug={nestSlug}
+          threadSlug={thread.slug}
+          isWalled={isWalled}
+          walledMessage={walledMessage}
+        />
 
         {thread.access.canEditThread && (
           <button type='button' onClick={() => setIsEditing(true)} className='text-sm text-muted-foreground hover:underline'>

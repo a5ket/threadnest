@@ -12,9 +12,9 @@ import * as zod from 'zod'
 export const platformReportCreateBodyDetailsMax = 500
 
 export const PlatformReportCreateBody = zod.object({
-  targetType: zod.enum(['THREAD', 'COMMENT', 'NEST', 'USER', 'MESSAGE']),
+  targetType: zod.enum(['NEST', 'USER', 'THREAD', 'COMMENT', 'MESSAGE']),
   targetId: zod.uuid(),
-  reason: zod.enum(['HARASSMENT', 'OTHER', 'ILLEGAL_CONTENT', 'BAN_EVASION', 'SPAM_NETWORK', 'IMPERSONATION', 'PLATFORM_RULE_VIOLATION']),
+  reason: zod.enum(['ILLEGAL_CONTENT', 'BAN_EVASION', 'SPAM_NETWORK', 'HARASSMENT', 'IMPERSONATION', 'PLATFORM_RULE_VIOLATION', 'OTHER']),
   details: zod.string().max(platformReportCreateBodyDetailsMax).optional()
 })
 

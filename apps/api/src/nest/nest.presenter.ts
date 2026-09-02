@@ -64,10 +64,11 @@ export class NestPresenter {
     }
   }
 
-  toReferenceView(nest: { name: string; slug: string }) {
+  toReferenceView(nest: { name: string; slug: string; iconKey: string | null }) {
     return {
       name: nest.name,
       slug: nest.slug,
+      iconUrl: this.resolveIconUrl(nest.iconKey),
     }
   }
 }

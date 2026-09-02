@@ -14,16 +14,18 @@ export function DiscoverFeedList({ initialPage }: DiscoverFeedListProps) {
   const threads = data.pages.flatMap((page) => page.items)
 
   return (
-    <ul className='flex flex-col gap-3'>
-      {threads.map((thread) => (
-        <ThreadSearchResultItem key={thread.id} thread={thread} />
-      ))}
+    <div className='flex flex-col gap-3'>
+      <ul className='divide-y divide-divider'>
+        {threads.map((thread) => (
+          <ThreadSearchResultItem key={thread.id} thread={thread} />
+        ))}
+      </ul>
 
       {hasNextPage && <InfiniteScrollSentinel onVisible={fetchNextPage} disabled={isFetchingNextPage} />}
 
       {isFetchingNextPage && (
         <p className='py-4 text-center text-sm text-muted-foreground'>Loading more...</p>
       )}
-    </ul>
+    </div>
   )
 }

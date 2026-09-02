@@ -35,8 +35,8 @@ export default async function ThreadPage({
         />
       )}
 
-      <ThreadDetail nestSlug={nestSlug} />
-      <CommentSection nestSlug={nestSlug} threadSlug={threadSlug} sortBy={sortBy} initialPage={commentPage} />
+      <ThreadDetail nestSlug={nestSlug} nest={nest} />
+      <CommentSection nestSlug={nestSlug} threadSlug={threadSlug} sortBy={sortBy} initialPage={commentPage} nest={nest} />
     </div>
   )
 }

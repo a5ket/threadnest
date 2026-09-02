@@ -1,5 +1,6 @@
 'use client'
 
+import { AutoResizeTextarea } from '@/common/components/auto-resize-textarea'
 import { type AttachmentItem, MultiImageUploadField } from '@/common/components/multi-image-upload-field'
 import { useUploadAttachment } from '@/features/attachment/attachment.hooks'
 import { useCreateThreadComment } from '@/features/comment/comment.hooks'
@@ -16,6 +17,7 @@ interface CreateThreadCommentFormProps {
 }
 
 export function CreateThreadCommentForm({ nestSlug, threadSlug, onCreated }: CreateThreadCommentFormProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const [attachments, setAttachments] = useState<AttachmentItem[]>([])
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
   const uploadAttachment = useUploadAttachment()
@@ -38,6 +40,7 @@ export function CreateThreadCommentForm({ nestSlug, threadSlug, onCreated }: Cre
     onSuccess: (comment) => {
       reset()
       setAttachments([])
+      setIsExpanded(false)
       onCreated(comment)
     },
     onError: (error) => {
@@ -81,25 +84,49 @@ export function CreateThreadCommentForm({ nestSlug, threadSlug, onCreated }: Cre
 
   const isPending = createComment.isPending || isSubmitting || isUploadingAttachment
 
+  if (!isExpanded) {
+    return (
+      <button
+        type='button'
+        onClick={() => setIsExpanded(true)}
+        className='w-full rounded-md border border-input bg-background px-3 py-2.5 text-left text-sm text-muted-foreground outline-none transition-colors hover:border-ring'
+      >
+        Add a comment...
+      </button>
+    )
+  }
+
   return (
     <form onSubmit={onSubmit} noValidate className='flex flex-col gap-2'>
-      <textarea
-        id='comment-content'
-        rows={3}
-        placeholder='Add a comment...'
-        aria-invalid={errors.content ? 'true' : 'false'}
-        aria-describedby={errors.content ? 'comment-content-error' : undefined}
-        className='rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-destructive'
-        {...register('content')}
-      />
+      <div className='flex flex-col rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring'>
+        <AutoResizeTextarea
+          id='comment-content'
+          autoFocus
+          placeholder='Add a comment...'
+          aria-invalid={errors.content ? 'true' : 'false'}
+          aria-describedby={errors.content ? 'comment-content-error' : undefined}
+          className='min-h-[40px] border-0 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground'
+          {...register('content')}
+        />
 
-      <MultiImageUploadField
-        items={attachments}
-        onItemsChange={setAttachments}
-        onUploadingChange={setIsUploadingAttachment}
-        maxFiles={1}
-        onUpload={(file) => uploadAttachment.mutateAsync(file)}
-      />
+        <div className='flex items-end justify-between gap-2 px-2 pb-2'>
+          <MultiImageUploadField
+            items={attachments}
+            onItemsChange={setAttachments}
+            onUploadingChange={setIsUploadingAttachment}
+            maxFiles={1}
+            onUpload={(file) => uploadAttachment.mutateAsync(file)}
+          />
+
+          <button
+            type='submit'
+            disabled={isPending}
+            className='shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
+          >
+            {isPending ? 'Posting...' : 'Comment'}
+          </button>
+        </div>
+      </div>
 
       {errors.content && (
         <p id='comment-content-error' role='alert' className='text-sm text-destructive'>
@@ -112,14 +139,6 @@ export function CreateThreadCommentForm({ nestSlug, threadSlug, onCreated }: Cre
           {errors.root.message}
         </p>
       )}
-
-      <button
-        type='submit'
-        disabled={isPending}
-        className='self-start rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover disabled:opacity-50'
-      >
-        {isPending ? 'Posting...' : 'Comment'}
-      </button>
     </form>
   )
 }

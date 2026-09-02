@@ -1,4 +1,4 @@
-import { formatDateTime } from '@/common/format-date'
+import { formatDateTime, formatRelativeTime } from '@/common/format-date'
 import type { CommentAuthorItemResponseDto } from '@/generated/api/models'
 import Link from 'next/link'
 
@@ -8,7 +8,7 @@ interface UserActivityCommentItemProps {
 
 export function UserActivityCommentItem({ comment }: UserActivityCommentItemProps) {
   return (
-    <li className='rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm'>
+    <li className='p-3 transition-colors hover:bg-muted/50'>
       <div className='flex items-start gap-3'>
         <div className='min-w-0 flex-1'>
           <div className='flex items-center gap-2 text-xs text-muted-foreground'>
@@ -28,19 +28,23 @@ export function UserActivityCommentItem({ comment }: UserActivityCommentItemProp
             {comment.content}
           </Link>
 
-          <p className='mt-1 text-xs text-muted-foreground'>{formatDateTime(comment.createdAt)}</p>
-        </div>
+          <p className='mt-1 text-xs text-muted-foreground' title={formatDateTime(comment.createdAt)}>{formatRelativeTime(comment.createdAt)}</p>
 
-        {comment.attachment && (
-          <Link href={`/n/${comment.nest.slug}/t/${comment.thread.slug}/c/${comment.id}`} className='shrink-0'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={comment.attachment.url}
-              alt=''
-              className='h-16 w-16 rounded-md object-cover'
-            />
-          </Link>
-        )}
+          {comment.attachment && (
+            <Link
+              href={`/n/${comment.nest.slug}/t/${comment.thread.slug}/c/${comment.id}`}
+              className='mt-3 block overflow-hidden rounded-md border border-border bg-background'
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={comment.attachment.url}
+                alt=''
+                className='max-h-[480px] w-full object-cover'
+                style={{ aspectRatio: `${comment.attachment.width} / ${comment.attachment.height}` }}
+              />
+            </Link>
+          )}
+        </div>
       </div>
     </li>
   )

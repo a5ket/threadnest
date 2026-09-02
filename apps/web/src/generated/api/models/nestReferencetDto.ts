@@ -10,4 +10,9 @@ export interface NestReferencetDto {
   name: string
   /** Unique nest slug */
   slug: string
+  /**
+     * Nest icon URL
+     * @nullable
+     */
+  iconUrl: string | null
 }

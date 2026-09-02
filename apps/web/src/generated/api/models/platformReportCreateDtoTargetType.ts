@@ -8,9 +8,9 @@
 export type PlatformReportCreateDtoTargetType = typeof PlatformReportCreateDtoTargetType[keyof typeof PlatformReportCreateDtoTargetType]
 
 export const PlatformReportCreateDtoTargetType = {
-  THREAD: 'THREAD',
-  COMMENT: 'COMMENT',
   NEST: 'NEST',
   USER: 'USER',
+  THREAD: 'THREAD',
+  COMMENT: 'COMMENT',
   MESSAGE: 'MESSAGE'
 } as const
