@@ -171,7 +171,9 @@ import { StripeWebhookService } from './subscription/webhook/stripe-webhook.serv
     NestInviteService,
     NestJoinRequestService,
     UserNestPreferenceService,
-    NestAccess
+    NestAccess,
+    NestPaywallService,
+    NestSettingsService
   ]
 })
 export class NestModule { }
