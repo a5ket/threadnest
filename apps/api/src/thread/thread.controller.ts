@@ -9,6 +9,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { OptionalCurrentUser } from 'src/security/decorators/optional-current-user.decorator'
 import { RateLimit } from 'src/security/decorators/rate-limit.decorator'
 import { OptionalAuthGuard } from 'src/security/guards/optional-auth.guard'
+import { ThreadFeedQueryDto } from './dto/thread-feed.query.dto'
 import { ThreadSearchResponseDto } from './dto/thread-search-response.dto'
 import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
 import { ThreadService } from './thread.service'
@@ -32,5 +33,18 @@ export class ThreadController {
     @OptionalCurrentUser() user: AuthUser | null,
   ) {
     return this.threads.searchThreads(query, user?.id)
+  }
+
+  @Get('discover')
+  @UseGuards(OptionalAuthGuard)
+  @RateLimit({ limit: 30, ttlMs: 60_000 })
+  @ApiOperation({ operationId: 'threadDiscover', summary: 'Recent threads from public nests, for viewers with no personalized feed yet' })
+  @ApiPaginatedResponse({ status: 200, description: 'Recent threads', type: ThreadSearchResponseDto })
+  @ApiExceptionResponses(ValidationException, InvalidCursorException)
+  discover(
+    @Query() query: ThreadFeedQueryDto,
+    @OptionalCurrentUser() user: AuthUser | null,
+  ) {
+    return this.threads.discoverFeed(query, user?.id)
   }
 }

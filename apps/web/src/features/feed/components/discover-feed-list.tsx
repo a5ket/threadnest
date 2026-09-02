@@ -2,15 +2,15 @@
 
 import { InfiniteScrollSentinel } from '@/common/components/infinite-scroll-sentinel'
 import { ThreadSearchResultItem } from '@/features/thread/components/thread-search-result-item'
-import { useFeed } from '../feed.hooks'
+import { useDiscoverFeed } from '../feed.hooks'
 import type { FeedPage } from '../feed.server'
 
-interface FeedListProps {
+interface DiscoverFeedListProps {
   initialPage: FeedPage
 }
 
-export function FeedList({ initialPage }: FeedListProps) {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeed(initialPage)
+export function DiscoverFeedList({ initialPage }: DiscoverFeedListProps) {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useDiscoverFeed(initialPage)
   const threads = data.pages.flatMap((page) => page.items)
 
   return (
@@ -23,10 +23,6 @@ export function FeedList({ initialPage }: FeedListProps) {
 
       {isFetchingNextPage && (
         <p className='py-4 text-center text-sm text-muted-foreground'>Loading more...</p>
-      )}
-
-      {!hasNextPage && !isFetchingNextPage && threads.length > 0 && (
-        <p className='py-4 text-center text-sm text-muted-foreground'>{'You\'ve reached the end.'}</p>
       )}
     </ul>
   )

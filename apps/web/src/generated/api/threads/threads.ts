@@ -63,6 +63,10 @@ import type {
   NestThreadVote404,
   NestThreadVote429,
   ThreadCreateDto,
+  ThreadDiscover200,
+  ThreadDiscover400,
+  ThreadDiscover429,
+  ThreadDiscoverParams,
   ThreadSearch200,
   ThreadSearch400,
   ThreadSearch429,
@@ -779,6 +783,57 @@ export const getThreadSearchUrl = (params: ThreadSearchParams) => {
  */
 export const threadSearch = async (params: ThreadSearchParams, options?: RequestInit): Promise<threadSearchResponse> => {
   return apiFetch<threadSearchResponse>(getThreadSearchUrl(params),
+    {
+      ...options,
+      method: 'GET'
+
+    }
+  )
+}
+
+export type threadDiscoverResponse200 = {
+  data: ThreadDiscover200
+  status: 200
+}
+
+export type threadDiscoverResponse400 = {
+  data: ThreadDiscover400
+  status: 400
+}
+
+export type threadDiscoverResponse429 = {
+  data: ThreadDiscover429
+  status: 429
+}
+
+export type threadDiscoverResponseSuccess = (threadDiscoverResponse200) & {
+  headers: Headers
+}
+export type threadDiscoverResponseError = (threadDiscoverResponse400 | threadDiscoverResponse429) & {
+  headers: Headers
+}
+
+export type threadDiscoverResponse = (threadDiscoverResponseSuccess | threadDiscoverResponseError)
+
+export const getThreadDiscoverUrl = (params: ThreadDiscoverParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/threads/discover?${stringifiedParams}` : `/threads/discover`
+}
+
+/**
+ * @summary Recent threads from public nests, for viewers with no personalized feed yet
+ */
+export const threadDiscover = async (params: ThreadDiscoverParams, options?: RequestInit): Promise<threadDiscoverResponse> => {
+  return apiFetch<threadDiscoverResponse>(getThreadDiscoverUrl(params),
     {
       ...options,
       method: 'GET'

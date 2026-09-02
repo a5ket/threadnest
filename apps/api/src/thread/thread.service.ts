@@ -115,6 +115,12 @@ export class ThreadService {
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
+  async discoverFeed(query: ThreadFeedQueryDto, actorUserId?: string) {
+    const page = await this.threadsRepo.listDiscoverFeed(query, actorUserId)
+
+    return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
+  }
+
   async updateThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ThreadUpdateDto) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 

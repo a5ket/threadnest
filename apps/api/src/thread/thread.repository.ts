@@ -305,6 +305,64 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  async listDiscoverFeed(query: ThreadFeedQueryDto, viewerId?: string) {
+    let cursorSql = Prisma.sql`TRUE`
+
+    if (query.cursor) {
+      try {
+        const { date, id } = decodeCursor(query.cursor)
+        cursorSql = Prisma.sql`(t."createdAt" < ${date}) OR (t."createdAt" = ${date} AND t.id < ${id})`
+      } catch {
+        throw new InvalidCursorException()
+      }
+    }
+
+    const visibilitySql = viewerId
+      ? Prisma.sql`(ns.visibility = 'PUBLIC' OR EXISTS (SELECT 1 FROM "NestMember" vm WHERE vm."nestId" = t."nestId" AND vm."userId" = ${viewerId}))`
+      : Prisma.sql`ns.visibility = 'PUBLIC'`
+
+    const rows = await this.prisma.$queryRaw<ThreadFeedRow[]>(Prisma.sql`
+      SELECT
+        t.id, t.title, t.slug, t."createdAt", t."updatedAt", t."lastCommentAt",
+        t."commentCount", t.score, t."lockedAt", t."pinnedAt", t."authorId", t."nestId",
+        n.name AS "nestName",
+        n.slug AS "nestSlug",
+        up.username AS "authorUsername",
+        up."displayName" AS "authorDisplayName",
+        up."avatarKey" AS "authorAvatarKey",
+        nm.role AS "authorRole",
+        tv.type AS "viewerVote",
+        (st."threadId" IS NOT NULL) AS "viewerSaved",
+        ta.id AS "attachmentId",
+        ta.key AS "attachmentKey",
+        ta.width AS "attachmentWidth",
+        ta.height AS "attachmentHeight"
+      FROM "Thread" t
+      JOIN "NestSettings" ns ON ns."nestId" = t."nestId"
+      JOIN "Nest" n ON n.id = t."nestId"
+      LEFT JOIN "UserProfile" up ON up."userId" = t."authorId"
+      LEFT JOIN "NestMember" nm ON nm."userId" = t."authorId" AND nm."nestId" = t."nestId"
+      LEFT JOIN "ThreadVote" tv ON tv."threadId" = t.id AND tv."userId" = ${viewerId ?? ''}
+      LEFT JOIN "SavedThread" st ON st."threadId" = t.id AND st."userId" = ${viewerId ?? ''}
+      LEFT JOIN LATERAL (
+        SELECT id, key, width, height FROM "ThreadAttachment"
+        WHERE "threadId" = t.id ORDER BY "order" ASC LIMIT 1
+      ) ta ON true
+      WHERE t."deletedAt" IS NULL AND n."deletedAt" IS NULL AND ${visibilitySql} AND ${cursorSql}
+      ORDER BY t."createdAt" DESC, t.id DESC
+      LIMIT ${query.limit + 1}
+    `)
+
+    const hasMore = rows.length > query.limit
+    const page = hasMore ? rows.slice(0, query.limit) : rows
+    const items = page.map((row) => this.toGlobalThreadSearchResult({ ...row, rank: 0 }))
+    const last = page.at(-1)
+
+    const nextCursor = last && hasMore ? encodeCursor(last.createdAt, last.id) : null
+
+    return { items, meta: { nextCursor, hasMore } }
+  }
+
   // Cross-nest, ordered by when the viewer saved each thread rather than thread recency/rank.
   async listSaved(viewerId: string, query: ThreadSavedQueryDto) {
     let cursorSql = Prisma.sql`TRUE`
