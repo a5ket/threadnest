@@ -15,6 +15,11 @@ import { ReportAlreadyResolvedException } from './exceptions/report-already-reso
 import { ReportNotFoundException } from './exceptions/report-not-found.exception'
 import { ReportService } from './report.service'
 
+/**
+ * Nest-moderator review queue for content reports. Filing a report happens through the
+ * target-specific endpoints instead — {@link NestThreadReportController} and
+ * {@link CommentReportController}.
+ */
 @ApiTags('Reports')
 @Controller('nests/:nestSlug/reports')
 @Authenticated()

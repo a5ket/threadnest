@@ -32,6 +32,7 @@ import { ThreadVoteRepository } from './thread-vote.repository'
 import { SavedThreadRepository } from './saved-thread.repository'
 import { ThreadPolicySubject } from './types/thread.policy-subject'
 
+/** Thread lifecycle: creation, edits, moderation (lock/pin/delete), voting, and saving. */
 @Injectable()
 export class ThreadService {
   constructor(
@@ -50,12 +51,18 @@ export class ThreadService {
     this.logger.setContext(ThreadService.name)
   }
 
+  /** @throws {InvalidAttachmentKeyException} An attachment key isn't namespaced under `actorUserId`'s own uploads. */
   private assertOwnsAttachments(attachments: AttachmentInputDto[] | undefined, actorUserId: string) {
     if (attachments?.some((a) => !isAttachmentKeyOwnedBy(a.key, actorUserId))) {
       throw new InvalidAttachmentKeyException()
     }
   }
 
+  /**
+   * @param nestSlug - The nest to post in.
+   * @param actorUserId - The thread's author.
+   * @param dto - Title, content, and any attachments.
+   */
   async createThread(nestSlug: string, actorUserId: string, dto: ThreadCreateDto) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -83,6 +90,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(thread, threadCtx)
   }
 
+  /** @param actorUserId - The viewer, if signed in. */
   async getThread(nestSlug: string, threadSlug: string, actorUserId?: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
     const threadCtx = await this.threadsPolicy.assertCanReadThread(thread, actorUserId)
@@ -90,15 +98,22 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(thread, threadCtx)
   }
 
+  /** The bare policy-subject shape, unscoped by nest — used where only the id is known. */
   async getById(threadId: string) {
     return this.threadsRepo.getById(threadId)
   }
 
+  /** @param actorUserId - The viewer, if signed in; determines `viewerVote`/`viewerSaved`. */
   async getByNestSlug(nestSlug: string, threadSlug: string, actorUserId?: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
     return this.threadsRepo.getBySlug(nest.id, threadSlug, actorUserId)
   }
 
+  /**
+   * @param nestSlug - The nest whose threads to list.
+   * @param query - Sort/pagination, and an optional in-nest search term.
+   * @param actorUserId - The viewer, if signed in.
+   */
   async listByNest(nestSlug: string, query: ThreadQueryDto, actorUserId?: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -109,18 +124,28 @@ export class ThreadService {
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSummaryView(t))), meta: page.meta }
   }
 
+  /** Cross-nest full-text search, gated by nest visibility (public nests, or private nests `actorUserId` belongs to). */
   async searchThreads(query: ThreadSearchQueryDto, actorUserId?: string) {
     const page = await this.threadsRepo.searchGlobal(query.search, query.limit, query.cursor, actorUserId)
 
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
+  /**
+   * Cross-nest chronological discovery feed — public nests, plus the viewer's own private nests
+   * if signed in. Unlike {@link listFeed}, works for anonymous visitors too.
+   */
   async discoverFeed(query: ThreadFeedQueryDto, actorUserId?: string) {
     const page = await this.threadsRepo.listDiscoverFeed(query, actorUserId)
 
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
+  /**
+   * @param dto - Fields to change. If `attachments` is provided, it fully replaces the existing
+   *   set — any dropped keys are deleted from storage after the update commits.
+   * @throws {InvalidAttachmentKeyException} An attachment key isn't `actorUserId`'s own.
+   */
   async updateThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ThreadUpdateDto) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -143,6 +168,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** By the author or a nest moderator — see {@link removeByPlatform} for platform-level removal. */
   async deleteThread(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -151,7 +177,14 @@ export class ThreadService {
     await this.softDeleteAndNotify(thread, actorUserId, false)
   }
 
-  // Bypasses nest-level membership/permission checks: platform authority supersedes them.
+  /**
+   * Platform-admin removal — bypasses nest-level membership/permission checks entirely, since
+   * platform authority supersedes them.
+   *
+   * @param threadId - The thread to remove.
+   * @param actorUserId - The platform admin performing the removal.
+   * @throws {ThreadAlreadyDeletedException} Already deleted.
+   */
   async removeByPlatform(threadId: string, actorUserId: string) {
     const thread = await this.threadsRepo.getById(threadId)
 
@@ -164,8 +197,15 @@ export class ThreadService {
     return thread
   }
 
-  // Bulk moderation sweep: intentionally skips per-thread events, unlike removeByPlatform — one
-  // notification per removed thread would spam whoever's being purged for a handful of comments.
+  /**
+   * Bulk moderation sweep, e.g. when a user is banned platform-wide. Intentionally skips
+   * per-thread events, unlike {@link removeByPlatform} — one notification per removed thread
+   * would spam whoever's being purged for a large number of threads.
+   *
+   * @param authorId - Every active thread by this author is removed.
+   * @param actorUserId - The platform admin performing the sweep.
+   * @returns The number of threads removed.
+   */
   async removeAllByAuthorPlatform(authorId: string, actorUserId: string) {
     const threads = await this.threadsRepo.listActiveByAuthor(authorId)
 
@@ -189,6 +229,10 @@ export class ThreadService {
     return threads.length
   }
 
+  /**
+   * @param deletedByPlatform - Suppresses the "moderator removed" log line, since platform
+   *   removals are logged one layer up in `PlatformContentService`.
+   */
   private async softDeleteAndNotify(thread: ThreadPolicySubject, actorUserId: string, deletedByPlatform: boolean) {
     await this.transactionManager.run(async (tx) => {
       await this.threadsRepo.softDelete(thread.id, actorUserId, tx, deletedByPlatform)
@@ -213,6 +257,7 @@ export class ThreadService {
     }))
   }
 
+  /** @param actorUserId - A nest moderator or above. */
   async lockThread(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -232,6 +277,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** @param actorUserId - A nest moderator or above. */
   async unlockThread(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -251,6 +297,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** @param actorUserId - A nest moderator or above. */
   async pinThread(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -270,6 +317,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** @param actorUserId - A nest moderator or above. */
   async unpinThread(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -289,6 +337,10 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /**
+   * Upserts the viewer's vote and adjusts the thread's score by the resulting delta (accounting
+   * for any previous vote being replaced, not just added).
+   */
   async voteOnThread(nestSlug: string, threadSlug: string, actorUserId: string, type: VoteType) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -306,6 +358,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** Removes the viewer's vote and reverses its effect on the thread's score. */
   async removeThreadVote(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -323,6 +376,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** Adds the thread to the viewer's saved list, for later retrieval via {@link listSavedThreads}. */
   async saveThread(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -336,6 +390,7 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** Removes the thread from the viewer's saved list. */
   async unsaveThread(nestSlug: string, threadSlug: string, actorUserId: string) {
     const thread = await this.getByNestSlug(nestSlug, threadSlug, actorUserId)
 
@@ -349,28 +404,36 @@ export class ThreadService {
     return this.threadPresenter.toDetailView(updated, threadCtx)
   }
 
+  /** @param actorUserId - Lists this user's saved threads, ordered by when each was saved. */
   async listSavedThreads(actorUserId: string, query: ThreadSavedQueryDto) {
     const page = await this.threadsRepo.listSaved(actorUserId, query)
 
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
+  /** @param actorUserId - Cross-nest chronological feed across every nest this user is a member of. */
   async listFeed(actorUserId: string, query: ThreadFeedQueryDto) {
     const page = await this.threadsRepo.listFeed(actorUserId, query)
 
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
+  /**
+   * @param authorId - Lists this user's threads.
+   * @param viewerId - The viewer, if signed in; gates which of `authorId`'s private-nest threads show.
+   */
   async listByAuthor(authorId: string, viewerId: string | undefined, query: ThreadFeedQueryDto) {
     const page = await this.threadsRepo.listByAuthor(authorId, viewerId, query)
 
     return { items: await Promise.all(page.items.map((t) => this.threadPresenter.toSearchResultView(t))), meta: page.meta }
   }
 
+  /** Called by {@link CommentService} when a comment is created/removed — not exposed as its own endpoint. */
   async adjustCommentCount(threadId: string, delta: number, db?: Database) {
     return this.threadsRepo.adjustCommentCount(threadId, delta, db)
   }
 
+  /** Called by {@link CommentService} on comment creation, to keep "last activity" sort order accurate. */
   async updateLastCommentAt(threadId: string, date: Date, db?: Database) {
     return this.threadsRepo.updateLastCommentAt(threadId, date, db)
   }

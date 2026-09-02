@@ -13,6 +13,7 @@ import { AlreadyMemberException } from './exceptions/already-member.exception'
 import { MemberNotFoundException } from './exceptions/member-not-found.exception'
 import { NestMemberRepository } from './nest-member.repository'
 
+/** Prisma implementation of {@link NestMemberRepository} — see that abstract class for the method contracts. */
 @Injectable()
 export class NestMemberPrismaRepository extends NestMemberRepository {
   constructor(private readonly prisma: PrismaService) { super() }

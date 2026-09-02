@@ -13,6 +13,7 @@ import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 import { UserNotFoundException } from 'src/user/exceptions/user-not-found.exception'
 
+/** The current user's outgoing blocks: list, create, check, remove. */
 @ApiTags('Blocks')
 @Controller('me/blocks')
 @UseInterceptors(ResponseInterceptor)

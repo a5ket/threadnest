@@ -17,6 +17,7 @@ import { UserProfileResponseDto } from 'src/user/dto/user-profile-response.dto'
 import { UsernameTakenException } from 'src/user/exceptions/username-taken.exception'
 import { UserService } from 'src/user/user.service'
 
+/** The signed-in user's profile: view, update, and avatar upload/removal. */
 @ApiTags('Me')
 @Controller('me/profile')
 @Authenticated()

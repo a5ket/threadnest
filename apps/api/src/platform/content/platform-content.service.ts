@@ -20,6 +20,16 @@ export class PlatformContentService {
     this.logger.setContext(PlatformContentService.name)
   }
 
+  /**
+   * Removes a thread with platform-moderator authority, bypassing nest-level permission checks.
+   * Publishes {@link PlatformThreadRemovedEvent} for downstream notification/action-log consumers.
+   *
+   * @param threadId - The thread to remove.
+   * @param actorUserId - The platform moderator performing the removal.
+   * @throws {InsufficientPermissionsException} Not a platform moderator or admin.
+   * @throws {ThreadNotFoundException} No thread with this id.
+   * @throws {ThreadAlreadyDeletedException} Already deleted.
+   */
   async removeThread(threadId: string, actorUserId: string) {
     await this.policy.assertIsModerator(actorUserId)
 
@@ -38,6 +48,17 @@ export class PlatformContentService {
     }))
   }
 
+  /**
+   * Removes a comment with platform-moderator authority, bypassing nest-level permission checks.
+   * Publishes {@link PlatformCommentRemovedEvent} with a truncated 200-char excerpt of the
+   * removed content, for downstream notification/action-log consumers.
+   *
+   * @param commentId - The comment to remove.
+   * @param actorUserId - The platform moderator performing the removal.
+   * @throws {InsufficientPermissionsException} Not a platform moderator or admin.
+   * @throws {CommentNotFoundException} No comment with this id.
+   * @throws {CommentAlreadyDeletedException} Already deleted.
+   */
   async removeComment(commentId: string, actorUserId: string) {
     await this.policy.assertIsModerator(actorUserId)
 
@@ -57,6 +78,17 @@ export class PlatformContentService {
     }))
   }
 
+  /**
+   * Bulk-removes every thread and comment authored by a user, with platform-moderator authority —
+   * used when purging a suspended/banned user's content platform-wide. Publishes
+   * {@link PlatformContentBulkRemovedEvent} only if anything was actually removed, so purging an
+   * already-clean user is a silent no-op that doesn't spam downstream consumers.
+   *
+   * @param userId - The author whose content to remove.
+   * @param actorUserId - The platform moderator performing the removal.
+   * @returns Counts of threads and comments removed.
+   * @throws {InsufficientPermissionsException} Not a platform moderator or admin.
+   */
   async removeAllContentByUser(userId: string, actorUserId: string) {
     await this.policy.assertIsModerator(actorUserId)
 

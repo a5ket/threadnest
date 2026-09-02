@@ -9,10 +9,20 @@ import { PlatformActionLogQueryDto } from './dto/platform-action-log.query.dto'
 import { PLATFORM_ACTION_LOG_SELECT } from './selects/platform-action-log.select'
 import { PlatformActionLogDataByType } from './types/platform-action-log-data'
 
+/** Persistence for the platform-wide moderation audit trail. */
 @Injectable()
 export class PlatformActionLogRepository {
   constructor(private readonly prisma: PrismaService) { }
 
+  /**
+   * @param actorId - The moderator/admin who performed the action.
+   * @param targetUserId - The user the action targeted, or `null` if not user-targeted.
+   * @param nestId - The nest the action relates to, or `null` if not nest-scoped.
+   * @param type - The kind of action.
+   * @param data - Type-specific details, keyed by `type` via {@link PlatformActionLogDataByType}.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The created log entry.
+   */
   async create<T extends PlatformActionType>(
     actorId: string,
     targetUserId: string | null,
@@ -27,6 +37,12 @@ export class PlatformActionLogRepository {
     })
   }
 
+  /**
+   * @param query - Pagination cursor/limit plus optional filters (type, actor, target user, nest,
+   * created-at range).
+   * @returns A cursor-paginated page of log entries, newest first.
+   * @throws {InvalidCursorException} `query.cursor` is malformed.
+   */
   async list(query: PlatformActionLogQueryDto) {
     const { limit, cursor, type, actorId, targetUserId, nestId, createdAfter, createdBefore } = query
 

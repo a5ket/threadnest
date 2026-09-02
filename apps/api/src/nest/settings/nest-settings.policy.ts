@@ -8,6 +8,7 @@ export class NestSettingsPolicy {
     private readonly nestAccess: NestAccess
   ) { }
 
+  /** @throws {InsufficientPermissionsException} Not a moderator or above in this nest. */
   async assertCanViewSettings(nestId: string, actorUserId: string) {
     const access = await this.nestAccess.getContext(nestId, actorUserId)
 
@@ -16,6 +17,7 @@ export class NestSettingsPolicy {
     }
   }
 
+  /** @throws {InsufficientPermissionsException} `actorUserId` isn't this nest's owner. */
   async assertCanUpdateSettings(nestId: string, actorUserId: string) {
     const access = await this.nestAccess.getContext(nestId, actorUserId)
 

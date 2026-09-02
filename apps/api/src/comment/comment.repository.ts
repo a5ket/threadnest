@@ -42,15 +42,39 @@ const SORTABLE_COLUMNS = {
   score: Prisma.sql`"score"`,
 } as const
 
+/**
+ * Persistence for comments, including the recursive-CTE tree queries behind
+ * {@link getByThread}/{@link getReplies}.
+ */
 @Injectable()
 export class CommentRepository {
   constructor(private readonly prisma: PrismaService) { }
 
+  /**
+   * @param comment - A row selected via {@link commentViewerSelect}, with the viewer's vote as a
+   * (0- or 1-element) relation array.
+   * @returns The same comment, with `viewerVote` flattened to a single value.
+   */
   private toCommentWithRole(comment: CommentViewerSelectResult): CommentWithRole {
     const { commentVotes, ...rest } = comment
     return { ...rest, viewerVote: commentVotes[0]?.type ?? null }
   }
 
+  /**
+   * Builds the recursive CTE shared by {@link getTree}/{@link getByThread}/{@link getReplies}:
+   * walk from `anchor` (one or more root comments) down through replies up to `maxDepth`,
+   * capping each level at `replyLimit` replies (ordered by `column`/`order`), then joins in
+   * author/attachment/vote/block info for the resulting rows in a single query.
+   *
+   * @param anchor - SQL `WHERE` fragment selecting the root row(s) to start from.
+   * @param column - The column driving `orderBy`'s sort (score/createdAt/updatedAt).
+   * @param order - `ASC` or `DESC`, matching `orderBy`.
+   * @param maxDepth - How many levels of replies to include below the anchor.
+   * @param replyLimit - Max replies fetched per parent, per level.
+   * @param orderBy - Full SQL `ORDER BY` fragment for the final result set.
+   * @param viewerId - Used to join in the viewer's own vote and block relationships.
+   * @param nestId - Used to join in each author's role within this specific nest.
+   */
   private buildTreeSql(
     anchor: Prisma.Sql,
     column: Prisma.Sql,
@@ -100,6 +124,15 @@ export class CommentRepository {
     `
   }
 
+  /**
+   * Comment listings can sort by `score` (numeric cursor) as well as timestamp fields, unlike
+   * most cursor-paginated listings in this codebase — so the cursor codec used depends on `sortBy`.
+   *
+   * @param cursor - The raw cursor, or a falsy value for the first page.
+   * @param sortBy - Which cursor encoding to use.
+   * @returns The decoded cursor, or `null` for the first page.
+   * @throws {InvalidCursorException} `cursor` is malformed.
+   */
   private decodeCommentCursor(cursor: string | null | undefined, sortBy: CommentSortBy): { value: Date | number; id: string } | null {
     if (!cursor) {
       return null
@@ -117,6 +150,12 @@ export class CommentRepository {
     }
   }
 
+  /**
+   * @param decoded - The decoded cursor from {@link decodeCommentCursor}, or `null` for the first page.
+   * @param sortBy - Which column the cursor's `value` applies to.
+   * @param sortAscending - The listing's sort direction, which flips the comparison operators.
+   * @returns A Prisma `where` fragment for "everything after this cursor", or `{}` for the first page.
+   */
   private buildCursorWhere(
     decoded: { value: Date | number; id: string } | null,
     sortBy: CommentSortBy,
@@ -162,6 +201,7 @@ export class CommentRepository {
     return { items, total, hasNextPage, nextCursor }
   }
 
+  /** The full subtree rooted at one comment, unpaginated. Currently unused by any caller in this codebase. */
   getTree(commentId: string, nestId: string, viewerId: string | null, options: Omit<CommentTreeOptions, 'limit' | 'cursor'>) {
     const { maxDepth, replyLimit, sortBy, sortAscending } = options
     const column = SORTABLE_COLUMNS[sortBy]
@@ -177,6 +217,10 @@ export class CommentRepository {
     return this.prisma.$queryRaw<CommentNode[]>(sql)
   }
 
+  /**
+   * Paginates root comments first, then fetches each root's reply subtree via {@link buildTreeSql}
+   * in a single follow-up query — two queries total, regardless of tree size.
+   */
   async getByThread(threadId: string, nestId: string, viewerId: string | null, options: CommentTreeOptions): Promise<CommentPage> {
     const { maxDepth, replyLimit, sortBy, sortAscending, limit, cursor } = options
     const column = SORTABLE_COLUMNS[sortBy]
@@ -208,6 +252,10 @@ export class CommentRepository {
     return { items, meta: { total, limit, hasMore: hasNextPage, nextCursor } }
   }
 
+  /**
+   * Same two-query pagination strategy as {@link getByThread}, rooted at a comment's direct
+   * replies instead of a thread's top-level comments.
+   */
   async getReplies(parentId: string, nestId: string, viewerId: string | null, options: CommentTreeOptions): Promise<CommentPage> {
     const { maxDepth, replyLimit, sortBy, sortAscending, limit, cursor } = options
     const column = SORTABLE_COLUMNS[sortBy]
@@ -239,7 +287,12 @@ export class CommentRepository {
     return { items, meta: { total, limit, hasMore: hasNextPage, nextCursor } }
   }
 
-  // For call sites where nestId/viewerId is only known after an initial getById lookup.
+  /**
+   * Viewer-aware re-fetch, for call sites where `nestId`/`viewerId` is only known after an
+   * initial {@link getById} lookup.
+   *
+   * @throws {CommentNotFoundException} No such comment.
+   */
   async getByIdForViewer(commentId: string, nestId: string, viewerId?: string) {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId },
@@ -253,6 +306,11 @@ export class CommentRepository {
     return this.toCommentWithRole(comment)
   }
 
+  /**
+   * The bare policy-subject shape, unscoped by nest/viewer — used where only the id is known.
+   *
+   * @throws {CommentNotFoundException} No such comment.
+   */
   async getById(commentId: string) {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId },
@@ -266,6 +324,16 @@ export class CommentRepository {
     return comment
   }
 
+  /**
+   * Creates a top-level comment on a thread — see {@link createReply} for a reply to another comment.
+   *
+   * @param threadId - The thread to comment on.
+   * @param authorId - The comment's author.
+   * @param nestId - The thread's nest, used to resolve the author's nest role in the response.
+   * @param dto - Content and optional attachment.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The created comment.
+   */
   async create(threadId: string, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
     const comment = await db.comment.create({
       data: {
@@ -281,6 +349,7 @@ export class CommentRepository {
     return this.toCommentWithRole(comment)
   }
 
+  /** Creates the reply and increments the parent's `replyCount` in the same call. */
   async createReply(parentComment: Comment, authorId: string, nestId: string, dto: CommentCreateDto, db: Database = this.prisma) {
     const reply = await db.comment.create({
       data: {
@@ -304,6 +373,15 @@ export class CommentRepository {
     return this.toCommentWithRole(reply)
   }
 
+  /**
+   * @param commentId - The comment to update.
+   * @param nestId - The thread's nest, used to resolve the author's nest role in the response.
+   * @param dto - The new content.
+   * @param viewerId - The viewer, used to resolve their vote on the updated comment.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The updated comment.
+   * @throws {CommentNotFoundException} No comment with this id.
+   */
   async updateById(commentId: string, nestId: string, dto: CommentUpdateDto, viewerId?: string, db: Database = this.prisma) {
     try {
       const comment = await db.comment.update({
@@ -321,6 +399,14 @@ export class CommentRepository {
     }
   }
 
+  /**
+   * @param commentId - The comment to delete.
+   * @param deletedById - The user performing the deletion.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @param deletedByPlatform - Whether this is a platform-level removal (bypassing nest
+   * moderation), used by {@link CommentPresenter} to decide who the deletion is attributed to.
+   * @throws {CommentNotFoundException} No comment with this id.
+   */
   async softDeleteById(commentId: string, deletedById: string, db: Database = this.prisma, deletedByPlatform = false) {
     try {
       await db.comment.update({
@@ -342,6 +428,16 @@ export class CommentRepository {
     }
   }
 
+  /**
+   * Raw-SQL listing for a user's profile activity feed — joins through to the thread/nest to
+   * filter out comments in nests the viewer can't see (deleted, or private and not a member of).
+   *
+   * @param authorId - The comment author whose activity to list.
+   * @param viewerId - The viewer, or `undefined` if anonymous; gates private-nest visibility.
+   * @param query - Pagination options.
+   * @returns A cursor-paginated page of the author's comments, newest first.
+   * @throws {InvalidCursorException} `query.cursor` is malformed.
+   */
   async listByAuthor(authorId: string, viewerId: string | undefined, query: CommentAuthorQueryDto) {
     let cursorSql = Prisma.sql`TRUE`
 
@@ -395,6 +491,12 @@ export class CommentRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * @param authorId - The author whose non-deleted comments to list.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns Minimal identifying info for every non-deleted comment by this author — for bulk
+   * moderation flows that need to know which comments/threads/parents are affected, not full comment data.
+   */
   async listActiveByAuthor(authorId: string, db: Database = this.prisma) {
     return db.comment.findMany({
       where: { authorId, deletedAt: null },
@@ -402,6 +504,14 @@ export class CommentRepository {
     })
   }
 
+  /**
+   * Bulk platform-level removal of every comment by a user, in one query.
+   *
+   * @param authorId - The author whose comments to remove.
+   * @param deletedById - The platform moderator performing the removal.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The count of comments removed.
+   */
   async softDeleteManyByAuthor(authorId: string, deletedById: string, db: Database = this.prisma) {
     return db.comment.updateMany({
       where: { authorId, deletedAt: null },
@@ -409,6 +519,11 @@ export class CommentRepository {
     })
   }
 
+  /**
+   * @param threadId - The thread to check.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The most recent non-deleted comment's timestamp, or `null` if the thread has none.
+   */
   async getLatestCommentByThreadId(threadId: string, db: Database = this.prisma) {
     return db.comment.findFirst({
       where: { threadId, deletedAt: null },
@@ -417,6 +532,9 @@ export class CommentRepository {
     })
   }
 
+  /**
+   * @param commentId - Pass null for a top-level comment (no parent to update) — a no-op, not an error.
+   */
   async decrementReplyCount(commentId: string | null, db: Database = this.prisma) {
     if (!commentId) {
       return
@@ -428,6 +546,14 @@ export class CommentRepository {
     })
   }
 
+  /**
+   * @param commentId - The comment whose score to adjust.
+   * @param delta - The signed change to apply — see {@link computeVoteScoreDelta}.
+   * @param nestId - The thread's nest, used to resolve the author's nest role in the response.
+   * @param viewerId - The voter, used to resolve their vote on the updated comment.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The updated comment.
+   */
   async adjustScore(commentId: string, delta: number, nestId: string, viewerId?: string, db: Database = this.prisma) {
     const comment = await db.comment.update({
       where: { id: commentId },

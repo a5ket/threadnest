@@ -10,6 +10,15 @@ import { QueueDispatcher } from './queue.dispatcher'
 import { QueueService } from './queue.service'
 import { queueDefinitionToken } from './queue.tokens'
 
+/**
+ * Builds a per-queue BullMQ `WorkerHost` that hands every dequeued job straight to
+ * {@link QueueDispatcher} — the actual per-job-type logic lives in the matching
+ * {@link JobHandler}, not here. Named dynamically (`${name}QueueProcessor`) so BullMQ's own
+ * logging/metrics distinguish which queue's worker is running.
+ *
+ * @param name - The BullMQ queue name this processor handles.
+ * @returns A `WorkerHost` subclass, ready to register as a provider for that queue.
+ */
 function createQueueProcessor(name: string) {
   const context = `${name}QueueProcessor`
 

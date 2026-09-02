@@ -8,6 +8,11 @@ type NestInviteUserView = Pick<NestInviteSummary, 'id' | 'nest' | 'invitedBy' | 
 export class NestInvitePresenter {
   constructor(private readonly userPresenter: UserPresenter) { }
 
+  /**
+   * For the invited user's own invite list — omits the invited user itself (redundant when it's you).
+   *
+   * @param invite - The invite to present.
+   */
   toUserView(invite: NestInviteUserView) {
     return {
       id: invite.id,
@@ -21,6 +26,11 @@ export class NestInvitePresenter {
     }
   }
 
+  /**
+   * For the nest's sent-invites list — includes the invited user.
+   *
+   * @param invite - The invite to present.
+   */
   toNestView(invite: NestInviteSummary) {
     return {
       id: invite.id,

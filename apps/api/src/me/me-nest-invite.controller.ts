@@ -13,6 +13,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 
+/** The invited user's side of invites: list mine, view one, accept, decline. */
 @ApiTags('Nest Invites')
 @Controller('/me/nest-invites')
 @Authenticated()

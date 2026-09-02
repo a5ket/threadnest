@@ -15,6 +15,7 @@ import { Verified } from 'src/security/decorators/verified.decorator'
 import { ChangeEmailDto } from './dto/me-auth.change-email.dto'
 import { ChangePasswordDto } from './dto/me-auth.change-password.dto'
 
+/** Credential changes for the signed-in user: password, and email (via confirmation link). */
 @ApiTags('Me')
 @Controller('me/auth')
 @Authenticated()

@@ -9,7 +9,14 @@ interface ApiPaginatedResponseOptions {
   metaType?: Type<unknown>
 }
 
-// Documents ResponseInterceptor's wrap of a paginated result: `{ data: { items: T[], meta } }`.
+/**
+ * Documents the shape a cursor-paginated endpoint's response actually takes at runtime:
+ * `{ data: { items: T[], meta } }`.
+ *
+ * @param options - The response status/description, the item type, and an optional `metaType`
+ * override for listings whose pagination metadata isn't the default {@link PaginationDto} shape.
+ * @returns The combined `@ApiExtraModels`/`@ApiResponse` decorator to apply to a route handler.
+ */
 export function ApiPaginatedResponse({ status, description, type, metaType = PaginationDto }: ApiPaginatedResponseOptions) {
   return applyDecorators(
     ApiExtraModels(type, metaType),

@@ -3,10 +3,22 @@ import { UserPresenter } from 'src/user/user.presenter'
 import { ChatAccessContext } from './types/chat.access-context'
 import { ChatSummaryRaw } from './types/chat.summary'
 
+/** Shapes chat rows into viewer-scoped API responses. */
 @Injectable()
 export class ChatPresenter {
   constructor(private readonly userPresenter: UserPresenter) { }
 
+  /**
+   * Applies two viewer-specific rules before exposing the last message: it's hidden entirely if
+   * the viewer cleared the chat after it was sent, and its content is nulled out (but the row
+   * still shown) if it was deleted.
+   *
+   * @param chat - The chat row, with participants and the latest message preloaded.
+   * @param viewerId - The user viewing this chat, used to resolve "the other participant" and
+   * apply their clear/read state.
+   * @returns A summary view for chat lists: the other participant, the visible last message
+   * (if any), an unread flag, and this viewer's archive state.
+   */
   toSummaryView(chat: ChatSummaryRaw, viewerId: string) {
     const me = chat.participants.find((p) => p.userId === viewerId)
     const other = chat.participants.find((p) => p.userId !== viewerId)
@@ -31,6 +43,14 @@ export class ChatPresenter {
     }
   }
 
+  /**
+   * @param chat - The chat row, with participants and the latest message preloaded.
+   * @param viewerId - The user viewing this chat.
+   * @param ctx - The precomputed access context from {@link ChatPolicy.assertCanViewChat}, so
+   * this doesn't need to recompute block/participation state.
+   * @returns The summary view plus the access context and the other participant's read state,
+   * for a single-chat detail screen.
+   */
   toDetailView(chat: ChatSummaryRaw, viewerId: string, ctx: ChatAccessContext) {
     const other = chat.participants.find((p) => p.userId !== viewerId)
 

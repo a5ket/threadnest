@@ -14,6 +14,7 @@ import { NestSettingsUpdateDto } from './dto/nest-settings.update.dto'
 import { NestSettingsNotFoundException } from './exceptions/nest-settings-not-found.exception'
 import { NestSettingsService } from './nest-settings.service'
 
+/** View and update a nest's visibility, join policy, and permission-level thresholds. */
 @ApiTags('Nest Settings')
 @Controller('nests/:nestSlug/settings')
 @UseInterceptors(ResponseInterceptor)

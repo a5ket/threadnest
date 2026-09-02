@@ -13,6 +13,7 @@ import { UserActivityItemResponseDto } from './dto/user-activity-item-response.d
 import { UserActivityQueryDto } from './dto/user-activity.query.dto'
 import { UserActivityService } from './user-activity.service'
 
+/** A public profile's activity feed: threads and comments merged into one timeline. */
 @ApiTags('Users')
 @Controller('users/:username')
 @UseInterceptors(ResponseInterceptor)

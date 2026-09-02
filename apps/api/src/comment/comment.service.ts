@@ -23,6 +23,7 @@ import { CommentUpdatedEvent } from './events/comment-updated.event'
 import { Comment, CommentBlockFlags, CommentTreeOptions } from './types/comment'
 import { ThreadPolicySubject } from 'src/thread/types/thread.policy-subject'
 
+/** Comment lifecycle: creation (root + replies), edits, moderation, voting, and listing. */
 @Injectable()
 export class CommentService {
   constructor(
@@ -40,12 +41,21 @@ export class CommentService {
     this.logger.setContext(CommentService.name)
   }
 
+  /** @throws {InvalidAttachmentKeyException} The attachment key isn't namespaced under `actorUserId`'s own uploads. */
   private assertOwnsAttachment(dto: CommentCreateDto, actorUserId: string) {
     if (dto.attachment && !isAttachmentKeyOwnedBy(dto.attachment.key, actorUserId)) {
       throw new InvalidAttachmentKeyException()
     }
   }
 
+  /**
+   * The full comment tree for a thread's top-level comment page.
+   *
+   * @param nestSlug - The nest the thread belongs to.
+   * @param threadSlug - The thread whose comments to list.
+   * @param viewerId - The viewer, or null if anonymous.
+   * @param options - Sort/depth/pagination for the tree query.
+   */
   async listCommentsByThreadSlug(nestSlug: string, threadSlug: string, viewerId: string | null, options: CommentTreeOptions) {
     const thread = await this.threads.getByNestSlug(nestSlug, threadSlug)
     const threadCtx = await this.threadAccess.getContext(thread, viewerId ?? undefined)
@@ -57,6 +67,14 @@ export class CommentService {
     return this.commentPresenter.toTreePage(page, threadCtx.canModerateContent)
   }
 
+  /**
+   * The reply subtree under one comment — used for "load more replies" pagination beneath the
+   * initial tree page.
+   *
+   * @param commentId - The parent comment whose replies to list.
+   * @param viewerId - The viewer, or null if anonymous.
+   * @param options - Sort/depth/pagination for the tree query.
+   */
   async listCommentReplies(commentId: string, viewerId: string | null, options: CommentTreeOptions) {
     const comment = await this.repo.getById(commentId)
     const thread = await this.threads.getById(comment.threadId)
@@ -69,6 +87,16 @@ export class CommentService {
     return this.commentPresenter.toTreePage(page, threadCtx.canModerateContent)
   }
 
+  /**
+   * Creates a top-level (non-reply) comment. `recipientId` on the resulting notification is null
+   * when commenting on your own thread, so you don't get notified of your own activity.
+   *
+   * @param nestSlug - The nest the thread belongs to.
+   * @param threadSlug - The thread to comment on.
+   * @param userId - The comment's author.
+   * @param dto - Content and optional attachment.
+   * @throws {InvalidAttachmentKeyException} See {@link assertOwnsAttachment}.
+   */
   async createThreadCommentByThreadSlug(
     nestSlug: string,
     threadSlug: string,
@@ -104,6 +132,14 @@ export class CommentService {
     return this.commentPresenter.toView(comment, await this.getBlockFlags(userId, comment.author.id), threadCtx.canModerateContent)
   }
 
+  /**
+   * Replies to an existing comment. `recipientId` is null when replying to your own comment.
+   *
+   * @param commentId - The comment being replied to.
+   * @param userId - The reply's author.
+   * @param dto - Content and optional attachment.
+   * @throws {InvalidAttachmentKeyException} See {@link assertOwnsAttachment}.
+   */
   async createCommentReply(
     commentId: string,
     userId: string,
@@ -139,6 +175,7 @@ export class CommentService {
     return this.commentPresenter.toView(reply, await this.getBlockFlags(userId, reply.author.id), threadCtx.canModerateContent)
   }
 
+  /** @param viewerId - The viewer, or null if anonymous. */
   async getCommentById(commentId: string, viewerId: string | null) {
     const comment = await this.repo.getById(commentId)
     const thread = await this.threads.getById(comment.threadId)
@@ -152,6 +189,11 @@ export class CommentService {
     return this.commentPresenter.toView(commentWithRole, await this.getBlockFlags(viewerId, comment.author.id), threadCtx.canModerateContent)
   }
 
+  /**
+   * @param commentId - The comment to update.
+   * @param userId - Must be the comment's author.
+   * @param dto - The new content.
+   */
   async updateComment(
     commentId: string,
     userId: string,
@@ -168,6 +210,7 @@ export class CommentService {
     return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
   }
 
+  /** By the author or a nest moderator — see {@link removeByPlatform} for platform-level removal. */
   async removeComment(
     commentId: string,
     userId: string
@@ -180,7 +223,14 @@ export class CommentService {
     await this.softDeleteAndNotify(comment, thread, userId, false)
   }
 
-  // Bypasses nest-level membership/permission checks: platform authority supersedes them.
+  /**
+   * Platform-admin removal — bypasses nest-level membership/permission checks entirely, since
+   * platform authority supersedes them.
+   *
+   * @param commentId - The comment to remove.
+   * @param actorUserId - The platform admin performing the removal.
+   * @throws {CommentAlreadyDeletedException} Already deleted.
+   */
   async removeByPlatform(commentId: string, actorUserId: string) {
     const comment = await this.repo.getById(commentId)
 
@@ -195,8 +245,15 @@ export class CommentService {
     return { comment, thread }
   }
 
-  // Bulk moderation sweep: intentionally skips per-comment events, unlike removeByPlatform — one
-  // notification per removed comment would spam whoever's being purged for a handful of comments.
+  /**
+   * Bulk moderation sweep, e.g. when a user is banned platform-wide. Intentionally skips
+   * per-comment events, unlike {@link removeByPlatform} — one notification per removed comment
+   * would spam whoever's being purged for a large number of comments.
+   *
+   * @param authorId - Every active comment by this author is removed.
+   * @param actorUserId - The platform admin performing the sweep.
+   * @returns The number of comments removed.
+   */
   async removeAllByAuthorPlatform(authorId: string, actorUserId: string) {
     const comments = await this.repo.listActiveByAuthor(authorId)
 
@@ -230,6 +287,10 @@ export class CommentService {
     return comments.length
   }
 
+  /**
+   * @param deletedByPlatform - Suppresses the "moderator removed" log line, since platform
+   *   removals are logged one layer up in `PlatformContentService`.
+   */
   private async softDeleteAndNotify(comment: Comment, thread: ThreadPolicySubject, actorUserId: string, deletedByPlatform: boolean) {
     await this.transactionManager.run(async (tx) => {
       await this.repo.softDeleteById(comment.id, actorUserId, tx, deletedByPlatform)
@@ -259,6 +320,7 @@ export class CommentService {
     }))
   }
 
+  /** Upserts the viewer's vote and adjusts the comment's score by the resulting delta. */
   async voteOnComment(commentId: string, userId: string, type: VoteType) {
     const comment = await this.repo.getById(commentId)
     const thread = await this.threads.getById(comment.threadId)
@@ -276,6 +338,7 @@ export class CommentService {
     return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
   }
 
+  /** Removes the viewer's vote and reverses its effect on the comment's score. */
   async removeCommentVote(commentId: string, userId: string) {
     const comment = await this.repo.getById(commentId)
     const thread = await this.threads.getById(comment.threadId)
@@ -293,12 +356,17 @@ export class CommentService {
     return this.commentPresenter.toView(updated, await this.getBlockFlags(userId, updated.author.id), threadCtx.canModerateContent)
   }
 
+  /**
+   * @param authorId - Lists this user's comments.
+   * @param viewerId - The viewer, if signed in; gates which of `authorId`'s private-nest comments show.
+   */
   async listByAuthor(authorId: string, viewerId: string | undefined, query: CommentAuthorQueryDto) {
     const page = await this.repo.listByAuthor(authorId, viewerId, query)
 
     return { items: await Promise.all(page.items.map((item) => this.commentPresenter.toAuthorItemView(item))), meta: page.meta }
   }
 
+  /** @param viewerId - Returns both-false without querying if anonymous — an anonymous viewer can't have blocked anyone. */
   private async getBlockFlags(viewerId: string | null, authorId: string): Promise<CommentBlockFlags> {
     if (!viewerId) {
       return { viewerBlockedAuthor: false, authorBlockedViewer: false }

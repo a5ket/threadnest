@@ -19,6 +19,7 @@ class NestSubscriptionCheckoutResponseDto {
   clientSecret!: string
 }
 
+/** Start a Stripe checkout, view, or cancel the current user's subscription to a paywalled nest. */
 @ApiTags('Nest Subscriptions')
 @Controller('nests/:nestSlug/subscription')
 @UseInterceptors(ResponseInterceptor)

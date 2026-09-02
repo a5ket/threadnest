@@ -3,6 +3,7 @@ import { EventSubscriber } from 'src/event/event-subscriber'
 import { NestDeletedEvent } from 'src/nest/events/nest-deleted.event'
 import { NestSubscriptionService } from '../nest-subscription.service'
 
+/** On nest deletion, cancels every active subscription to it via Stripe. */
 @Injectable()
 export class NestDeletedSubscriptionSubscriber extends EventSubscriber<NestDeletedEvent> {
   readonly eventClass = NestDeletedEvent

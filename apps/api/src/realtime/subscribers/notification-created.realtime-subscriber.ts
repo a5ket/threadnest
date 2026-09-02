@@ -3,6 +3,7 @@ import { EventSubscriber } from 'src/event/event-subscriber'
 import { NotificationCreatedEvent } from 'src/notification/events/notification-created.event'
 import { RealtimeGateway, userRoom } from '../realtime.gateway'
 
+/** Pushes a newly created notification live to the recipient's connected sockets. */
 @Injectable()
 export class NotificationCreatedRealtimeSubscriber extends EventSubscriber<NotificationCreatedEvent> {
   readonly eventClass = NotificationCreatedEvent

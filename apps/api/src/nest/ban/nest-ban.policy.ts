@@ -17,6 +17,17 @@ export class NestBanPolicy {
     private readonly users: UserService
   ) { }
 
+  /**
+   * If the target is a current member, the actor must outrank them — a moderator can't ban an
+   * owner or a fellow moderator.
+   *
+   * @param nestId - The nest to ban in.
+   * @param actorUserId - The user attempting the ban.
+   * @param targetUserId - The user to ban.
+   * @throws {CannotBanYourselfException} `actorUserId === targetUserId`.
+   * @throws {InsufficientPermissionsException} Not authorized, or outranked by the target member.
+   * @throws {UserAlreadyBannedException} Already actively banned.
+   */
   async assertCanBanUser(nestId: string, actorUserId: string, targetUserId: string) {
     if (actorUserId === targetUserId) {
       throw new CannotBanYourselfException()
@@ -48,6 +59,13 @@ export class NestBanPolicy {
     }
   }
 
+  /**
+   * @param nestId - The nest to unban in.
+   * @param actorUserId - The user attempting the unban.
+   * @param targetUserId - The user to unban.
+   * @throws {CannotUnbanYourselfException} `actorUserId === targetUserId`.
+   * @throws {InsufficientPermissionsException} Not authorized to manage bans in this nest.
+   */
   async assertCanUnbanUser(nestId: string, actorUserId: string, targetUserId: string) {
     if (actorUserId === targetUserId) {
       throw new CannotUnbanYourselfException()
@@ -60,6 +78,11 @@ export class NestBanPolicy {
     }
   }
 
+  /**
+   * @param nestId - The nest whose ban list is being viewed.
+   * @param actorUserId - The viewer.
+   * @throws {InsufficientPermissionsException} Not authorized to manage bans in this nest.
+   */
   async assertCanViewBans(nestId: string, actorUserId: string) {
     const access = await this.nestAccess.getContext(nestId, actorUserId)
 

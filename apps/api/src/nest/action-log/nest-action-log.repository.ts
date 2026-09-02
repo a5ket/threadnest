@@ -8,6 +8,7 @@ import { NestActionLogQueryDto } from './dto/nest-action-log.query.dto'
 import { NEST_ACTION_LOG_SELECT } from './selects/nest-action-log.select'
 import { NestActionLogDataByType } from './types/nest-action-log-data'
 
+/** Persistence for a nest's moderation action log. */
 @Injectable()
 export class NestActionLogRepository {
   constructor(private readonly prisma: PrismaService) { }

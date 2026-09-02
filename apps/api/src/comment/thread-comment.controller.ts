@@ -21,6 +21,7 @@ import { CommentQueryDto } from './dto/comment.query.dto'
 import { CommentResponseDto } from './dto/comment-response.dto'
 import { CommentNodeResponseDto, CommentTreeMetaDto } from './dto/comment-node-response.dto'
 
+/** Lists a thread's comment tree and creates top-level comments on it. */
 @ApiTags('Comments')
 @Controller('nests/:nestSlug/threads/:threadSlug/comments')
 @UseInterceptors(ResponseInterceptor)

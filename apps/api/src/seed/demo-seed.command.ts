@@ -87,19 +87,36 @@ const COLOR_PALETTE: [number, number, number][] = [
   [20, 184, 166], [59, 130, 246], [139, 92, 246], [236, 72, 153]
 ]
 
+/**
+ * @param min - Inclusive lower bound.
+ * @param max - Inclusive upper bound.
+ * @returns A random integer in `[min, max]`.
+ */
 function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+/** @param items - The pool to pick from. @returns One random element. */
 function pick<T>(items: T[]): T {
   return items[randomInt(0, items.length - 1)]
 }
 
+/**
+ * @param items - The pool to pick from.
+ * @param n - How many to pick; clamped to `items.length` if larger.
+ * @returns `n` distinct random elements, in random order.
+ */
 function pickN<T>(items: T[], n: number): T[] {
   const shuffled = [...items].sort(() => Math.random() - 0.5)
   return shuffled.slice(0, Math.min(n, items.length))
 }
 
+/**
+ * Weighted random distribution for demo nests: mostly public/free, a slice public/paywalled, a
+ * slice private/free, and a small slice private/paywalled — roughly approximating a real app's mix.
+ *
+ * @returns A random visibility, plus a paywall amount or `null` for a free nest.
+ */
 function pickNestConfig(): { visibility: NestVisibility, paywallAmountCents: number | null } {
   const roll = Math.random()
   if (roll < 0.7) return { visibility: NestVisibility.PUBLIC, paywallAmountCents: null }
@@ -108,12 +125,25 @@ function pickNestConfig(): { visibility: NestVisibility, paywallAmountCents: num
   return { visibility: NestVisibility.PRIVATE, paywallAmountCents: randomInt(5, 30) * 100 }
 }
 
+/**
+ * @param rgb - The fill color.
+ * @param size - The output's width and height, in pixels (always square).
+ * @returns A solid-color PNG, for demo avatars/icons/attachments without needing real image assets.
+ */
 async function generatePlaceholderImage(rgb: [number, number, number], size: number): Promise<Buffer> {
   return sharp({
     create: { width: size, height: size, channels: 3, background: { r: rgb[0], g: rgb[1], b: rgb[2] } }
   }).png().toBuffer()
 }
 
+/**
+ * CLI: `demo-seed [-u users] [-n nests] [-i] [-p password]` — generates a large volume of
+ * randomized demo data (via the app's normal services, not raw SQL, so every write goes through
+ * the same validation/events as a real user action) and guarantees every seeded user has at least
+ * one thread, one comment, and a few votes, so the app doesn't look empty when demoed. Idempotent
+ * per-entity: re-running against the same database skips users/nests that already exist rather
+ * than erroring or duplicating. Run via the app's CLI entry point, not over HTTP.
+ */
 @Command({ name: 'demo-seed', description: 'Populate the database with a large volume of randomized demo data, with every user getting real activity' })
 export class DemoSeedCommand extends CommandRunner {
   constructor(
@@ -130,11 +160,13 @@ export class DemoSeedCommand extends CommandRunner {
     super()
   }
 
+  /** @param val - The `-u`/`--users` flag's raw string value. */
   @Option({ flags: '-u, --users [number]', description: 'Number of demo users to create (default 300)' })
   parseUsers(val: string): number {
     return Number.parseInt(val, 10)
   }
 
+  /** @param val - The `-n`/`--nests` flag's raw string value. */
   @Option({ flags: '-n, --nests [number]', description: 'Number of demo nests to create (default 30)' })
   parseNests(val: string): number {
     return Number.parseInt(val, 10)
@@ -145,11 +177,16 @@ export class DemoSeedCommand extends CommandRunner {
     return true
   }
 
+  /** @param val - The `-p`/`--password` flag's raw string value. */
   @Option({ flags: '-p, --password [password]', description: 'Shared password for all demo accounts (default DemoPassword123!)' })
   parsePassword(val: string): string {
     return val
   }
 
+  /**
+   * @param _params - Positional CLI arguments; unused, this command takes options only.
+   * @param options - Parsed `--users`/`--nests`/`--with-images`/`--password` flags.
+   */
   async run(_params: string[], options: Partial<DemoSeedOptions>) {
     const userCount = options.users ?? 300
     const nestCount = options.nests ?? 30

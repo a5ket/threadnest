@@ -15,6 +15,10 @@ import { UserSummaryResponseDto } from './dto/user-summary-response.dto'
 import { UserNotFoundException } from './exceptions/user-not-found.exception'
 import { UserService } from './user.service'
 
+/**
+ * Public, read-only user lookups (search, profile by username). Account-management endpoints
+ * for the signed-in user live under `/me` — see {@link MeProfileController}.
+ */
 @ApiTags('Users')
 @Controller('users')
 @UseInterceptors(ResponseInterceptor)

@@ -14,6 +14,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { AttachmentService } from './attachment.service'
 import { AttachmentUploadResponseDto } from './dto/attachment-upload-response.dto'
 
+/** Image upload for thread/comment attachments, ahead of being attached to anything. */
 @ApiTags('Attachments')
 @Controller('me/attachments')
 @Authenticated()

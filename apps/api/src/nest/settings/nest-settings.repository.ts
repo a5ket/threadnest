@@ -11,6 +11,7 @@ export interface NestSettingsCreateOptions {
 
 export type NestSettingsSelectResult = Prisma.NestSettingsGetPayload<{ select: typeof NEST_SETTINGS_SELECT }>
 
+/** Persistence contract for nest settings. */
 export abstract class NestSettingsRepository {
   abstract create(nestId: string, options?: NestSettingsCreateOptions, db?: Database): Promise<NestSettingsSelectResult>
   abstract get(nestId: string): Promise<NestSettingsSelectResult>

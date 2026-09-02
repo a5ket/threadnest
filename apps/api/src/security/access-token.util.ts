@@ -18,6 +18,13 @@ function getCookie(cookieHeader: string | undefined, name: string): string | nul
   }
 }
 
+/**
+ * Reads the access token from the `Authorization: Bearer` header, falling back to the httpOnly
+ * cookie — so the same guards work for both API clients and the cookie-based browser session.
+ *
+ * @param request - An object exposing the relevant headers (not the full Express/Fastify request type).
+ * @returns The raw token, or null if neither the header nor the cookie carries one.
+ */
 export function extractAccessToken(request: { headers: { authorization?: string, cookie?: string } }): string | null {
   const header = request.headers.authorization
 

@@ -9,6 +9,10 @@ import { NestPrismaRepository } from './nest.prisma.repository'
 
 const DELETED_AT_CACHE_TTL_MS = 5 * 60 * 1000
 
+/**
+ * Wraps {@link NestPrismaRepository}, adding caching. Only `getDeletedAt` is actually cached
+ * (it's checked on nearly every nest-scoped request); every other method is a plain pass-through.
+ */
 @Injectable()
 export class NestCachedRepository extends NestRepository {
   constructor(
@@ -48,6 +52,7 @@ export class NestCachedRepository extends NestRepository {
     return this.inner.getBalanceCents(nestId)
   }
 
+  /** Deletes, then evicts the cached `deletedAt` so the next {@link getDeletedAt} sees it. */
   async delete(nestId: string, actorUserId: string) {
     await this.inner.delete(nestId, actorUserId)
     await this.cache.delete(this.deletedAtCacheKey(nestId))
@@ -57,6 +62,10 @@ export class NestCachedRepository extends NestRepository {
     return this.inner.adjustThreadCount(nestId, delta, db)
   }
 
+  /**
+   * Caches for {@link DELETED_AT_CACHE_TTL_MS} — checked on nearly every nest-scoped request,
+   * making it one of the hottest reads in the request path.
+   */
   async getDeletedAt(nestId: string) {
     const key = this.deletedAtCacheKey(nestId)
     // '' means "cached: not deleted" — cache.get() returning null must stay reserved for "not cached at all",

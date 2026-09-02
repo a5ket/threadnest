@@ -21,6 +21,10 @@ import { CannotChatWithYourselfException } from './exceptions/cannot-chat-with-y
 import { CannotMessageBlockedUserException } from './exceptions/cannot-message-blocked-user.exception'
 import { ChatNotFoundException } from './exceptions/chat-not-found.exception'
 
+/**
+ * 1:1 chat lifecycle: list, start/resume, view, archive/unarchive, clear. Message-level
+ * operations live in {@link MessageController}.
+ */
 @ApiTags('Chats')
 @Controller('chats')
 @AuthenticatedAndVerified()

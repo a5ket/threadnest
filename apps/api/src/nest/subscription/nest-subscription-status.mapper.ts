@@ -12,6 +12,12 @@ const STATUS_MAP: Record<Stripe.Subscription.Status, NestSubscriptionStatus> = {
   paused: NestSubscriptionStatus.CANCELED
 }
 
+/**
+ * Collapses Stripe's 8 subscription statuses onto our 5 — `incomplete`/`unpaid` both read as
+ * "not currently paying" (`UNPAID`), and `incomplete_expired`/`paused` both read as ended (`CANCELED`).
+ *
+ * @param stripeStatus - The status from a Stripe subscription object or webhook event.
+ */
 export function toNestSubscriptionStatus(stripeStatus: Stripe.Subscription.Status): NestSubscriptionStatus {
   return STATUS_MAP[stripeStatus]
 }

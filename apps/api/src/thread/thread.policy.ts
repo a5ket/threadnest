@@ -9,6 +9,7 @@ import { ThreadPolicySubject } from './types/thread.policy-subject'
 import { ThreadAccessContext } from './types/thread.access-context'
 
 
+/** Thread-level authorization, built on top of {@link ThreadAccess} and {@link NestAccess}. */
 @Injectable()
 export class ThreadPolicy {
   constructor(
@@ -17,8 +18,13 @@ export class ThreadPolicy {
     private readonly memberRepo: NestMemberRepository
   ) { }
 
-  // Moderation actions (delete/lock/pin) against another member's thread must not let a lower-ranked
-  // moderator act against a higher-ranked one. No-op when the actor is acting on their own thread.
+  /**
+   * Moderation actions (delete/lock/pin) against another member's thread must not let a
+   * lower-ranked moderator act against a higher-ranked one. No-op when the actor is acting on
+   * their own thread.
+   *
+   * @throws {InsufficientPermissionsException} `actorRole` doesn't outrank the author's role.
+   */
   private async assertOutranksAuthor(thread: ThreadPolicySubject, actorUserId: string, actorRole: NestMemberRole | null) {
     if (thread.authorId === actorUserId) {
       return
@@ -31,6 +37,7 @@ export class ThreadPolicy {
     }
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to create threads in this nest. */
   async assertCanCreateThread(nestId: string, actorUserId: string) {
     const ctx = await this.nestAccess.getContext(nestId, actorUserId)
 
@@ -39,15 +46,25 @@ export class ThreadPolicy {
     }
   }
 
-   
+  /**
+   * Checks a context the caller already computed — see {@link assertCanReadThread} for the
+   * self-contained variant.
+   *
+   * @throws {ThreadNotFoundException} The thread is deleted or otherwise not visible — a 404,
+   *   not a 403, so its existence isn't leaked to unauthorized viewers.
+   */
   async assertCanReadThreadContext(threadAccessContext: ThreadAccessContext) {
     if (!threadAccessContext.canViewThread) {
       throw new ThreadNotFoundException()
     }
   }
 
-  // Self-contained variant for callers without a context on hand — returns the context so
-  // callers who need it afterward (like a presenter) don't have to fetch it twice.
+  /**
+   * Self-contained variant for callers without a context on hand — returns the context so
+   * callers who need it afterward (like a presenter) don't have to fetch it twice.
+   *
+   * @throws {ThreadNotFoundException} See {@link assertCanReadThreadContext}.
+   */
   async assertCanReadThread(thread: ThreadPolicySubject, actorUserId?: string) {
     const ctx = await this.threadAccess.getContext(thread, actorUserId)
 
@@ -56,6 +73,7 @@ export class ThreadPolicy {
     return ctx
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to view this nest. */
   async assertCanReadThreads(nestId: string, actorUserId?: string) {
     const ctx = await this.nestAccess.getContext(nestId, actorUserId)
 
@@ -64,6 +82,10 @@ export class ThreadPolicy {
     }
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Not visible to `actorUserId`.
+   * @throws {InsufficientPermissionsException} Not the author, or the thread is deleted.
+   */
   async assertCanUpdateThread(thread: ThreadPolicySubject, actorUserId: string) {
     const ctx = await this.threadAccess.getContext(thread, actorUserId)
 
@@ -76,6 +98,10 @@ export class ThreadPolicy {
     }
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Not visible to `actorUserId`.
+   * @throws {InsufficientPermissionsException} Not the author/a moderator, or outranked by the author.
+   */
   async assertCanDeleteThread(thread: ThreadPolicySubject, actorUserId: string) {
     const ctx = await this.threadAccess.getContext(thread, actorUserId)
 
@@ -90,6 +116,10 @@ export class ThreadPolicy {
     await this.assertOutranksAuthor(thread, actorUserId, ctx.role)
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Not visible to `actorUserId`.
+   * @throws {InsufficientPermissionsException} Not authorized to lock threads, or outranked by the author.
+   */
   async assertCanManageThreadLock(thread: ThreadPolicySubject, actorUserId: string) {
     const ctx = await this.threadAccess.getContext(thread, actorUserId)
 
@@ -104,6 +134,10 @@ export class ThreadPolicy {
     await this.assertOutranksAuthor(thread, actorUserId, ctx.role)
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Not visible to `actorUserId`.
+   * @throws {InsufficientPermissionsException} Not authorized to pin threads, or outranked by the author.
+   */
   async assertCanManageThreadPin(thread: ThreadPolicySubject, actorUserId: string) {
     const ctx = await this.threadAccess.getContext(thread, actorUserId)
 
@@ -118,6 +152,10 @@ export class ThreadPolicy {
     await this.assertOutranksAuthor(thread, actorUserId, ctx.role)
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Not visible to `actorUserId`.
+   * @throws {InsufficientPermissionsException} Not authorized to vote in this nest.
+   */
   async assertCanVoteThread(thread: ThreadPolicySubject, actorUserId: string) {
     const ctx = await this.threadAccess.getContext(thread, actorUserId)
 
@@ -130,6 +168,10 @@ export class ThreadPolicy {
     }
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Not visible to `actorUserId`.
+   * @throws {InsufficientPermissionsException} The thread is deleted.
+   */
   async assertCanSaveThread(thread: ThreadPolicySubject, actorUserId: string) {
     const ctx = await this.threadAccess.getContext(thread, actorUserId)
 

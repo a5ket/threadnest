@@ -28,6 +28,17 @@ export class NestInvitePolicy {
     private readonly preferences: UserNestPreferenceRepository,
   ) { }
 
+  /**
+   * @param nest - The inviting nest.
+   * @param actorUserId - Must be authorized to manage invites in this nest.
+   * @param targetUserId - The prospective invitee.
+   * @throws {UserIsBannedException} `targetUserId` is actively banned from this nest.
+   * @throws {AlreadyMemberException} `targetUserId` is already a member.
+   * @throws {AlreadyInvitedException} A pending invite already exists.
+   * @throws {AlreadyHasPendingJoinRequestException} A pending join request already exists (invite
+   *   would create an ambiguous double-pending state).
+   * @throws {InvitesNotAllowedException} `targetUserId`'s preferences block invites from this nest.
+   */
   async assertCanCreate(nest: NestPolicySubject, actorUserId: string, targetUserId: string) {
     await this.assertCanManageNestInvites(nest.id, actorUserId)
 
@@ -66,21 +77,29 @@ export class NestInvitePolicy {
     }
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to manage invites in this nest. */
   async assertCanListAsNest(nest: NestPolicySubject, actorUserId: string) {
     await this.assertCanManageNestInvites(nest.id, actorUserId)
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to manage invites in this nest. */
   async assertCanGetAsNest(invite: NestInvitePolicySubject, actorUserId: string) {
     await this.assertCanManageNestInvites(invite.nestId, actorUserId)
   }
 
+  /** @throws {NestInviteNotFoundException} The invite isn't addressed to `actorUserId`. */
   async assertCanGetAsUser(invite: NestInvitePolicySubject, actorUserId: string) {
     if (invite.userId !== actorUserId) {
       throw new NestInviteNotFoundException()
     }
   }
 
-
+  /**
+   * @throws {NestInviteNotFoundException} The invite isn't addressed to `actorUserId`.
+   * @throws {InviteNotPendingException} Already resolved.
+   * @throws {AlreadyMemberException} Already a member (e.g. joined some other way since inviting).
+   * @throws {UserIsBannedException} Actively banned from this nest.
+   */
   async assertCanAccept(invite: NestInvitePolicySubject, actorUserId: string) {
     if (invite.userId !== actorUserId) {
       throw new NestInviteNotFoundException()
@@ -104,6 +123,10 @@ export class NestInvitePolicy {
     }
   }
 
+  /**
+   * @throws {NestInviteNotFoundException} The invite isn't addressed to `actorUserId`.
+   * @throws {InviteNotPendingException} Already resolved.
+   */
   async assertCanDecline(invite: NestInvitePolicySubject, actorUserId: string) {
     if (invite.userId !== actorUserId) {
       throw new NestInviteNotFoundException()
@@ -114,6 +137,10 @@ export class NestInvitePolicy {
     }
   }
 
+  /**
+   * @throws {InsufficientPermissionsException} Not authorized to manage invites in this nest.
+   * @throws {InviteNotPendingException} Already resolved.
+   */
   async assertCanRevoke(invite: NestInvitePolicySubject, actorUserId: string) {
     await this.assertCanManageNestInvites(invite.nestId, actorUserId)
 
@@ -122,6 +149,7 @@ export class NestInvitePolicy {
     }
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to manage invites in this nest. */
   private async assertCanManageNestInvites(nestId: string, actorUserId: string) {
     const ctx = await this.nestAccess.getContext(nestId, actorUserId)
 

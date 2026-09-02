@@ -6,10 +6,20 @@ import { InvalidImageFileException } from './exceptions/invalid-image-file.excep
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 const MAX_UPLOAD_MB = MAX_UPLOAD_BYTES / (1024 * 1024)
 
+/** Validates and re-encodes uploaded images to webp, via `sharp`. */
 @Injectable()
 export class ImageProcessor {
-  // Square-crops and re-encodes as webp — also doubles as content validation, since sharp
-  // throws on anything that isn't a decodable image regardless of the claimed mimetype.
+  /**
+   * Square-crops (centered) and re-encodes as webp — for avatars/icons, where a fixed aspect
+   * ratio matters more than preserving the original framing. Also doubles as content validation:
+   * `sharp` throws on anything that isn't a decodable image, regardless of the claimed mimetype.
+   *
+   * @param buffer - The raw uploaded image bytes.
+   * @param size - The output's width and height, in pixels (always square).
+   * @returns The processed webp image.
+   * @throws {ImageTooLargeException} `buffer` exceeds the upload size limit.
+   * @throws {InvalidImageFileException} `buffer` isn't a decodable image.
+   */
   async toSquareWebp(buffer: Buffer, size: number): Promise<Buffer> {
     if (buffer.byteLength > MAX_UPLOAD_BYTES) {
       throw new ImageTooLargeException(MAX_UPLOAD_MB)
@@ -27,8 +37,16 @@ export class ImageProcessor {
     }
   }
 
-  // Resizes only if larger than maxDimension, preserving aspect ratio — no crop. For content
-  // (thread/comment attachments) where the original framing matters, unlike avatars/icons.
+  /**
+   * Resizes only if larger than `maxDimension`, preserving aspect ratio — no crop. For content
+   * where the original framing matters, unlike avatars/icons (see {@link toSquareWebp}).
+   *
+   * @param buffer - The raw uploaded image bytes.
+   * @param maxDimension - The maximum width/height; smaller images pass through unresized.
+   * @returns The processed webp image and its final dimensions.
+   * @throws {ImageTooLargeException} `buffer` exceeds the upload size limit.
+   * @throws {InvalidImageFileException} `buffer` isn't a decodable image.
+   */
   async toBoundedWebp(buffer: Buffer, maxDimension: number): Promise<{ buffer: Buffer, width: number, height: number }> {
     if (buffer.byteLength > MAX_UPLOAD_BYTES) {
       throw new ImageTooLargeException(MAX_UPLOAD_MB)

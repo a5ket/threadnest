@@ -9,7 +9,14 @@ interface ApiDataResponseOptions {
   nullable?: boolean
 }
 
-// Documents ResponseInterceptor's `{ data: T }` wrap without a per-endpoint wrapper DTO.
+/**
+ * Documents the `{ data: T }` envelope every response gets wrapped in at runtime, without
+ * needing a dedicated wrapper DTO class per endpoint.
+ *
+ * @param options - The response status/description, the wrapped type, and whether it's an array
+ * or nullable.
+ * @returns The combined `@ApiExtraModels`/`@ApiResponse` decorator to apply to a route handler.
+ */
 export function ApiDataResponse({ status, description, type, isArray = false, nullable = false }: ApiDataResponseOptions) {
   const refSchema = { $ref: getSchemaPath(type) }
   const dataSchema = isArray

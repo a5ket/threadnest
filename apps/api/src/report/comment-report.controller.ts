@@ -16,6 +16,7 @@ import { ReportResponseDto } from './dto/report-response.dto'
 import { AlreadyReportedException } from './exceptions/already-reported.exception'
 import { ReportService } from './report.service'
 
+/** Filing a nest-level report against a comment. Queue management lives in {@link NestReportController}. */
 @ApiTags('Reports')
 @Controller('comments/:commentId/reports')
 @UseInterceptors(ResponseInterceptor)

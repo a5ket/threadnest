@@ -19,6 +19,10 @@ import { NestJoinRequestPersonalResponseDto } from './dto/nest-join-request-pers
 import { NestJoinRequestResponseDto } from './dto/nest-join-request-response.dto'
 import { NestJoinRequestService } from './nest-join-request.service'
 
+/**
+ * Nest-side join-request management: list, view, approve, reject. See
+ * {@link MeNestJoinRequestController} for the requesting user's side.
+ */
 @ApiTags('Nest Join Requests')
 @Controller('nests/:nestSlug/join-requests')
 @Authenticated()

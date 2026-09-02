@@ -6,6 +6,10 @@ import { NestBanPrismaRepository } from './nest-ban.prisma.repository'
 
 const BAN_STATUS_CACHE_TTL_MS = 5 * 60 * 1000
 
+/**
+ * Wraps {@link NestBanPrismaRepository}, caching `existsActive` — checked on nearly every write
+ * inside a nest. `create`/`revoke` evict the cache entry so the next check sees the change.
+ */
 @Injectable()
 export class NestBanCachedRepository extends NestBanRepository {
   constructor(

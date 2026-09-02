@@ -4,10 +4,16 @@ import { PlatformActionLogResponseDto } from './dto/platform-action-log-response
 import { PlatformActionLogDataByType } from './types/platform-action-log-data'
 import { PlatformActionLogSummary } from './types/platform-action-log.summary'
 
+/** Shapes platform action log entries into API responses. */
 @Injectable()
 export class PlatformActionLogPresenter {
   constructor(private readonly userPresenter: UserPresenter) { }
 
+  /**
+   * @param log - The log entry to present.
+   * @returns The entry's view, with its type-specific `data` payload tagged with `type` so
+   * clients can discriminate the union without a separate lookup.
+   */
   toResponseView(log: PlatformActionLogSummary): PlatformActionLogResponseDto {
     const data = log.data as PlatformActionLogDataByType[keyof PlatformActionLogDataByType]
 

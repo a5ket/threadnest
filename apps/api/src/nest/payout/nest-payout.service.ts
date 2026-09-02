@@ -17,6 +17,10 @@ export interface NestPayoutAccountView {
   balanceCents: number
 }
 
+/**
+ * Payouts of a nest's paywall earnings to its owner via a connected Stripe Express account. See
+ * {@link NestLedgerService} for how the withdrawable balance is tracked.
+ */
 @Injectable()
 export class NestPayoutService {
   constructor(
@@ -31,6 +35,10 @@ export class NestPayoutService {
     this.logger.setContext(NestPayoutService.name)
   }
 
+  /**
+   * @param nestSlug - The nest to look up.
+   * @param actorUserId - Must be authorized to manage this nest's payouts (the owner).
+   */
   async get(nestSlug: string, actorUserId: string): Promise<NestPayoutAccountView> {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -44,6 +52,16 @@ export class NestPayoutService {
     return this.toView(account, balanceCents)
   }
 
+  /**
+   * Creates the Stripe Connect account on first call (idempotent thereafter) and returns a fresh
+   * onboarding link — Stripe account links expire quickly, so a new one is generated every call
+   * rather than cached.
+   *
+   * @param nestSlug - The nest to connect payouts for.
+   * @param actorUserId - Must be authorized to manage this nest's payouts (the owner).
+   * @param actorEmail - Prefilled on the new Stripe account, only used the first time.
+   * @returns The Stripe-hosted onboarding URL to redirect the user to.
+   */
   async startOnboarding(nestSlug: string, actorUserId: string, actorEmail: string): Promise<{ url: string }> {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -67,10 +85,27 @@ export class NestPayoutService {
     return { url }
   }
 
+  /**
+   * Applies Stripe's account-status webhook payload — called by the webhook handler, never directly.
+   *
+   * @param stripeAccountId - Identifies which nest's account to update.
+   * @param chargesEnabled - Whether the account can currently accept charges.
+   * @param payoutsEnabled - Whether the account can currently receive payouts.
+   */
   async syncFromStripe(stripeAccountId: string, chargesEnabled: boolean, payoutsEnabled: boolean) {
     await this.payoutAccountRepo.updateByStripeAccountId(stripeAccountId, { chargesEnabled, payoutsEnabled })
   }
 
+  /**
+   * Transfers the nest's entire withdrawable balance to its connected Stripe account and records
+   * the debit in the ledger.
+   *
+   * @param nestSlug - The nest to withdraw for.
+   * @param actorUserId - Must be authorized to manage this nest's payouts (the owner).
+   * @throws {PayoutAccountNotConnectedException} No Stripe account has been connected.
+   * @throws {PayoutsNotEnabledException} The connected account hasn't completed onboarding.
+   * @throws {NothingToWithdrawException} The withdrawable balance is zero or negative.
+   */
   async withdraw(nestSlug: string, actorUserId: string): Promise<NestPayoutAccountView> {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 

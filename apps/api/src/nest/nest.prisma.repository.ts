@@ -15,11 +15,15 @@ import { NestSlugTakenException } from './exceptions/nest-slug-taken.exception'
 import { NestRepository } from './nest.repository'
 import type { NestDiscovery, NestDiscoveryRaw } from './types/nest.discovery'
 
+/** Prisma implementation of {@link NestRepository} — see that abstract class for the method contracts. */
 @Injectable()
 export class NestPrismaRepository extends NestRepository {
   constructor(private readonly prisma: PrismaService) { super() }
 
-  // nestSettings is always created alongside the nest in the same transaction, so it's never actually null.
+  /**
+   * `nestSettings` is always created alongside the nest in the same transaction, so it's never
+   * actually null here despite the optional relation type.
+   */
   private toNestDiscovery(nest: NestDiscoveryRaw): NestDiscovery {
     const { nestSettings, members, nestJoinRequests, ...rest } = nest
     return {

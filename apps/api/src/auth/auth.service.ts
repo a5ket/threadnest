@@ -47,6 +47,10 @@ const REFRESH_RESULT_TTL_MS = 15_000
 const REFRESH_RESULT_WAIT_MS = 2_000
 const REFRESH_RESULT_POLL_INTERVAL_MS = 50
 
+/**
+ * Account lifecycle: registration, login/logout, password and email verification/reset, and
+ * refresh-token rotation.
+ */
 @Injectable()
 export class AuthService {
   constructor(
@@ -65,6 +69,13 @@ export class AuthService {
     this.logger.setContext(AuthService.name)
   }
 
+  /**
+   * Creates the account, starts a session, and kicks off email verification.
+   *
+   * @param dto - Registration payload (email + password).
+   * @returns The new access/refresh token pair.
+   * @throws {EmailTakenException} The email is already registered.
+   */
   async register(dto: RegisterDto) {
     const exists = await this.userService.existsByEmail(dto.email)
 
@@ -83,6 +94,14 @@ export class AuthService {
     return tokens
   }
 
+  /**
+   * Verifies credentials and starts a session.
+   *
+   * @param dto - Login payload (email + password).
+   * @returns The new access/refresh token pair.
+   * @throws {InvalidCredentialsException} Unknown email, or the password doesn't match.
+   * @throws {UserSuspendedException} The account is currently suspended.
+   */
   async login(dto: LoginDto) {
     const user = await this.userService.findByEmailWithCredentials(dto.email)
 
@@ -113,6 +132,13 @@ export class AuthService {
     return tokens
   }
 
+  /**
+   * Revokes the refresh token for one session — signs the caller out of just this device/tab.
+   *
+   * @param userId - The session owner.
+   * @param sessionId - The session to revoke, from the caller's access token (`sid` claim).
+   * @returns `{ success: true }`.
+   */
   async logoutCurrentSession(userId: string, sessionId: string) {
     await this.refreshTokenRepo.revokeOne(sessionId, userId)
 
@@ -121,6 +147,12 @@ export class AuthService {
     return { success: true }
   }
 
+  /**
+   * Revokes every refresh token for the user — signs them out on every device.
+   *
+   * @param userId - The account to sign out everywhere.
+   * @returns `{ success: true }`.
+   */
   async logoutAllSessions(userId: string) {
     await this.refreshTokenRepo.revokeAll(userId)
 
@@ -129,6 +161,22 @@ export class AuthService {
     return { success: true }
   }
 
+  /**
+   * Rotates a refresh token into a new access/refresh pair.
+   *
+   * Refresh tokens are single-use, but the same raw token can legitimately arrive twice in a race
+   * (e.g. two tabs refreshing at once), not just via replay. The first request to atomically claim
+   * the token via {@link RefreshTokenRepository.rotate} wins; its result is cached briefly under the
+   * token's hash so a near-simultaneous second request returns that same new pair instead of being
+   * rejected as reuse of an already-revoked token.
+   *
+   * @param rawRefreshToken - The raw (unhashed) refresh token from the request body or cookie.
+   * @returns The new access/refresh token pair.
+   * @throws {InvalidRefreshTokenException} Unknown token, or revoked outside the grace window
+   *   with no cached winner to return.
+   * @throws {RefreshTokenExpiredException} The token is valid but past its expiry.
+   * @throws {UserSuspendedException} The owning account is currently suspended.
+   */
   async refresh(rawRefreshToken: string) {
     const tokenHash = this.hashToken(rawRefreshToken)
     const cached = await this.getCachedRefreshResult(tokenHash)
@@ -199,6 +247,15 @@ export class AuthService {
     return result
   }
 
+  /**
+   * Verifies the current password before setting a new one.
+   *
+   * @param userId - The account to update.
+   * @param currentPassword - Must match the stored hash.
+   * @param newPassword - Must differ from the current password.
+   * @throws {InvalidCredentialsException} The current password is wrong.
+   * @throws {SamePasswordException} The new password matches the current one.
+   */
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
     const user = await this.userService.getByIdWithCredentials(userId)
 
@@ -217,6 +274,12 @@ export class AuthService {
     this.logger.info({ userId }, 'Password changed')
   }
 
+  /**
+   * Issues a fresh verification token (superseding any still-pending one) and emails it.
+   *
+   * @param userId - The account to verify.
+   * @returns The raw token, so callers like {@link register} can use it without a round trip.
+   */
   async requestEmailVerification(userId: string) {
     const user = await this.userService.findByIdWithEmail(userId)
     const token = await this.createToken(userId, ConfirmationTokenType.EMAIL_VERIFICATION, this.addDays(1))
@@ -227,6 +290,11 @@ export class AuthService {
     return token
   }
 
+  /**
+   * Redeems a verification token and marks the account's email verified.
+   *
+   * @param rawToken - The raw token from the verification link/email.
+   */
   async confirmEmailVerification(rawToken: string) {
     const token = await this.getToken(rawToken, ConfirmationTokenType.EMAIL_VERIFICATION)
 
@@ -238,6 +306,12 @@ export class AuthService {
     void this.eventBus.publish(new EmailVerifiedEvent({ userId: token.userId }))
   }
 
+  /**
+   * Emails a reset token if the address belongs to an account. Silently no-ops otherwise, so this
+   * can't be used to enumerate registered emails.
+   *
+   * @param email - The address to send a reset link to, if it exists.
+   */
   async requestPasswordReset(email: string) {
     const user = await this.userService.findByEmailWithCredentials(email)
 
@@ -251,10 +325,24 @@ export class AuthService {
     void this.emailService.sendPasswordResetEmail(user.email, token)
   }
 
+  /**
+   * Validates a reset link before showing the "set new password" form — throws unless the token
+   * is a valid, unredeemed, unexpired password-reset token.
+   *
+   * @param rawToken - The raw token from the reset link.
+   */
   async validatePasswordResetToken(rawToken: string) {
     await this.getToken(rawToken, ConfirmationTokenType.PASSWORD_RESET)
   }
 
+  /**
+   * Redeems the token, sets the new password, and revokes every existing session — a reset logs
+   * the user out everywhere.
+   *
+   * @param rawToken - The raw token from the reset link.
+   * @param password - The new password.
+   * @throws {SamePasswordException} The new password matches the current one.
+   */
   async confirmPasswordReset(rawToken: string, password: string) {
     const token = await this.getToken(rawToken, ConfirmationTokenType.PASSWORD_RESET)
 
@@ -277,6 +365,13 @@ export class AuthService {
     void this.eventBus.publish(new PasswordResetEvent({ userId: token.userId }))
   }
 
+  /**
+   * Emails a confirmation token to the new address.
+   *
+   * @param userId - The account requesting the change.
+   * @param newEmail - The address to move to, pending confirmation.
+   * @throws {EmailTakenException} `newEmail` is unchanged, or already registered to someone else.
+   */
   async requestEmailChange(userId: string, newEmail: string) {
     const user = await this.userService.findByIdWithEmail(userId)
 
@@ -296,6 +391,13 @@ export class AuthService {
     void this.emailService.sendEmailChangeEmail(newEmail, token, newEmail)
   }
 
+  /**
+   * Redeems the token and applies the pending email change.
+   *
+   * @param rawToken - The raw token from the confirmation link.
+   * @throws {TokenNotFoundException} The token has no target email attached (shouldn't happen
+   *   for a genuine `EMAIL_CHANGE` token).
+   */
   async confirmEmailChange(rawToken: string) {
     const token = await this.getToken(rawToken, ConfirmationTokenType.EMAIL_CHANGE)
 
@@ -348,6 +450,12 @@ export class AuthService {
     return this.cache.get<RefreshResult>(this.refreshResultKey(tokenHash))
   }
 
+  /**
+   * Short-polls the cache for a rotation result another concurrent request may be about to write.
+   *
+   * @param tokenHash - Hash of the refresh token whose rotation result to wait for.
+   * @returns The cached result, or null if it hasn't appeared within {@link REFRESH_RESULT_WAIT_MS}.
+   */
   private async waitForRefreshResult(tokenHash: string) {
     const deadline = Date.now() + REFRESH_RESULT_WAIT_MS
 
@@ -405,6 +513,17 @@ export class AuthService {
     return rawToken
   }
 
+  /**
+   * Looks up a confirmation token by its raw value and validates type/status/expiry, throwing
+   * the specific exception for whichever check fails first.
+   *
+   * @param rawToken - The raw token to look up.
+   * @param type - The expected token type — a mismatch is treated as not found.
+   * @throws {TokenNotFoundException} No matching token, or it's for a different purpose.
+   * @throws {TokenSupersededException} A newer token of this type was issued since.
+   * @throws {TokenAlreadyRedeemedException} Already used.
+   * @throws {TokenExpiredException} Past its expiry.
+   */
   private async getToken(rawToken: string, type: ConfirmationTokenType) {
     const token = await this.confirmationTokenRepo.findByHash(this.hashToken(rawToken))
 

@@ -54,12 +54,18 @@ type ThreadSavedRow = Omit<ThreadSearchGlobalRow, 'rank'> & { savedAt: Date }
 
 type ThreadFeedRow = Omit<ThreadSearchGlobalRow, 'rank'>
 
+/** Persistence for threads — CRUD plus the raw-SQL search/feed/discovery queries. */
 @Injectable()
 export class ThreadRepository {
   private readonly generateSlug = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
 
   constructor(private readonly prisma: PrismaService) { }
 
+  /**
+   * @param thread - A row selected via {@link threadSummarySelect}/{@link threadDetailsSelect},
+   * with the viewer's vote and save state as relation arrays.
+   * @returns The same thread, with `viewerVote`/`viewerSaved` flattened to single values.
+   */
   private toThreadWithVote<T extends { threadVotes: { type: VoteType }[], savedBy: { threadId: string }[] }>(
     thread: T,
   ): Omit<T, 'threadVotes' | 'savedBy'> & { viewerVote: VoteType | null, viewerSaved: boolean } {
@@ -67,6 +73,17 @@ export class ThreadRepository {
     return { ...rest, viewerVote: threadVotes[0]?.type ?? null, viewerSaved: savedBy.length > 0 }
   }
 
+  /**
+   * Retries with a freshly generated slug on a collision, up to 3 attempts, rather than letting a
+   * random 8-char slug collision fail the request outright.
+   *
+   * @param nestId - The nest to create the thread in.
+   * @param authorId - The thread's author.
+   * @param dto - Title, content, and optional attachments.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The created thread.
+   * @throws {InternalServerErrorException} All slug-generation retries collided.
+   */
   async create(
     nestId: string,
     authorId: string,
@@ -111,6 +128,11 @@ export class ThreadRepository {
     throw new InternalServerErrorException('Error creating thread')
   }
 
+  /**
+   * @param threadId - The thread to fetch.
+   * @returns The minimal policy-subject shape used for access checks.
+   * @throws {ThreadNotFoundException} No thread with this id.
+   */
   async getById(threadId: string) {
     const thread = await this.prisma.thread.findUnique({
       where: { id: threadId },
@@ -124,6 +146,13 @@ export class ThreadRepository {
     return thread
   }
 
+  /**
+   * @param nestId - The nest the thread belongs to.
+   * @param slug - The thread's slug, unique within the nest.
+   * @param viewerId - The viewer, used to resolve their vote/save state.
+   * @returns The thread's full detail shape.
+   * @throws {ThreadNotFoundException} No thread with this slug in this nest.
+   */
   async getBySlug(nestId: string, slug: string, viewerId?: string) {
     const thread = await this.prisma.thread.findUnique({
       where: { nestId_slug: { nestId, slug } },
@@ -137,6 +166,10 @@ export class ThreadRepository {
     return this.toThreadWithVote(thread)
   }
 
+  /**
+   * @param row - A flat row from one of the raw-SQL search/feed/listing queries.
+   * @returns The row reshaped into a nested {@link ThreadSummary}.
+   */
   private toThreadSearchResult(row: ThreadSearchRow): ThreadSummary {
     return {
       id: row.id,
@@ -164,7 +197,10 @@ export class ThreadRepository {
     }
   }
 
-  // No stored tsvector/GIN index yet - fine at nest scale, revisit if search gets slow.
+  /**
+   * In-nest full-text search, rank-ordered. No stored tsvector/GIN index yet — fine at nest
+   * scale, revisit if search gets slow.
+   */
   private async searchByNest(nestId: string, limit: number, cursor: string | undefined, term: string, viewerId?: string) {
     let cursorSql = Prisma.sql`TRUE`
 
@@ -227,6 +263,10 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * @param row - A flat row from one of the cross-nest raw-SQL queries.
+   * @returns The row reshaped into a {@link ThreadSearchResult}, including its nest reference.
+   */
   private toGlobalThreadSearchResult(row: ThreadSearchGlobalRow): ThreadSearchResult {
     return {
       ...this.toThreadSearchResult(row),
@@ -234,7 +274,10 @@ export class ThreadRepository {
     }
   }
 
-  // Cross-nest, so results are gated by the same visibility-or-membership rule as nest discovery (see nest.access.ts).
+  /**
+   * Cross-nest full-text search, rank-ordered. Results are gated by the same
+   * visibility-or-membership rule as nest discovery — see {@link NestAccess}.
+   */
   async searchGlobal(term: string, limit: number, cursor: string | undefined, viewerId?: string) {
     let cursorSql = Prisma.sql`TRUE`
 
@@ -305,6 +348,16 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * Cross-nest discovery feed: every visible thread across every nest, newest first — unlike
+   * {@link listFeed}, not scoped to the viewer's own memberships.
+   *
+   * @param query - Pagination options.
+   * @param viewerId - The viewer, or `undefined` if anonymous; gates private-nest visibility and
+   * resolves vote/save state.
+   * @returns A cursor-paginated page of threads, newest first.
+   * @throws {InvalidCursorException} `query.cursor` is malformed.
+   */
   async listDiscoverFeed(query: ThreadFeedQueryDto, viewerId?: string) {
     let cursorSql = Prisma.sql`TRUE`
 
@@ -363,7 +416,7 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
-  // Cross-nest, ordered by when the viewer saved each thread rather than thread recency/rank.
+  /** Cross-nest, ordered by when the viewer saved each thread rather than thread recency/rank. */
   async listSaved(viewerId: string, query: ThreadSavedQueryDto) {
     let cursorSql = Prisma.sql`TRUE`
 
@@ -418,7 +471,7 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
-  // Cross-nest, ordered by thread recency across every nest the viewer is a member of.
+  /** Cross-nest, ordered by thread recency across every nest the viewer is a member of. */
   async listFeed(viewerId: string, query: ThreadFeedQueryDto) {
     let cursorSql = Prisma.sql`TRUE`
 
@@ -474,6 +527,13 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * @param authorId - The thread author whose threads to list.
+   * @param viewerId - The viewer, or `undefined` if anonymous; gates private-nest visibility.
+   * @param query - Pagination options.
+   * @returns A cursor-paginated page of the author's threads, newest first.
+   * @throws {InvalidCursorException} `query.cursor` is malformed.
+   */
   async listByAuthor(authorId: string, viewerId: string | undefined, query: ThreadFeedQueryDto) {
     let cursorSql = Prisma.sql`TRUE`
 
@@ -532,6 +592,17 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * Lists a nest's threads, sorted per `query.sortBy` — or, if `query.search` is set, delegates
+   * to the raw-SQL {@link searchByNest} instead, since full-text search needs its own rank-based
+   * cursor and can't share the plain-column ordering/pagination path below.
+   *
+   * @param nestId - The nest whose threads to list.
+   * @param query - Sort, pagination, and optional search term.
+   * @param viewerId - The viewer, used to resolve their vote/save state.
+   * @returns A cursor-paginated page of threads.
+   * @throws {InvalidCursorException} `query.cursor` is malformed.
+   */
   async listByNest(nestId: string, query: ThreadQueryDto, viewerId?: string) {
     const search = query.search?.trim()
     if (search) {
@@ -595,6 +666,14 @@ export class ThreadRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * @param threadId - The thread to delete.
+   * @param deletedById - The user performing the deletion.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @param deletedByPlatform - Whether this is a platform-level removal (bypassing nest
+   * moderation), used by {@link ThreadPresenter} to decide who the deletion is attributed to.
+   * @throws {ThreadNotFoundException} No thread with this id.
+   */
   async softDelete(threadId: string, deletedById: string, db: Database = this.prisma, deletedByPlatform = false) {
     try {
       await db.thread.update({
@@ -616,6 +695,12 @@ export class ThreadRepository {
     }
   }
 
+  /**
+   * @param authorId - The author whose non-deleted threads to list.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns Minimal identifying info for every non-deleted thread by this author — for bulk
+   * moderation flows that need to know which threads/nests are affected, not full thread data.
+   */
   async listActiveByAuthor(authorId: string, db: Database = this.prisma) {
     return db.thread.findMany({
       where: { authorId, deletedAt: null },
@@ -623,6 +708,14 @@ export class ThreadRepository {
     })
   }
 
+  /**
+   * Bulk platform-level removal of every thread by a user, in one query.
+   *
+   * @param authorId - The author whose threads to remove.
+   * @param deletedById - The platform moderator performing the removal.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The count of threads removed.
+   */
   async softDeleteManyByAuthor(authorId: string, deletedById: string, db: Database = this.prisma) {
     return db.thread.updateMany({
       where: { authorId, deletedAt: null },
@@ -630,8 +723,11 @@ export class ThreadRepository {
     })
   }
 
-  // When dto.attachments is provided, replaces the full set and returns the keys that were
-  // dropped (present before, absent from the new set) so the caller can clean them up in storage.
+  /**
+   * @returns The updated thread, plus `droppedAttachmentKeys` — when `dto.attachments` is
+   *   provided, it replaces the full set, and these are the keys that were present before but
+   *   absent from the new set, for the caller to clean up in storage.
+   */
   async updateById(threadId: string, nestId: string, dto: ThreadUpdateDto, viewerId?: string, db: Database = this.prisma) {
     const previousKeys = dto.attachments !== undefined
       ? (await db.threadAttachment.findMany({ where: { threadId }, select: { key: true } })).map((a) => a.key)
@@ -670,6 +766,15 @@ export class ThreadRepository {
     }
   }
 
+  /**
+   * @param threadId - The thread to update.
+   * @param nestId - The thread's nest, used to resolve the author's nest role in the response.
+   * @param pinnedAt - The new pinned timestamp, or `null` to unpin.
+   * @param viewerId - The viewer, used to resolve their vote/save state.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The updated thread.
+   * @throws {ThreadNotFoundException} No thread with this id.
+   */
   private async setPinnedAt(threadId: string, nestId: string, pinnedAt: Date | null, viewerId?: string, db: Database = this.prisma) {
     try {
       const thread = await db.thread.update({
@@ -687,14 +792,25 @@ export class ThreadRepository {
     }
   }
 
+  /** @throws {ThreadNotFoundException} No thread with this id. */
   async pin(threadId: string, nestId: string, viewerId?: string, db?: Database) {
     return this.setPinnedAt(threadId, nestId, new Date(), viewerId, db)
   }
 
+  /** @throws {ThreadNotFoundException} No thread with this id. */
   async unpin(threadId: string, nestId: string, viewerId?: string, db?: Database) {
     return this.setPinnedAt(threadId, nestId, null, viewerId, db)
   }
 
+  /**
+   * @param threadId - The thread to update.
+   * @param nestId - The thread's nest, used to resolve the author's nest role in the response.
+   * @param lockedAt - The new locked timestamp, or `null` to unlock.
+   * @param viewerId - The viewer, used to resolve their vote/save state.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The updated thread.
+   * @throws {ThreadNotFoundException} No thread with this id.
+   */
   private async setLockedAt(threadId: string, nestId: string, lockedAt: Date | null, viewerId?: string, db: Database = this.prisma) {
     try {
       const thread = await db.thread.update({
@@ -712,14 +828,21 @@ export class ThreadRepository {
     }
   }
 
+  /** @throws {ThreadNotFoundException} No thread with this id. */
   async lock(threadId: string, nestId: string, viewerId?: string, db?: Database) {
     return this.setLockedAt(threadId, nestId, new Date(), viewerId, db)
   }
 
+  /** @throws {ThreadNotFoundException} No thread with this id. */
   async unlock(threadId: string, nestId: string, viewerId?: string, db?: Database) {
     return this.setLockedAt(threadId, nestId, null, viewerId, db)
   }
 
+  /**
+   * @param threadId - The thread whose comment count to adjust.
+   * @param delta - The signed change to apply (e.g. `+1` on comment creation, `-1` on deletion).
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   */
   async adjustCommentCount(
     threadId: string,
     delta: number,
@@ -735,6 +858,12 @@ export class ThreadRepository {
     })
   }
 
+  /**
+   * @param threadId - The thread to update.
+   * @param lastCommentAt - The new latest-comment timestamp — drives the thread's position in
+   * "recent activity" sorts.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   */
   async updateLastCommentAt(
     threadId: string,
     lastCommentAt: Date,
@@ -746,6 +875,14 @@ export class ThreadRepository {
     })
   }
 
+  /**
+   * @param threadId - The thread whose score to adjust.
+   * @param delta - The signed change to apply — see {@link computeVoteScoreDelta}.
+   * @param nestId - The thread's nest, used to resolve the author's nest role in the response.
+   * @param viewerId - The voter, used to resolve their vote on the updated thread.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The updated thread.
+   */
   async adjustScore(threadId: string, delta: number, nestId: string, viewerId?: string, db: Database = this.prisma) {
     const thread = await db.thread.update({
       where: { id: threadId },

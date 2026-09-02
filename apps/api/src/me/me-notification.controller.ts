@@ -15,6 +15,7 @@ import { NotificationQueryDto } from 'src/notification/dto/notification.query.dt
 import { NotificationNotFoundException } from 'src/notification/exceptions/notification-not-found.exception'
 import { NotificationService } from 'src/notification/notification.service'
 
+/** The current user's notifications: list, unseen count, and mark read/seen. */
 @ApiTags('Notifications')
 @Controller('/me/notifications')
 @Authenticated()

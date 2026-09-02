@@ -9,10 +9,24 @@ import { NotificationNotFoundException } from './exceptions/notification-not-fou
 import { NOTIFICATION_SELECT } from './selects/notification.select'
 import { NotificationDataByType } from './types/notification-data'
 
+/**
+ * Persistence for user notifications. Tracks two independent timestamps: `seenAt` (the user
+ * glanced at their notification list/bell — see {@link markAllAsSeen}) and `readAt` (the user
+ * opened this specific notification — see {@link markAsRead}/{@link markAllAsRead}).
+ */
 @Injectable()
 export class NotificationRepository {
   constructor(private readonly prisma: PrismaService) { }
 
+  /**
+   * @param userId - The recipient.
+   * @param actorUserId - The user who triggered the notification, or `null` for a system-generated one.
+   * @param nestId - The nest this notification relates to, or `null` if not nest-scoped.
+   * @param type - The kind of notification.
+   * @param data - Type-specific details, keyed by `type` via {@link NotificationDataByType}.
+   * @param db - Optional transaction client; defaults to the standalone prisma client.
+   * @returns The created notification.
+   */
   async create<T extends NotificationType>(
     userId: string,
     actorUserId: string | null,
@@ -27,6 +41,12 @@ export class NotificationRepository {
     })
   }
 
+  /**
+   * @param userId - The recipient whose notifications to list.
+   * @param query - Pagination options plus an unread-only filter.
+   * @returns A cursor-paginated page of notifications, newest first.
+   * @throws {InvalidCursorException} `query.cursor` is malformed.
+   */
   async listForUser(userId: string, query: NotificationQueryDto) {
     const { limit, cursor, unreadOnly } = query
 
@@ -56,10 +76,20 @@ export class NotificationRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * @param userId - The recipient.
+   * @returns The count of notifications not yet marked seen — typically shown as a badge count.
+   */
   countUnseen(userId: string) {
     return this.prisma.notification.count({ where: { userId, seenAt: null } })
   }
 
+  /**
+   * @param notificationId - The notification to mark read.
+   * @param userId - The recipient; scopes the update so a user can't mark someone else's
+   * notification read.
+   * @throws {NotificationNotFoundException} No such notification, or it belongs to another user.
+   */
   async markAsRead(notificationId: string, userId: string) {
     const result = await this.prisma.notification.updateMany({
       where: { id: notificationId, userId },
@@ -71,6 +101,7 @@ export class NotificationRepository {
     }
   }
 
+  /** @param userId - The recipient whose unread notifications to mark read. */
   markAllAsRead(userId: string) {
     return this.prisma.notification.updateMany({
       where: { userId, readAt: null },
@@ -78,6 +109,7 @@ export class NotificationRepository {
     })
   }
 
+  /** @param userId - The recipient whose unseen notifications to mark seen. */
   markAllAsSeen(userId: string) {
     return this.prisma.notification.updateMany({
       where: { userId, seenAt: null },

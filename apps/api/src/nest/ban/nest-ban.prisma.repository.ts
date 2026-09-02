@@ -7,6 +7,7 @@ import { UserAlreadyBannedException } from './exceptions/user-already-banned.exc
 import { NestBanRepository } from './nest-ban.repository'
 import { NEST_BAN_SUMMARY_SELECT } from './selects/nest-ban.summary.select'
 
+/** Prisma implementation of {@link NestBanRepository} — see that abstract class for the method contracts. */
 @Injectable()
 export class NestBanPrismaRepository extends NestBanRepository {
   constructor(

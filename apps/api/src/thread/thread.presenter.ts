@@ -9,6 +9,7 @@ import { ThreadSearchResult } from './thread.repository'
 type AuthorWithMembership = (ThreadSummary | ThreadDetails)['author']
 type AttachmentWithKey = (ThreadSummary | ThreadDetails)['attachments'][number]
 
+/** Shapes thread views for listings, search results, and the thread detail page. */
 @Injectable()
 export class ThreadPresenter {
   constructor(
@@ -20,6 +21,7 @@ export class ThreadPresenter {
     return this.userPresenter.toReferenceView(author, author.nestMembership[0]?.role ?? null)
   }
 
+  /** Attachment URLs are presigned (not public) — threads can live inside private, paywalled nests. */
   private async toAttachmentsView(attachments: AttachmentWithKey[]) {
     return Promise.all(attachments.map(async (a) => ({
       id: a.id,
@@ -30,6 +32,11 @@ export class ThreadPresenter {
     })))
   }
 
+  /**
+   * Row shape for a nest's thread listing.
+   *
+   * @param thread - The thread to present.
+   */
   async toSummaryView(thread: ThreadSummary) {
     return {
       id: thread.id,
@@ -49,6 +56,12 @@ export class ThreadPresenter {
     }
   }
 
+  /**
+   * Cross-nest listing row (search, feed, saved, profile activity) — a summary plus which nest
+   * it belongs to.
+   *
+   * @param thread - The thread to present.
+   */
   async toSearchResultView(thread: ThreadSearchResult) {
     return {
       ...await this.toSummaryView(thread),
@@ -56,6 +69,15 @@ export class ThreadPresenter {
     }
   }
 
+  /**
+   * The thread detail page's data. Content is hidden unless `ctx.canReadContent` — see
+   * {@link ThreadAccess.getContext} for when that's false (e.g. a paywalled nest the viewer
+   * hasn't subscribed to). Who deleted a removed thread stays nest-moderator-only, and a
+   * platform-admin deletion masks the deleter's identity even from nest moderators.
+   *
+   * @param thread - The thread to present.
+   * @param ctx - The viewer's permission context for this thread.
+   */
   async toDetailView(thread: ThreadDetails, ctx: ThreadAccessContext) {
     return {
       id: thread.id,

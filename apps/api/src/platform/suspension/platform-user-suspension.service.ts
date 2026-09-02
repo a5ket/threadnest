@@ -8,6 +8,11 @@ import { PlatformUserSuspendedEvent } from '../events/platform-user-suspended.ev
 import { PlatformUserUnsuspendedEvent } from '../events/platform-user-unsuspended.event'
 import { PlatformUserSuspensionPolicy } from './platform-user-suspension.policy'
 
+/**
+ * Platform-moderator wrapper around {@link UserSuspensionService} — adds the moderator
+ * authorization check and publishes platform action-log events; the suspension logic itself
+ * lives in the underlying service.
+ */
 @Injectable()
 export class PlatformUserSuspensionService {
   constructor(
@@ -20,6 +25,16 @@ export class PlatformUserSuspensionService {
     this.logger.setContext(PlatformUserSuspensionService.name)
   }
 
+  /**
+   * @param userId - The user to suspend.
+   * @param actorUserId - The moderator issuing the suspension.
+   * @param dto - The suspension reason and duration.
+   * @returns The new suspension's view.
+   * @throws {InsufficientPermissionsException} `actorUserId` isn't a platform moderator or admin.
+   * @throws {CannotSuspendYourselfException} `actorUserId` equals `userId`.
+   * @throws {UserNotFoundException} `userId` does not exist.
+   * @throws {UserAlreadySuspendedException} `userId` already has an active suspension.
+   */
   async suspend(userId: string, actorUserId: string, dto: UserSuspensionCreateDto) {
     await this.policy.assertIsModerator(actorUserId)
 
@@ -31,6 +46,12 @@ export class PlatformUserSuspensionService {
     return this.presenter.toView(suspension)
   }
 
+  /**
+   * @param userId - The user to unsuspend.
+   * @param actorUserId - The moderator lifting the suspension.
+   * @throws {InsufficientPermissionsException} `actorUserId` isn't a platform moderator or admin.
+   * @throws {UserSuspensionNotFoundException} `userId` has no active suspension.
+   */
   async unsuspend(userId: string, actorUserId: string) {
     await this.policy.assertIsModerator(actorUserId)
 
@@ -40,6 +61,12 @@ export class PlatformUserSuspensionService {
     void this.eventBus.publish(new PlatformUserUnsuspendedEvent({ userId, unsuspendedById: actorUserId }))
   }
 
+  /**
+   * @param userId - The user to check.
+   * @param actorUserId - The moderator performing the lookup.
+   * @returns The active suspension's view, or `null` if the user isn't currently suspended.
+   * @throws {InsufficientPermissionsException} `actorUserId` isn't a platform moderator or admin.
+   */
   async getActive(userId: string, actorUserId: string) {
     await this.policy.assertIsModerator(actorUserId)
 

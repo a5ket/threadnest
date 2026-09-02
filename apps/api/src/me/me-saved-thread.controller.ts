@@ -12,6 +12,7 @@ import { ThreadSearchResponseDto } from 'src/thread/dto/thread-search-response.d
 import { ThreadSavedQueryDto } from 'src/thread/dto/thread-saved.query.dto'
 import { ThreadService } from 'src/thread/thread.service'
 
+/** The signed-in user's saved threads. */
 @ApiTags('Me')
 @Controller('/me/saved-threads')
 @Authenticated()

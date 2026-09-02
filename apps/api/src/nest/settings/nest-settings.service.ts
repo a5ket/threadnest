@@ -15,6 +15,7 @@ interface NestSettingsParticipationFields {
   minCommentCreationLevel: number
 }
 
+/** Per-nest configuration: visibility, join policy, and the 15 `min*Level` permission thresholds. */
 @Injectable()
 export class NestSettingsService {
   constructor(
@@ -27,6 +28,10 @@ export class NestSettingsService {
     this.logger.setContext(NestSettingsService.name)
   }
 
+  /**
+   * @param nestSlug - The nest to look up.
+   * @param actorUserId - Must be authorized to view this nest's settings.
+   */
   async getSettings(nestSlug: string, actorUserId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -35,6 +40,12 @@ export class NestSettingsService {
     return this.settingsRepo.get(nest.id)
   }
 
+  /**
+   * @param nestSlug - The nest to update.
+   * @param actorUserId - Must be authorized to update this nest's settings (the owner).
+   * @param dto - Fields to change; omitted fields are left as-is. See {@link clampParticipationForPrivacy}
+   *   for how switching to `PRIVATE` interacts with participation thresholds.
+   */
   async updateSettings(nestSlug: string, actorUserId: string, dto: NestSettingsUpdateDto) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -57,8 +68,15 @@ export class NestSettingsService {
     return settings
   }
 
-  // A private nest is invisible to non-members, so a non-member participation threshold
-  // would be a no-op at best — raise it to MEMBER instead of rejecting the update outright.
+  /**
+   * A private nest is invisible to non-members, so a non-member participation threshold would
+   * be a no-op at best — raise it to `MEMBER` instead of rejecting the update outright.
+   *
+   * @param dto - The incoming update, possibly changing visibility and/or thresholds.
+   * @param current - The nest's settings before this update, used to resolve fields `dto` omits.
+   * @returns `dto`, with `minThreadCreationLevel`/`minCommentCreationLevel` raised to at least
+   *   `MEMBER` if the resulting visibility is `PRIVATE`.
+   */
   private clampParticipationForPrivacy(dto: NestSettingsUpdateDto, current: NestSettingsParticipationFields): NestSettingsUpdateDto {
     const visibility = dto.visibility ?? current.visibility
 

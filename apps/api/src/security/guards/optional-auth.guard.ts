@@ -6,6 +6,11 @@ import { AuthenticatedRequest } from 'src/common/types/authenticated.request'
 import { extractAccessToken } from '../access-token.util'
 import { SecurityConfig } from '../security.config'
 
+/**
+ * Decodes and attaches the current user when a valid token is present, but never rejects the
+ * request — for routes that render differently for guests vs signed-in users (e.g. showing
+ * "your vote" on a thread).
+ */
 @Injectable()
 export class OptionalAuthGuard implements CanActivate {
   constructor(
@@ -13,6 +18,10 @@ export class OptionalAuthGuard implements CanActivate {
     private readonly config: ConfigService<SecurityConfig>,
   ) { }
 
+  /**
+   * @param context - The execution context; only the underlying HTTP request is used.
+   * @returns Always true — a missing or invalid token just means the request proceeds without a user.
+   */
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
     const token = extractAccessToken(request)

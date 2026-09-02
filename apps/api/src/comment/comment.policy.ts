@@ -8,6 +8,10 @@ import { ThreadAccessContext } from 'src/thread/types/thread.access-context'
 import { ThreadRepository } from 'src/thread/thread.repository'
 import { CommentPolicySubject } from './types/comment.policy-subject'
 
+/**
+ * Comment-level authorization, layered on top of {@link ThreadAccess} — most checks start from
+ * an already-computed thread context.
+ */
 @Injectable()
 export class CommentPolicy {
   constructor(
@@ -17,6 +21,10 @@ export class CommentPolicy {
     private readonly memberRepo: NestMemberRepository,
   ) { }
 
+  /**
+   * @throws {ThreadNotFoundException} Thread not visible.
+   * @throws {InsufficientPermissionsException} Not authorized to comment.
+   */
   assertCanCreateThreadComment(threadCtx: ThreadAccessContext) {
     if (!threadCtx.canViewThread) {
       throw new ThreadNotFoundException()
@@ -27,12 +35,17 @@ export class CommentPolicy {
     }
   }
 
+  /** @throws {ThreadNotFoundException} Thread not visible. */
   assertCanReadThreadComment(threadCtx: ThreadAccessContext) {
     if (!threadCtx.canViewThread) {
       throw new ThreadNotFoundException()
     }
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Thread not visible.
+   * @throws {InsufficientPermissionsException} Not the author, or the comment is deleted.
+   */
   assertCanUpdateComment(comment: CommentPolicySubject, userId: string, threadCtx: ThreadAccessContext) {
     if (!threadCtx.canViewThread) {
       throw new ThreadNotFoundException()
@@ -43,6 +56,14 @@ export class CommentPolicy {
     }
   }
 
+  /**
+   * The author can always delete their own comment. A moderator deleting someone else's must
+   * outrank the author's nest role, same as the thread/ban moderation checks elsewhere.
+   *
+   * @throws {ThreadNotFoundException} Thread not visible.
+   * @throws {InsufficientPermissionsException} Already deleted, or not the author/a moderator
+   *   who outranks the comment's author.
+   */
   async assertCanDeleteComment(comment: CommentPolicySubject, userId: string) {
     const thread = await this.threadsRepo.getById(comment.threadId)
     const threadCtx = await this.threadAccess.getContext(thread, userId)
@@ -70,6 +91,10 @@ export class CommentPolicy {
     }
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Thread not visible.
+   * @throws {InsufficientPermissionsException} Not authorized to comment, or the parent comment is deleted.
+   */
   assertCanReplyToComment(comment: CommentPolicySubject, threadCtx: ThreadAccessContext) {
     this.assertCanCreateThreadComment(threadCtx)
 
@@ -78,6 +103,10 @@ export class CommentPolicy {
     }
   }
 
+  /**
+   * @throws {ThreadNotFoundException} Thread not visible.
+   * @throws {InsufficientPermissionsException} The comment is deleted, or not authorized to vote.
+   */
   assertCanVoteOnComment(comment: CommentPolicySubject, threadCtx: ThreadAccessContext) {
     if (!threadCtx.canViewThread) {
       throw new ThreadNotFoundException()

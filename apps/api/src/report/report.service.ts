@@ -13,6 +13,11 @@ import { ReportPolicy } from './report.policy'
 import { ReportPresenter } from './report.presenter'
 import { ReportRepository } from './report.repository'
 
+/**
+ * Nest-level content moderation reports: any nest member can report a thread or comment, nest
+ * moderators triage the queue. Distinct from {@link PlatformReportService}, which covers
+ * platform-wide reports (nests, users, threads, comments, messages) reviewed by platform staff.
+ */
 @Injectable()
 export class ReportService {
   constructor(
@@ -29,6 +34,15 @@ export class ReportService {
     this.logger.setContext(ReportService.name)
   }
 
+  /**
+   * @param nestSlug - The nest the thread belongs to.
+   * @param threadSlug - The thread to report.
+   * @param actorUserId - The reporter.
+   * @param dto - The report reason and optional details.
+   * @returns The new report's summary view.
+   * @throws {ThreadNotFoundException} The thread isn't visible to the reporter.
+   * @throws {AlreadyReportedException} `actorUserId` already has a pending report against this thread.
+   */
   async reportThread(nestSlug: string, threadSlug: string, actorUserId: string, dto: ReportCreateDto) {
     const thread = await this.threadsService.getByNestSlug(nestSlug, threadSlug, actorUserId)
     const threadCtx = await this.threadAccess.getContext(thread, actorUserId)
@@ -44,6 +58,15 @@ export class ReportService {
     return this.presenter.toSummaryView(report)
   }
 
+  /**
+   * @param commentId - The comment to report.
+   * @param actorUserId - The reporter.
+   * @param dto - The report reason and optional details.
+   * @returns The new report's summary view.
+   * @throws {CommentNotFoundException} No comment with this id.
+   * @throws {ThreadNotFoundException} The comment's thread isn't visible to the reporter.
+   * @throws {AlreadyReportedException} `actorUserId` already has a pending report against this comment.
+   */
   async reportComment(commentId: string, actorUserId: string, dto: ReportCreateDto) {
     const comment = await this.commentsRepo.getById(commentId)
     const thread = await this.threadsService.getById(comment.threadId)
@@ -60,6 +83,14 @@ export class ReportService {
     return this.presenter.toSummaryView(report)
   }
 
+  /**
+   * @param nestSlug - The nest whose report queue to list.
+   * @param actorUserId - The moderator viewing the queue.
+   * @param status - Filter to only this status, or omit to list every report.
+   * @returns Matching reports' summary views, newest first.
+   * @throws {NestNotFoundException} No nest with this slug.
+   * @throws {InsufficientPermissionsException} `actorUserId` isn't a moderator in this nest.
+   */
   async listQueue(nestSlug: string, actorUserId: string, status?: ReportStatus) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -70,10 +101,32 @@ export class ReportService {
     return reports.map((report) => this.presenter.toSummaryView(report))
   }
 
+  /**
+   * Marks a report resolved — the reporter's concern was acted on (e.g. content removed).
+   *
+   * @param nestSlug - The nest the report belongs to.
+   * @param reportId - The report to resolve.
+   * @param actorUserId - The moderator reviewing it.
+   * @throws {NestNotFoundException} No nest with this slug.
+   * @throws {ReportNotFoundException} No report with this id in this nest.
+   * @throws {InsufficientPermissionsException} `actorUserId` isn't a moderator in this nest.
+   * @throws {ReportAlreadyResolvedException} Already resolved or dismissed.
+   */
   async resolve(nestSlug: string, reportId: string, actorUserId: string) {
     await this.setStatus(nestSlug, reportId, actorUserId, ReportStatus.RESOLVED)
   }
 
+  /**
+   * Marks a report dismissed — reviewed, but no action taken.
+   *
+   * @param nestSlug - The nest the report belongs to.
+   * @param reportId - The report to dismiss.
+   * @param actorUserId - The moderator reviewing it.
+   * @throws {NestNotFoundException} No nest with this slug.
+   * @throws {ReportNotFoundException} No report with this id in this nest.
+   * @throws {InsufficientPermissionsException} `actorUserId` isn't a moderator in this nest.
+   * @throws {ReportAlreadyResolvedException} Already resolved or dismissed.
+   */
   async dismiss(nestSlug: string, reportId: string, actorUserId: string) {
     await this.setStatus(nestSlug, reportId, actorUserId, ReportStatus.DISMISSED)
   }

@@ -22,6 +22,12 @@ export class NestMemberPolicy {
     private readonly memberRepo: NestMemberRepository
   ) { }
 
+  /**
+   * @throws {UserIsBannedException} Actively banned from this nest.
+   * @throws {AlreadyMemberException} Already a member.
+   * @throws {JoinNotOpenException} This nest's join policy isn't `OPEN` (requires an invite or
+   *   join request instead).
+   */
   async assertCanJoinNest(nest: NestPolicySubject, userId: string) {
     const ctx = await this.nestAccess.getContext(nest.id, userId)
 
@@ -38,6 +44,10 @@ export class NestMemberPolicy {
     }
   }
 
+  /**
+   * @throws {OwnerCannotLeaveException} The owner must transfer ownership first.
+   * @throws {InsufficientPermissionsException} Not a member.
+   */
   async assertCanLeaveNest(nest: NestPolicySubject, userId: string) {
     const ctx = await this.nestAccess.getContext(nest.id, userId)
 
@@ -50,6 +60,7 @@ export class NestMemberPolicy {
     }
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to view this nest's member list. */
   async assertCanListMembers(nest: NestPolicySubject, actorUserId: string) {
     const ctx = await this.nestAccess.getContext(nest.id, actorUserId)
 
@@ -58,6 +69,10 @@ export class NestMemberPolicy {
     }
   }
 
+  /**
+   * @throws {CannotRemoveYourselfException} `actorUserId === targetUserId` (leave instead).
+   * @throws {InsufficientPermissionsException} Not authorized, or outranked by the target.
+   */
   async assertCanRemoveMember(nest: NestPolicySubject, actorUserId: string, targetUserId: string) {
     if (actorUserId === targetUserId) {
       throw new CannotRemoveYourselfException()
@@ -76,6 +91,17 @@ export class NestMemberPolicy {
     }
   }
 
+  /**
+   * The actor must outrank both the target's current role and the role being assigned — so a
+   * moderator can demote another moderator but can't promote anyone to moderator or owner.
+   *
+   * @throws {CannotChangeYourOwnRoleException} `actorUserId === targetUserId`.
+   * @throws {InsufficientPermissionsException} Not authorized to manage roles in this nest.
+   * @throws {MemberNotFoundException} `targetUserId` isn't a member.
+   * @throws {MemberRoleUnchangedException} `targetNewRole` matches the current role.
+   * @throws {CannotManageHigherRoleMemberException} The actor doesn't outrank the target's current role.
+   * @throws {CannotAssignHigherOrEqualRoleException} The actor doesn't outrank `targetNewRole`.
+   */
   async assertCanChangeRole(nest: NestPolicySubject, actorUserId: string, targetUserId: string, targetNewRole: NestMemberRole) {
     if (actorUserId === targetUserId) {
       throw new CannotChangeYourOwnRoleException()

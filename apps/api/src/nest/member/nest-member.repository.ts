@@ -21,6 +21,7 @@ export type NestMemberPage = {
   meta: { nextCursor: string | null, hasMore: boolean }
 }
 
+/** Persistence contract for nest memberships. */
 export abstract class NestMemberRepository {
   abstract findByUser(nestId: string, userId: string): Promise<NestMember | null>
   abstract getByUser(nestId: string, userId: string): Promise<NestMember>

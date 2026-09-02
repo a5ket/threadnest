@@ -13,9 +13,13 @@ export type NestDiscoveryPage = {
   meta: { nextCursor: string | null, hasMore: boolean }
 }
 
+/** Persistence contract for nests. */
 export abstract class NestRepository {
   abstract create(dto: NestCreateDto, db?: Database): Promise<NestSummary>
-  // Returns soft-deleted nests too — "deleted" and "never existed" are different cases callers need to tell apart.
+  /**
+   * Returns soft-deleted nests too — "deleted" and "never existed" are different cases callers
+   * need to tell apart.
+   */
   abstract getBySlug(nestSlug: string): Promise<NestSummary>
   abstract updateMetadata(nestId: string, dto: NestUpdateDto, db?: Database): Promise<NestSummary>
   abstract updateIconKey(nestId: string, iconKey: string | null): Promise<NestSummary>

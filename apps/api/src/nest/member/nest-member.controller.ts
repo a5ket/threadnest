@@ -27,6 +27,7 @@ import { MemberRoleUnchangedException } from './exceptions/member-role-unchanged
 import { UserIsBannedException } from './exceptions/user-is-banned.exception'
 import { NestMemberService } from './nest-member.service'
 
+/** Membership management: list members, join/leave, remove a member, change roles. */
 @ApiTags('Nest Members')
 @Controller('nests/:nestSlug/members')
 @Authenticated()

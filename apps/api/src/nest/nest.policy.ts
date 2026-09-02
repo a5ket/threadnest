@@ -11,6 +11,10 @@ import { NestPolicySubject } from './types/nest.policy-subject'
 
 const NEST_OWNER_LIMIT = 100
 
+/**
+ * Nest-level authorization: creation limits, edit/delete/transfer rights. Read-context checks
+ * delegate to {@link NestAccess}.
+ */
 @Injectable()
 export class NestPolicy {
   constructor(
@@ -18,6 +22,10 @@ export class NestPolicy {
     private readonly memberRepo: NestMemberRepository
   ) { }
 
+  /**
+   * @param actorUserId - The user attempting to create a nest.
+   * @throws {NestLimitReachedException} The user already owns {@link NEST_OWNER_LIMIT} nests.
+   */
   async assertCanCreateNest(actorUserId: string) {
     const count = await this.memberRepo.countByRole(actorUserId, NestMemberRole.OWNER)
 
@@ -26,12 +34,23 @@ export class NestPolicy {
     }
   }
 
+  /**
+   * Self-contained variant for callers that already have an access context on hand.
+   *
+   * @param accessContext - A context previously computed by {@link NestAccess.getContext}.
+   * @throws {InsufficientPermissionsException} `accessContext.canViewNest` is false.
+   */
   async assertCanViewNestByAccessContext(accessContext: NestAccessContext) {
     if (!accessContext.canViewNest) {
       throw new InsufficientPermissionsException()
     }
   }
 
+  /**
+   * @param nest - The nest being edited.
+   * @param actorUserId - The user attempting the edit.
+   * @throws {InsufficientPermissionsException} Not authorized to edit this nest.
+   */
   async assertCanUpdateNest(nest: NestPolicySubject, actorUserId: string) {
     const ctx = await this.nestAccess.getContext(nest.id, actorUserId)
 
@@ -40,6 +59,11 @@ export class NestPolicy {
     }
   }
 
+  /**
+   * @param nest - The nest being deleted.
+   * @param actorUserId - The user attempting the deletion.
+   * @throws {InsufficientPermissionsException} Not authorized to delete this nest.
+   */
   async assertCanDeleteNest(nest: NestPolicySubject, actorUserId: string) {
     const ctx = await this.nestAccess.getContext(nest.id, actorUserId)
 
@@ -48,6 +72,14 @@ export class NestPolicy {
     }
   }
 
+  /**
+   * @param nest - The nest whose ownership is transferring.
+   * @param actorUserId - The current owner.
+   * @param targetUserId - The prospective new owner.
+   * @throws {CannotTransferOwnershipToSelfException} `actorUserId === targetUserId`.
+   * @throws {InsufficientPermissionsException} `actorUserId` isn't the current owner.
+   * @throws {TargetUserNotMemberException} `targetUserId` isn't a member of this nest.
+   */
   async assertCanTransferOwnership(nest: NestPolicySubject, actorUserId: string, targetUserId: string) {
     if (actorUserId === targetUserId) {
       throw new CannotTransferOwnershipToSelfException()

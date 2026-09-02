@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import * as nodemailer from 'nodemailer'
 import { EmailConfig } from './email.config'
 
+/** Thin wrapper around a Nodemailer SMTP transport for sending raw emails. */
 @Injectable()
 export class MailerService {
   private readonly transporter: nodemailer.Transporter
@@ -20,6 +21,11 @@ export class MailerService {
     })
   }
 
+  /**
+   * @param to - The recipient address.
+   * @param subject - The email subject line.
+   * @param html - The email body, as HTML.
+   */
   async send(to: string, subject: string, html: string) {
     await this.transporter.sendMail({ from: this.from, to, subject, html })
   }

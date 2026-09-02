@@ -11,6 +11,10 @@ export interface NestPaywallView {
   priceAmountCents: number | null
 }
 
+/**
+ * Configures whether a nest's content requires an active subscription — see
+ * {@link NestSubscriptionService} for the subscription lifecycle.
+ */
 @Injectable()
 export class NestPaywallService {
   constructor(
@@ -23,6 +27,10 @@ export class NestPaywallService {
     this.logger.setContext(NestPaywallService.name)
   }
 
+  /**
+   * @param nestSlug - The nest to look up.
+   * @param actorUserId - Must be authorized to manage this nest's paywall (the owner).
+   */
   async get(nestSlug: string, actorUserId: string): Promise<NestPaywallView> {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -31,6 +39,15 @@ export class NestPaywallService {
     return this.toView(await this.paywallRepo.get(nest.id))
   }
 
+  /**
+   * Creates a new Stripe price and enables the paywall. Stripe prices are immutable, so any
+   * existing subscriptions stay pinned to whatever price they were created under — this only
+   * affects new subscriptions going forward.
+   *
+   * @param nestSlug - The nest to configure.
+   * @param actorUserId - Must be authorized to manage this nest's paywall (the owner).
+   * @param dto - The new monthly price.
+   */
   async setPrice(nestSlug: string, actorUserId: string, dto: NestPaywallSetPriceDto): Promise<NestPaywallView> {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -49,6 +66,13 @@ export class NestPaywallService {
     return this.toView(paywall)
   }
 
+  /**
+   * Disables the paywall without touching Stripe — existing subscriptions are left alone (see
+   * {@link NestSubscriptionService} for cancellation).
+   *
+   * @param nestSlug - The nest to configure.
+   * @param actorUserId - Must be authorized to manage this nest's paywall (the owner).
+   */
   async disable(nestSlug: string, actorUserId: string): Promise<NestPaywallView> {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 

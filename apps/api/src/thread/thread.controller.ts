@@ -14,6 +14,10 @@ import { ThreadSearchResponseDto } from './dto/thread-search-response.dto'
 import { ThreadSearchQueryDto } from './dto/thread-search.query.dto'
 import { ThreadService } from './thread.service'
 
+/**
+ * Cross-nest thread operations: search, discovery feed, saved threads, votes. Per-nest
+ * listing/creation lives in {@link NestThreadController}.
+ */
 @ApiTags('Threads')
 @Controller('threads')
 @UseInterceptors(ResponseInterceptor)

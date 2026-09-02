@@ -19,6 +19,7 @@ import { PlatformReportQueryDto } from './dto/platform-report.query.dto'
 import { PlatformReportResponseDto } from './dto/platform-report-response.dto'
 import { PlatformReportService } from './platform-report.service'
 
+/** Platform-level content reports: any user can file one, moderators triage the queue. */
 @ApiTags('Platform Reports')
 @Controller('platform/reports')
 @Authenticated()

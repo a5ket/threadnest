@@ -8,6 +8,11 @@ import { AuthenticatedRequest } from 'src/common/types/authenticated.request'
 import { extractAccessToken } from '../access-token.util'
 import { SecurityConfig } from '../security.config'
 
+/**
+ * Requires and verifies the access token, attaching the decoded user to the request for
+ * {@link CurrentUser} to read. Rejects the request entirely if the token is missing or invalid —
+ * see {@link OptionalAuthGuard} for routes that should still work anonymously.
+ */
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
@@ -15,6 +20,12 @@ export class AuthGuard implements CanActivate {
     private readonly config: ConfigService<SecurityConfig>,
   ) { }
 
+  /**
+   * @param context - The execution context; only the underlying HTTP request is used.
+   * @returns true if the token is valid.
+   * @throws {MissingAccessTokenException} No token on the request.
+   * @throws {InvalidAccessTokenException} Token present but invalid or expired.
+   */
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
     const token = extractAccessToken(request)

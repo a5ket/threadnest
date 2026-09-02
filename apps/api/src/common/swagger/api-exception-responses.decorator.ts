@@ -10,10 +10,27 @@ type ExceptionExample = {
   response: Record<string, unknown>
 }
 
-// @nestjs/swagger's @ApiResponse concatenates repeated calls for the same status instead of
-// overwriting, so we track de-duped state per route and replace each status entry ourselves.
+/**
+ * `@nestjs/swagger`'s `@ApiResponse` concatenates repeated calls for the same status instead of
+ * overwriting, so this decorator tracks its own de-duped state per route (keyed under this
+ * symbol) and replaces each status entry itself rather than relying on `@ApiResponse` stacking.
+ */
 const EXCEPTION_RESPONSES_METADATA = Symbol('apiExceptionResponses')
 
+/**
+ * Documents every exception a route can throw as a proper OpenAPI response — one entry per
+ * distinct HTTP status, with every exception sharing that status folded into a single response
+ * whose `code` is an enum of all of them and whose `examples` show each one concretely. Each
+ * exception's example body is derived by actually instantiating it and reading its real
+ * `getResponse()`/`getStatus()`, so the documented shape can't drift out of sync with what the
+ * exception class actually produces. Safe to call multiple times on the same route (e.g. once per
+ * layer of a shared base method) — later calls merge into the existing per-status metadata rather
+ * than overwriting it.
+ *
+ * @param exceptionTypes - The exception classes this route can throw, each with a no-arg
+ * constructor so an example instance can be built without real failure data.
+ * @returns The combined `@ApiExtraModels`/metadata decorator to apply to a route handler.
+ */
 export function ApiExceptionResponses(...exceptionTypes: ExceptionConstructor[]) {
   return (target: object, key?: string | symbol, descriptor?: PropertyDescriptor) => {
     const container = (descriptor?.value ?? target) as object

@@ -9,6 +9,10 @@ import { NestMemberPrismaRepository } from './nest-member.prisma.repository'
 
 const MEMBERSHIP_CACHE_TTL_MS = 5 * 60 * 1000
 
+/**
+ * Wraps {@link NestMemberPrismaRepository}, caching `findByUser` — checked on nearly every
+ * nest-scoped request. Every write invalidates the cache entry.
+ */
 @Injectable()
 export class NestMemberCachedRepository extends NestMemberRepository {
   constructor(

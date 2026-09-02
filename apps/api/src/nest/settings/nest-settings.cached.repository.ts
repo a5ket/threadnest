@@ -7,6 +7,10 @@ import { NestSettingsUpdateDto } from './dto/nest-settings.update.dto'
 
 const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000
 
+/**
+ * Wraps {@link NestSettingsPrismaRepository}, caching `get` — checked on nearly every nest-scoped
+ * request. `update` evicts the cache entry so the next read is fresh.
+ */
 @Injectable()
 export class NestSettingsCachedRepository extends NestSettingsRepository {
   constructor(

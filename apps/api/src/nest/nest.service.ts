@@ -25,6 +25,7 @@ import { NestSettingsRepository } from './settings/nest-settings.repository'
 
 const NEST_ICON_SIZE = 256
 
+/** Nest lifecycle: creation, metadata/icon updates, ownership transfer, and deletion. */
 @Injectable()
 export class NestService {
   constructor(
@@ -43,6 +44,13 @@ export class NestService {
     this.logger.setContext(NestService.name)
   }
 
+  /**
+   * Creates the nest, its default settings, and the owner's membership in one transaction.
+   *
+   * @param actorUserId - Becomes the nest's owner.
+   * @param dto - Nest name/slug/visibility/join-policy.
+   * @throws {NestSlugReservedException} `dto.slug` is a reserved route name (e.g. `admin`, `api`).
+   */
   async create(actorUserId: string, dto: NestCreateDto) {
     if (RESERVED_NEST_SLUGS.has(dto.slug)) {
       throw new NestSlugReservedException()
@@ -73,6 +81,10 @@ export class NestService {
     return this.presenter.toDetailView(nest, access)
   }
 
+  /**
+   * @param nestSlug - The nest to look up.
+   * @param actorUserId - The viewer, if signed in; determines how much of the nest is visible.
+   */
   async getBySlug(nestSlug: string, actorUserId?: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
     const access = await this.nestAccess.getContext(nest.id, actorUserId)
@@ -80,12 +92,20 @@ export class NestService {
     return this.presenter.toDetailView(nest, access)
   }
 
+  /**
+   * @param query - Search term plus pagination.
+   * @param actorUserId - The viewer, if signed in; affects which private nests are included.
+   */
   async listDiscoverable(query: NestQueryDto, actorUserId?: string) {
     const page = await this.nestsRepo.listDiscoverable(query, actorUserId)
 
     return { items: page.items.map((n) => this.presenter.toDiscoveryView(n)), meta: page.meta }
   }
 
+  /**
+   * @param nestSlug - The slug to check.
+   * @returns `{ available: false }` for a reserved or already-taken slug, `{ available: true }` otherwise.
+   */
   async checkSlugAvailability(nestSlug: string) {
     if (RESERVED_NEST_SLUGS.has(nestSlug)) {
       return { available: false }
@@ -96,6 +116,11 @@ export class NestService {
     return { available: !exists }
   }
 
+  /**
+   * @param nestSlug - The nest to update.
+   * @param actorUserId - Must be authorized to edit this nest.
+   * @param dto - Fields to change; omitted fields are left as-is.
+   */
   async update(nestSlug: string, actorUserId: string, dto: NestUpdateDto) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -109,6 +134,14 @@ export class NestService {
     return this.presenter.toDetailView(updated, access)
   }
 
+  /**
+   * Uploads the new icon before deleting the old one, so a failed upload never leaves the nest
+   * without an icon.
+   *
+   * @param nestSlug - The nest to update.
+   * @param actorUserId - Must be authorized to edit this nest.
+   * @param rawBuffer - The uploaded image, as-is (any format sharp can decode).
+   */
   async updateIcon(nestSlug: string, actorUserId: string, rawBuffer: Buffer) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -128,6 +161,10 @@ export class NestService {
     return this.presenter.toDetailView(updated, access)
   }
 
+  /**
+   * @param nestSlug - The nest to update.
+   * @param actorUserId - Must be authorized to edit this nest.
+   */
   async removeIcon(nestSlug: string, actorUserId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -143,6 +180,13 @@ export class NestService {
     return this.presenter.toDetailView(updated, access)
   }
 
+  /**
+   * Demotes the current owner to moderator and promotes the target member to owner.
+   *
+   * @param nestSlug - The nest whose ownership is transferring.
+   * @param actorUserId - The current owner.
+   * @param dto - The new owner (`userId`), who must already be a member.
+   */
   async transferOwnership(nestSlug: string, actorUserId: string, dto: NestTransferOwnershipDto) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -163,6 +207,10 @@ export class NestService {
     }))
   }
 
+  /**
+   * @param nestSlug - The nest to delete.
+   * @param actorUserId - Must be authorized to delete this nest (the owner).
+   */
   async delete(nestSlug: string, actorUserId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 

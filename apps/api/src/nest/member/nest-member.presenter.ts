@@ -13,6 +13,7 @@ interface NestMemberView {
 export class NestMemberPresenter {
   constructor(private readonly userPresenter: UserPresenter) { }
 
+  /** @param member - The membership to present. */
   toView(member: NestMemberView) {
     return {
       user: this.userPresenter.toReferenceView(member.user),

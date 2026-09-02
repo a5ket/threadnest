@@ -12,6 +12,7 @@ import { ThreadSearchResponseDto } from 'src/thread/dto/thread-search-response.d
 import { ThreadFeedQueryDto } from 'src/thread/dto/thread-feed.query.dto'
 import { ThreadService } from 'src/thread/thread.service'
 
+/** The signed-in user's cross-nest chronological thread feed. */
 @ApiTags('Me')
 @Controller('/me/feed')
 @Authenticated()

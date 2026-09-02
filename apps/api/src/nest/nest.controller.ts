@@ -45,6 +45,7 @@ import { NestSlugTakenException } from './exceptions/nest-slug-taken.exception'
 import { TargetUserNotMemberException } from './exceptions/target-user-not-member.exception'
 import { NestService } from './nest.service'
 
+/** Nest CRUD, discovery, and icon upload. Membership/ban/invite/settings live in their own sibling controllers. */
 @ApiTags('Nests')
 @Controller('nests')
 @UseInterceptors(ResponseInterceptor)

@@ -13,6 +13,7 @@ import { NestPaywallResponseDto } from './dto/nest-paywall-response.dto'
 import { NestPaywallSetPriceDto } from './dto/nest-paywall.set-price.dto'
 import { NestPaywallService } from './nest-paywall.service'
 
+/** View and configure a nest's paywall (price, on/off). */
 @ApiTags('Nest Paywall')
 @Controller('nests/:nestSlug/paywall')
 @UseInterceptors(ResponseInterceptor)

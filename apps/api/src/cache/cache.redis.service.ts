@@ -4,6 +4,11 @@ import Redis from 'ioredis'
 import { CacheConfig } from './cache.config'
 import { CacheService } from './cache.service'
 
+/**
+ * Compare-and-delete: only deletes the key if its current value still matches the expected
+ * owner. Must run as a single atomic Lua script — a plain `GET` then `DEL` from application code
+ * would race against another process re-acquiring the lock in between the two calls.
+ */
 const RELEASE_LOCK_SCRIPT = `
   if redis.call('get', KEYS[1]) == ARGV[1] then
     return redis.call('del', KEYS[1])
@@ -11,6 +16,7 @@ const RELEASE_LOCK_SCRIPT = `
   return 0
 `
 
+/** {@link CacheService} implementation backed by Redis. */
 @Injectable()
 export class CacheRedisService extends CacheService implements OnModuleDestroy {
   private readonly redis: Redis

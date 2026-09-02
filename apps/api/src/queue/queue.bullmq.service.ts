@@ -9,6 +9,7 @@ import { QueueDefinition } from './types/queue-definition'
 import { EnqueueOptions } from './types/enqueue-options'
 import { UnregisteredJobException } from './exceptions/unregistered-job.exception'
 
+/** {@link QueueService} implementation backed by BullMQ. */
 @Injectable()
 export class QueueBullmqService extends QueueService {
   private queues = new Map<string, Queue>
@@ -21,6 +22,11 @@ export class QueueBullmqService extends QueueService {
     super()
   }
 
+  /**
+   * Discovers every queue registered via {@link QueueModule.forFeature} (each provides a
+   * `QueueDefinition` under a `queueDefinitionToken`-prefixed token) and resolves the
+   * corresponding BullMQ `Queue` instance for each, so {@link enqueue} can look them up by name.
+   */
   onModuleInit() {
     const defs = this.discovery
       .getProviders()
@@ -32,6 +38,13 @@ export class QueueBullmqService extends QueueService {
     }
   }
 
+  /**
+   * @param job - The job to enqueue.
+   * @param options - Retry/backoff/delay overrides; defaults to 3 attempts, no backoff, no delay.
+   * @throws {UnregisteredJobException} No handler is registered for `job.type` — checked upfront
+   * so a misconfigured job fails fast at enqueue time rather than sitting unprocessable in the queue.
+   * @throws {Error} `job.queueName` doesn't match any queue registered via {@link QueueModule.forFeature}.
+   */
   async enqueue(job: BaseJob, options?: EnqueueOptions) {
     if (!this.dispatcher.hasHandler(job.type)) {
       throw new UnregisteredJobException(job.type)

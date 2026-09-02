@@ -353,12 +353,25 @@ const NEST_SPECS: NestSpec[] = [
   }
 ]
 
+/**
+ * @param rgb - The fill color.
+ * @param size - The output's width and height, in pixels (always square).
+ * @returns A solid-color PNG, for demo avatars/icons/attachments without needing real image assets.
+ */
 async function generatePlaceholderImage(rgb: [number, number, number], size: number): Promise<Buffer> {
   return sharp({
     create: { width: size, height: size, channels: 3, background: { r: rgb[0], g: rgb[1], b: rgb[2] } }
   }).png().toBuffer()
 }
 
+/**
+ * CLI: `seed` — populates the database with a small, handcrafted set of realistic users, nests,
+ * threads, and comments (defined in {@link NEST_SPECS}), for local development rather than
+ * demoing at scale (see {@link DemoSeedCommand} for that). Writes go through the app's normal
+ * services, not raw SQL, so seeded data passes the same validation/events as a real user action.
+ * Idempotent per-entity: re-running against the same database skips users/nests that already
+ * exist rather than erroring or duplicating. Run via the app's CLI entry point, not over HTTP.
+ */
 @Command({ name: 'seed', description: 'Populate the database with sample users, nests, threads, and comments for local testing' })
 export class SeedCommand extends CommandRunner {
   constructor(

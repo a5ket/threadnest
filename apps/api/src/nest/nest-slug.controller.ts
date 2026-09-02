@@ -5,6 +5,7 @@ import { NestSlugAvailabilityResponseDto } from './dto/nest.slug-availability-re
 import { NestService } from './nest.service'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 
+/** Checks slug availability while a user is choosing a nest name, before actual creation. */
 @ApiTags('Nests')
 @Controller('nest-slugs')
 export class NestSlugController {

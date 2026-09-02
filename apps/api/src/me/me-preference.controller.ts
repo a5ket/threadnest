@@ -11,6 +11,7 @@ import { UserPreferenceService } from 'src/user/preferences/user-preference.serv
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 
+/** The signed-in user's account-wide privacy preferences. */
 @ApiTags('Me')
 @Controller('/me/preferences')
 @Authenticated()

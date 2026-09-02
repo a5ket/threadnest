@@ -11,6 +11,10 @@ import { NestSettingsRepository } from './settings/nest-settings.repository'
 import { NestSubscriptionRepository } from './subscription/nest-subscription.repository'
 import { NestAccessContext } from './types/nest.access-context'
 
+/**
+ * Computes what a viewer (or an anonymous request) is allowed to do in a nest. This is the single
+ * source of truth every nest-scoped policy checks against — see {@link getContext}.
+ */
 @Injectable()
 export class NestAccess {
   constructor(
@@ -22,22 +26,42 @@ export class NestAccess {
     private readonly subscriptionsRepo: NestSubscriptionRepository
   ) { }
 
+  /** @returns true if `actorRole` outranks `targetRole` in the nest role hierarchy. */
   isHigherRole(actorRole: NestMemberRole, targetRole: NestMemberRole) {
     return NEST_ACCESS_LEVEL[actorRole] > NEST_ACCESS_LEVEL[targetRole]
   }
 
+  /** @returns true if `actorRole` is at least as senior as `targetRole`. */
   isSameOrHigherRole(actorRole: NestMemberRole, targetRole: NestMemberRole) {
     return NEST_ACCESS_LEVEL[actorRole] >= NEST_ACCESS_LEVEL[targetRole]
   }
 
+  /** @returns true if `actorRole` is at most as senior as `targetRole`. */
   isSameOrLowerRole(actorRole: NestMemberRole, targetRole: NestMemberRole) {
     return NEST_ACCESS_LEVEL[actorRole] <= NEST_ACCESS_LEVEL[targetRole]
   }
 
+  /** @returns true if `actorRole` is outranked by `targetRole`. */
   isLowerRole(actorRole: NestMemberRole, targetRole: NestMemberRole) {
     return NEST_ACCESS_LEVEL[actorRole] < NEST_ACCESS_LEVEL[targetRole]
   }
 
+  /**
+   * Builds the full permission context for one viewer in one nest.
+   *
+   * The key distinction is `canViewNest` vs `canViewNestMetadata`: a paywalled public nest still
+   * shows its name/description/member count to a non-subscriber (`canViewNestMetadata`, so the
+   * nest is discoverable and the paywall is visible) but hides its actual content
+   * (`canViewNest`, gated additionally on `hasActiveSubscription`). Every other `can*` flag is
+   * derived from the nest's per-permission `min*Level` settings via `hasAccess`, which further
+   * requires `canViewNest && !isBanned` — a banned member can still technically "view" metadata
+   * but can't participate.
+   *
+   * @param nestId - The nest to compute access for.
+   * @param userId - The viewer, or undefined for an anonymous request.
+   * @returns The full set of `can*` flags plus role/membership/paywall/visibility context.
+   * @throws {NestNotFoundException} No settings row for `nestId` (the nest doesn't exist).
+   */
   async getContext(
     nestId: string,
     userId?: string

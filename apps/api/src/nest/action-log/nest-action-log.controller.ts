@@ -14,6 +14,7 @@ import { NestActionLogResponseDto } from './dto/nest-action-log-response.dto'
 import { NestActionLogQueryDto } from './dto/nest-action-log.query.dto'
 import { NestActionLogService } from './nest-action-log.service'
 
+/** Read-only view of a nest's moderation action log. */
 @ApiTags('Nest Action Log')
 @Controller('nests/:nestSlug/action-logs')
 @Authenticated()

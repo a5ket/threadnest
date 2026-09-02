@@ -23,6 +23,10 @@ import { CommentResponseDto } from './dto/comment-response.dto'
 import { CommentNodeResponseDto, CommentTreeMetaDto } from './dto/comment-node-response.dto'
 import { CommentNotFoundException } from './exceptions/comment-not-found.exception'
 
+/**
+ * Comment operations by id: replies, read, edit, delete, votes. Thread-scoped listing/creation
+ * lives in {@link ThreadCommentController}.
+ */
 @ApiTags('Comments')
 @Controller('comments')
 @UseInterceptors(ResponseInterceptor)

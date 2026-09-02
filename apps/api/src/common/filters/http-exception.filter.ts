@@ -4,6 +4,11 @@ import { PinoLogger } from 'nestjs-pino'
 
 const INTERNAL_SERVER_ERROR_CODE = 'INTERNAL_SERVER_ERROR'
 
+/**
+ * Global exception filter — normalizes every error response (thrown `HttpException` or anything
+ * else) into the API's uniform `{ error: { status, code, message, ...extra } }` shape, and logs
+ * every 5xx as an unhandled exception worth investigating.
+ */
 @Injectable()
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -11,6 +16,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     this.logger.setContext(HttpExceptionFilter.name)
   }
 
+  /**
+   * @param exception - The thrown value — a domain `HttpException` in the normal case, but
+   * `unknown` since JavaScript allows throwing anything.
+   * @param host - Nest's request context, used to reach the underlying Express response.
+   * @returns The Express response, with the normalized error body written and sent.
+   */
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<Response>()

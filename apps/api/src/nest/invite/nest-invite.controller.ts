@@ -22,6 +22,10 @@ import { InvitesNotAllowedException } from './exceptions/invites-not-allowed.exc
 import { NestInviteNotFoundException } from './exceptions/nest-invite-not-found.exception'
 import { NestInviteService } from './nest-invite.service'
 
+/**
+ * Nest-side invite management: send, list, view, and revoke. See {@link MeNestInviteController}
+ * for the invited user's side.
+ */
 @ApiTags('Nest Invites')
 @Controller('nests/:nestSlug/invites')
 @Authenticated()

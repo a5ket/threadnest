@@ -23,14 +23,24 @@ interface Subscription {
 type StreamEntry = [id: string, fields: string[]]
 type ReadGroupResponse = [stream: string, entries: StreamEntry[]][] | null
 
+/** @param ms - Milliseconds to wait. */
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms))
 }
 
+/**
+ * @param error - The caught value; not necessarily an `Error` instance.
+ * @returns A loggable message string either way.
+ */
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error)
 }
 
+/**
+ * @param fields - A Redis Streams entry's flat `[key, value, key, value, ...]` field array.
+ * @returns The parsed JSON payload stored under the `payload` field.
+ * @throws {Error} No `payload` field is present — an entry this consumer never wrote itself.
+ */
 function parsePayload(fields: string[]): unknown {
   const index = fields.indexOf('payload')
 
@@ -41,7 +51,14 @@ function parsePayload(fields: string[]): unknown {
   return JSON.parse(fields[index + 1])
 }
 
-// Mirrors QueueDispatcher: auto-discovers EventSubscriber providers and runs one consumer-group loop per subscriber.
+/**
+ * Consume side of the Redis Streams event bus — mirrors {@link QueueDispatcher}'s shape:
+ * auto-discovers every {@link EventSubscriber} provider via Nest's `DiscoveryService` and runs one
+ * `XREADGROUP` consumer-group polling loop per subscriber, each on its own dedicated Redis
+ * connection (`BLOCK` ties up whatever connection issues it). A periodic `XAUTOCLAIM` sweep
+ * reclaims entries a crashed/stalled consumer left pending, and drops "poison" messages that have
+ * failed past {@link MAX_DELIVERY_ATTEMPTS} rather than retrying them forever.
+ */
 @Injectable()
 export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(EventStreamConsumer.name)
@@ -53,6 +70,7 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     private readonly streams: RedisStreamService
   ) { }
 
+  /** Discovers every registered {@link EventSubscriber} and starts a polling loop for each. */
   async onModuleInit() {
     const subscribers = this.discovery.getProviders()
       .map((wrapper) => wrapper.instance as unknown)
@@ -65,6 +83,7 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     this.reclaimTimer = setInterval(() => void this.reclaimStalePending(), RECLAIM_INTERVAL_MS)
   }
 
+  /** Stops every polling loop and closes its dedicated Redis connection, for a clean shutdown. */
   async onModuleDestroy() {
     if (this.reclaimTimer) clearInterval(this.reclaimTimer)
 
@@ -74,6 +93,7 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     }))
   }
 
+  /** @param subscriber - The subscriber to start polling for. */
   private async startSubscription(subscriber: EventSubscriber) {
     const stream = this.streams.streamKey(BaseEvent.typeOf(subscriber.eventClass))
     const group = subscriber.groupName
@@ -86,6 +106,14 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     void this.runLoop(subscription)
   }
 
+  /**
+   * Creates the consumer group starting from the beginning of the stream, creating the stream
+   * itself too if it doesn't exist yet (`MKSTREAM`). Idempotent — a `BUSYGROUP` error (the group
+   * already exists, e.g. from a previous process run) is swallowed rather than thrown.
+   *
+   * @param stream - The stream key.
+   * @param group - The consumer group name.
+   */
   private async ensureGroup(stream: string, group: string) {
     try {
       await this.streams.commands.xgroup('CREATE', stream, group, '0', 'MKSTREAM')
@@ -96,6 +124,13 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * The core polling loop: blocks on `XREADGROUP` for new entries, processes each one, and
+   * repeats until {@link Subscription.stopped} is set. A read error logs and backs off for
+   * {@link BLOCK_MS} before retrying, rather than crashing the loop.
+   *
+   * @param subscription - The subscription to poll.
+   */
   private async runLoop(subscription: Subscription) {
     const { stream, group, connection } = subscription
 
@@ -127,6 +162,16 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Reconstructs the typed event from the raw entry and hands it to the subscriber's `handle`.
+   * Only acknowledges (`XACK`) on success — a failed handler leaves the entry pending, so it's
+   * picked up again by {@link reclaimForSubscription} rather than silently lost. A handler failure
+   * is logged, not rethrown, so one bad entry doesn't kill the polling loop.
+   *
+   * @param subscription - The subscription the entry belongs to.
+   * @param id - The stream entry's id, used to acknowledge it.
+   * @param fields - The raw entry fields.
+   */
   private async processEntry(subscription: Subscription, id: string, fields: string[]) {
     const { stream, group, subscriber } = subscription
 
@@ -139,10 +184,19 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /** Runs {@link reclaimForSubscription} across every active subscription, on {@link RECLAIM_INTERVAL_MS}. */
   private async reclaimStalePending() {
     await Promise.all(this.subscriptions.map((subscription) => this.reclaimForSubscription(subscription)))
   }
 
+  /**
+   * Claims entries that have sat pending (unacknowledged) for longer than {@link RECLAIM_IDLE_MS}
+   * — typically because the consumer that originally read them crashed before acking. An entry
+   * that has already failed more than {@link MAX_DELIVERY_ATTEMPTS} times is acknowledged and
+   * dropped instead of retried again, so one permanently-failing event can't block the stream forever.
+   *
+   * @param subscription - The subscription to reclaim stale entries for.
+   */
   private async reclaimForSubscription(subscription: Subscription) {
     const { stream, group } = subscription
 
@@ -167,6 +221,13 @@ export class EventStreamConsumer implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * @param stream - The stream key.
+   * @param group - The consumer group name.
+   * @param id - The entry to check.
+   * @returns How many times this entry has been delivered (via `XPENDING`'s delivery-count field),
+   * or `1` if it has no pending-entry record (shouldn't happen for an entry reached via `XAUTOCLAIM`).
+   */
   private async deliveryCount(stream: string, group: string, id: string) {
     const pending = await this.streams.commands.xpending(stream, group, id, id, 1) as [string, string, number, number][]
     return pending[0]?.[3] ?? 1

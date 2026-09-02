@@ -12,6 +12,7 @@ import { NestMemberService } from 'src/nest/member/nest-member.service'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 
+/** The signed-in user's nest memberships: list mine, leave one. */
 @ApiTags('Me')
 @Controller('/me/nests')
 @Authenticated()

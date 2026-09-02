@@ -8,10 +8,16 @@ import { MessageQueryDto } from './dto/message.query.dto'
 import { MessageNotFoundException } from '../exceptions/message-not-found.exception'
 import { MESSAGE_SELECT } from './selects/message.select'
 
+/** Persistence for chat messages. */
 @Injectable()
 export class MessageRepository {
   constructor(private readonly prisma: PrismaService) { }
 
+  /**
+   * @param messageId - The message to fetch.
+   * @returns The message.
+   * @throws {MessageNotFoundException} No message with this id.
+   */
   async getById(messageId: string) {
     const message = await this.prisma.message.findUnique({
       where: { id: messageId },
@@ -25,6 +31,12 @@ export class MessageRepository {
     return message
   }
 
+  /**
+   * @param chatId - The chat to send into.
+   * @param senderId - The sender.
+   * @param dto - The message content and optional reply target.
+   * @returns The created message.
+   */
   async create(chatId: string, senderId: string, dto: MessageCreateDto) {
     return this.prisma.message.create({
       data: {
@@ -37,6 +49,14 @@ export class MessageRepository {
     })
   }
 
+  /**
+   * @param chatId - The chat to list messages from.
+   * @param viewerClearedAt - The viewer's clear cutoff, or `null` if they haven't cleared this
+   * chat; messages at or before this timestamp are excluded.
+   * @param query - Pagination options.
+   * @returns A cursor-paginated page of messages, newest first.
+   * @throws {InvalidCursorException} `query.cursor` is malformed.
+   */
   async list(chatId: string, viewerClearedAt: Date | null, query: MessageQueryDto) {
     let cursorWhere: Prisma.MessageWhereInput = {}
 
@@ -74,6 +94,11 @@ export class MessageRepository {
     return { items, meta: { nextCursor, hasMore } }
   }
 
+  /**
+   * @param messageId - The message to delete.
+   * @param deletedById - The user performing the deletion, recorded on the message.
+   * @throws {MessageNotFoundException} No message with this id.
+   */
   async softDelete(messageId: string, deletedById: string) {
     try {
       await this.prisma.message.update({

@@ -30,6 +30,10 @@ import { ConfirmEmailVerificationDto } from './dto/auth.confirm-email-verificati
 import { RequestPasswordResetDto } from './dto/auth.request-password-reset.dto'
 import { ConfirmPasswordResetDto } from './dto/auth.confirm-password-reset.dto'
 
+/**
+ * Registration, login/logout, and the email-verification/password-reset/email-change flows.
+ * See {@link AuthService} for the underlying logic.
+ */
 @ApiTags('Auth')
 @Controller('auth')
 @UseInterceptors(ResponseInterceptor)

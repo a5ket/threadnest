@@ -14,6 +14,7 @@ import { NestMemberPolicy } from './nest-member.policy'
 import { NestMemberPresenter } from './nest-member.presenter'
 import { NestMemberRepository } from './nest-member.repository'
 
+/** Nest membership: joining, leaving, listing, role changes, and removal. */
 @Injectable()
 export class NestMemberService {
   constructor(
@@ -29,12 +30,22 @@ export class NestMemberService {
     this.logger.setContext(NestMemberService.name)
   }
 
+  /**
+   * @param nestSlug - The nest to check.
+   * @param userId - The user to check.
+   * @returns The membership, or null if `userId` isn't a member.
+   */
   async getMembershipByUser(nestSlug: string, userId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
     return this.membersRepo.getByUser(nest.id, userId)
   }
 
+  /**
+   * @param nestSlug - The nest whose members to list.
+   * @param actorUserId - Must be authorized to view this nest's member list.
+   * @param query - Pagination.
+   */
   async listMembers(nestSlug: string, actorUserId: string, query: NestMemberQueryDto) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -45,6 +56,13 @@ export class NestMemberService {
     return { items: items.map((item) => this.memberPresenter.toView(item)), meta }
   }
 
+  /**
+   * Directly joins an open nest — not for `BY_REQUEST` nests, which go through
+   * {@link NestJoinRequestService} instead.
+   *
+   * @param nestSlug - The nest to join.
+   * @param userId - The joining user.
+   */
   async joinNest(nestSlug: string, userId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -61,6 +79,10 @@ export class NestMemberService {
     return this.memberPresenter.toView(member)
   }
 
+  /**
+   * @param nestSlug - The nest to leave.
+   * @param userId - The leaving user.
+   */
   async leaveNest(nestSlug: string, userId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -74,6 +96,11 @@ export class NestMemberService {
     void this.eventBus.publish(new MemberLeftEvent({ nestId: nest.id, userId }))
   }
 
+  /**
+   * @param nestSlug - The nest to remove the member from.
+   * @param actorUserId - The moderator/owner performing the removal.
+   * @param targetUserId - The member being removed.
+   */
   async removeMember(nestSlug: string, actorUserId: string, targetUserId: string) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -88,6 +115,12 @@ export class NestMemberService {
     void this.eventBus.publish(new MemberRemovedEvent({ nestId: nest.id, actorUserId, targetUserId }))
   }
 
+  /**
+   * @param nestSlug - The nest the member belongs to.
+   * @param actorUserId - The owner performing the change.
+   * @param targetUserId - The member whose role is changing.
+   * @param dto - The new role.
+   */
   async changeRole(nestSlug: string, actorUserId: string, targetUserId: string, dto: NestMemberUpdateRoleDto) {
     const nest = await this.nestsRepo.getBySlug(nestSlug)
 
@@ -101,12 +134,19 @@ export class NestMemberService {
     return this.memberPresenter.toView(updated)
   }
 
+  /** @param userId - Lists the nests this user belongs to, as summaries. */
   async listNestsByUser(userId: string) {
     const memberships = await this.membersRepo.listMembershipsByUser(userId)
 
     return memberships.map(({ nest }) => this.presenter.toSummaryView(nest))
   }
 
+  /**
+   * Lightweight variant of {@link listNestsByUser}, for callers that only need enough to
+   * reference each nest (id/slug/name) rather than its full summary.
+   *
+   * @param userId - The user whose nest memberships to list.
+   */
   async listMembershipReferencesByUser(userId: string) {
     const memberships = await this.membersRepo.listMembershipReferencesByUser(userId)
 

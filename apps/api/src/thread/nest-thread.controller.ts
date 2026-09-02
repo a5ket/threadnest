@@ -36,6 +36,7 @@ import { ThreadVoteDto } from './dto/thread.vote.dto'
 import { ThreadNotFoundException } from './exceptions/thread-not-found.exception'
 import { ThreadService } from './thread.service'
 
+/** Per-nest thread operations: list, create, read, edit, delete, and moderation (lock/pin). */
 @ApiTags('Threads')
 @Controller('nests/:nestSlug/threads')
 @UseInterceptors(ResponseInterceptor)

@@ -12,6 +12,7 @@ import { NestInvitePolicy } from './nest-invite.policy'
 import { NestInvitePresenter } from './nest-invite.presenter'
 import { NestInviteRepository } from './nest-invite.repository'
 
+/** Nest-initiated invites — the counterpart to user-initiated {@link NestJoinRequestService} requests. */
 @Injectable()
 export class NestInviteService {
   constructor(
@@ -24,6 +25,11 @@ export class NestInviteService {
     private readonly eventBus: EventBus
   ) { }
 
+  /**
+   * @param nestSlug - The inviting nest.
+   * @param actorUserId - The moderator/owner sending the invite.
+   * @param targetUserId - The user being invited.
+   */
   async create(nestSlug: string, actorUserId: string, targetUserId: string) {
     const nest = await this.nestRepo.getBySlug(nestSlug)
 
@@ -44,6 +50,10 @@ export class NestInviteService {
     return this.presenter.toNestView(invite)
   }
 
+  /**
+   * @param nestSlug - The nest whose sent invites to list.
+   * @param actorUserId - Must be authorized to manage invites in this nest.
+   */
   async listAsNest(nestSlug: string, actorUserId: string) {
     const nest = await this.nestRepo.getBySlug(nestSlug)
 
@@ -54,18 +64,28 @@ export class NestInviteService {
     return invites.map((invite) => this.presenter.toNestView(invite))
   }
 
+  /** @param actorUserId - Lists the invites addressed to this user. */
   async listAsUser(actorUserId: string) {
     const invites = await this.inviteRepo.listAsUser(actorUserId)
 
     return invites.map((invite) => this.presenter.toUserView(invite))
   }
 
+  /**
+   * @param nestSlug - The nest the invite belongs to.
+   * @param inviteId - The invite to look up.
+   * @param actorUserId - Must be authorized to manage invites in this nest.
+   */
   async getAsNest(nestSlug: string, inviteId: string, actorUserId: string) {
     const invite = await this.getInviteAsNest(nestSlug, inviteId, actorUserId)
 
     return this.presenter.toNestView(invite)
   }
 
+  /**
+   * @param inviteId - The invite to look up.
+   * @param actorUserId - Must be the invited user.
+   */
   async getAsUser(inviteId: string, actorUserId: string) {
     const invite = await this.inviteRepo.getSummary(inviteId)
 
@@ -81,6 +101,12 @@ export class NestInviteService {
     return this.presenter.toUserView(invite)
   }
 
+  /**
+   * Accepts and creates the resulting membership in one transaction.
+   *
+   * @param inviteId - The invite to accept.
+   * @param actorUserId - Must be the invited user.
+   */
   async accept(inviteId: string, actorUserId: string) {
     const invite = await this.inviteRepo.getSummary(inviteId)
 
@@ -106,6 +132,10 @@ export class NestInviteService {
     }))
   }
 
+  /**
+   * @param inviteId - The invite to decline.
+   * @param actorUserId - Must be the invited user.
+   */
   async decline(inviteId: string, actorUserId: string) {
     const invite = await this.inviteRepo.getSummary(inviteId)
 
@@ -127,6 +157,11 @@ export class NestInviteService {
     }))
   }
 
+  /**
+   * @param nestSlug - The nest the invite belongs to.
+   * @param inviteId - The invite to revoke.
+   * @param actorUserId - Must be authorized to manage invites in this nest.
+   */
   async revoke(nestSlug: string, inviteId: string, actorUserId: string) {
     const invite = await this.getInviteAsNest(nestSlug, inviteId, actorUserId)
 
@@ -149,6 +184,7 @@ export class NestInviteService {
     }))
   }
 
+  /** @throws {NestInviteNotFoundException} `inviteId` doesn't belong to `nestSlug`. */
   private async getInviteAsNest(
     nestSlug: string,
     inviteId: string,

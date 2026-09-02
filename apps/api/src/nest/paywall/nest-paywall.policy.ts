@@ -8,6 +8,7 @@ export class NestPaywallPolicy {
     private readonly nestAccess: NestAccess
   ) { }
 
+  /** @throws {InsufficientPermissionsException} `actorUserId` isn't this nest's owner. */
   async assertCanManage(nestId: string, actorUserId: string) {
     const access = await this.nestAccess.getContext(nestId, actorUserId)
 

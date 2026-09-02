@@ -8,6 +8,11 @@ type NestJoinRequestUserView = Pick<NestJoinRequestSummary, 'id' | 'nest' | 'res
 export class NestJoinRequestPresenter {
   constructor(private readonly userPresenter: UserPresenter) { }
 
+  /**
+   * For the requester's own request list.
+   *
+   * @param request - The join request to present.
+   */
   toUserView(request: NestJoinRequestUserView) {
     return {
       id: request.id,
@@ -20,6 +25,11 @@ export class NestJoinRequestPresenter {
     }
   }
 
+  /**
+   * For the nest's incoming-requests list — includes the requesting user.
+   *
+   * @param request - The join request to present.
+   */
   toNestView(request: NestJoinRequestSummary) {
     return {
       id: request.id,

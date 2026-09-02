@@ -16,6 +16,14 @@ const NOUNS = [
   'Biscuit', 'Pretzel', 'Noodle', 'Pancake', 'Muffin', 'Walnut', 'Pepper', 'Ginger', 'Maple', 'Cactus'
 ]
 
+/**
+ * Reddit-style `adjective_noun1234` username, e.g. `Silent_Falcon482`.
+ *
+ * ~60 * 60 * 9999 combinations, so collisions are rare — {@link UserService.generateUniqueUsername}
+ * still checks and retries.
+ *
+ * @returns A newly generated candidate username (not guaranteed unique).
+ */
 export function generateRandomUsername(): string {
   const adjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]
   const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)]

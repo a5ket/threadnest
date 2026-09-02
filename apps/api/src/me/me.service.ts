@@ -7,6 +7,7 @@ import { UserNotFoundException } from 'src/user/exceptions/user-not-found.except
 import { UserService } from 'src/user/user.service'
 import { MeBootstrapDataDto } from './dto/me.bootstrap-response.dto'
 
+/** Assembles the signed-in user's app-bootstrap payload from several domains in one call. */
 @Injectable()
 export class MeService {
   constructor(
@@ -16,6 +17,13 @@ export class MeService {
     private readonly storage: StorageService
   ) { }
 
+  /**
+   * @param userId - The signed-in user, from their access token.
+   * @returns Account info, nest memberships, and platform access level, gathered in parallel.
+   * @throws {InvalidAccessTokenException} `userId` doesn't resolve to a user — an otherwise-valid
+   * token can outlive its account (e.g. after deletion), so this is treated as an invalid session
+   * rather than surfacing a 404 for an account the client thinks it's signed into.
+   */
   async getBootstrapData(userId: string): Promise<MeBootstrapDataDto> {
     try {
       const [userProfile, userNests, platformAccess] = await Promise.all([

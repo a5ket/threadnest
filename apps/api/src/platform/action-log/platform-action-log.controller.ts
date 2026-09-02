@@ -13,6 +13,7 @@ import { PlatformActionLogResponseDto } from './dto/platform-action-log-response
 import { PlatformActionLogQueryDto } from './dto/platform-action-log.query.dto'
 import { PlatformActionLogService } from './platform-action-log.service'
 
+/** Read-only view of the platform-wide moderation audit trail, for moderators/admins. */
 @ApiTags('Platform Action Log')
 @Controller('platform/action-logs')
 @Authenticated()

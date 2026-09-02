@@ -4,12 +4,26 @@ import { NestAccess } from 'src/nest/nest.access'
 import { ThreadAccessContext } from './types/thread.access-context'
 import { ThreadPolicySubject } from './types/thread.policy-subject'
 
+/**
+ * Computes what a viewer can do with a specific thread — layers deletion/lock/pin state on top
+ * of {@link NestAccess}'s nest-level permissions.
+ */
 @Injectable()
 export class ThreadAccess {
   constructor(
     private readonly nestAccess: NestAccess
   ) { }
 
+  /**
+   * A deleted thread's content is normally hidden, with one exception: a nest moderator can still
+   * read it for a short grace period after removal (to review what was actually said) — but only
+   * if a *moderator* deleted it. Content the author deleted themselves is never re-readable,
+   * regardless of role.
+   *
+   * @param thread - The thread to compute access for.
+   * @param userId - The viewer, or undefined for an anonymous request.
+   * @returns The full set of `can*` flags plus author/deletion/lock/pin state.
+   */
   async getContext(
     thread: ThreadPolicySubject,
     userId?: string

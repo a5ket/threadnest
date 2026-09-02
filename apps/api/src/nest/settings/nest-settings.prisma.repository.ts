@@ -7,6 +7,7 @@ import { NestSettingsCreateOptions, NestSettingsRepository } from './nest-settin
 import { NEST_SETTINGS_SELECT } from './selects/nest-settings.select'
 import { NestSettingsUpdateDto } from './dto/nest-settings.update.dto'
 
+/** Prisma implementation of {@link NestSettingsRepository} — see that abstract class for the method contracts. */
 @Injectable()
 export class NestSettingsPrismaRepository extends NestSettingsRepository {
   constructor(

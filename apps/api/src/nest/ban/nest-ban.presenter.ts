@@ -6,6 +6,7 @@ import { NestBanSummary } from './types/nest-ban.summary'
 export class NestBanPresenter {
   constructor(private readonly userPresenter: UserPresenter) { }
 
+  /** @param ban - The ban record to present. */
   toSummaryView(ban: NestBanSummary) {
     return {
       user: this.userPresenter.toSummaryView(ban.user),

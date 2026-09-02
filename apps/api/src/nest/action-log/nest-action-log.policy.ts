@@ -6,6 +6,7 @@ import { NestAccess } from '../nest.access'
 export class NestActionLogPolicy {
   constructor(private readonly nestAccess: NestAccess) { }
 
+  /** @throws {InsufficientPermissionsException} Not a moderator or above in this nest. */
   async assertCanViewActionLog(nestId: string, actorUserId: string) {
     const access = await this.nestAccess.getContext(nestId, actorUserId)
 

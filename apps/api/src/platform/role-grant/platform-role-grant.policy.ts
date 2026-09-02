@@ -8,6 +8,10 @@ export class PlatformRoleGrantPolicy {
     private readonly platformAccess: PlatformAccess
   ) { }
 
+  /**
+   * @param actorUserId - The user attempting a platform role-grant action.
+   * @throws {InsufficientPermissionsException} Not a platform admin — moderators cannot manage roles.
+   */
   async assertIsAdmin(actorUserId: string) {
     const ctx = await this.platformAccess.getContext(actorUserId)
 

@@ -15,6 +15,7 @@ import { PlatformRoleGrantNotFoundException } from './exceptions/platform-role-g
 import { UserAlreadyHasActiveRoleException } from './exceptions/user-already-has-active-role.exception'
 import { PlatformRoleGrantService } from './platform-role-grant.service'
 
+/** Platform-admin management of platform roles (moderator/admin): view, grant, change, revoke. */
 @ApiTags('Platform Roles')
 @Controller('platform/roles')
 @AuthenticatedAndVerified()

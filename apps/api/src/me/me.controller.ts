@@ -8,6 +8,7 @@ import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { MeService } from './me.service'
 import { MeBootstrapDataDto } from './dto/me.bootstrap-response.dto'
 
+/** The signed-in user's app-bootstrap endpoint — profile plus nest memberships in one call. */
 @ApiTags('Me')
 @Controller('me')
 @UseInterceptors(ResponseInterceptor)

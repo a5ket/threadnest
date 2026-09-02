@@ -11,6 +11,7 @@ import type { AuthUser } from 'src/common/types/auth.user'
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 
+/** The requester's side of join requests: list mine, view one, cancel. */
 @ApiTags('Nest Join Requests')
 @Controller('/me/nest-join-requests')
 @Authenticated()

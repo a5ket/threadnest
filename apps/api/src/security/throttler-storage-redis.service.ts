@@ -30,6 +30,10 @@ end
 return {hits, math.ceil(hitsPttl / 1000), 0, 0}
 `
 
+/**
+ * Redis-backed {@link ThrottlerStorage} so rate limits are shared across all API instances instead
+ * of each process tracking its own in-memory counters.
+ */
 @Injectable()
 export class ThrottlerStorageRedisService implements ThrottlerStorage {
   private readonly redis: Redis
@@ -42,6 +46,18 @@ export class ThrottlerStorageRedisService implements ThrottlerStorage {
     })
   }
 
+  /**
+   * Atomically increments the hit counter and evaluates blocking in a single Lua script, so
+   * concurrent requests can't race past the limit.
+   *
+   * @param key - Identifies the caller being throttled (e.g. `user:<id>` or `ip:<addr>`).
+   * @param ttl - Window length in seconds before the hit counter resets.
+   * @param limit - Hits allowed within `ttl` before blocking kicks in.
+   * @param blockDuration - How long (seconds) to block once `limit` is exceeded.
+   * @param throttlerName - Namespaces the counter so multiple named throttlers on one key don't collide.
+   * @returns Hit count, seconds until the counter expires, whether the caller is now blocked, and
+   *   seconds until any block expires.
+   */
   async increment(key: string, ttl: number, limit: number, blockDuration: number, throttlerName: string) {
     const namespacedKey = `${throttlerName}:${key}`
 

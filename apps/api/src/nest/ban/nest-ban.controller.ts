@@ -16,6 +16,7 @@ import { CannotUnbanYourselfException } from './exceptions/cannot-unban-yourself
 import { UserAlreadyBannedException } from './exceptions/user-already-banned.exception'
 import { NestBanService } from './nest-ban.service'
 
+/** Ban/unban a nest member and list a nest's active bans. */
 @ApiTags('Nest Bans')
 @Controller('nests/:nestSlug/bans')
 @Authenticated()

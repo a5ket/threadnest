@@ -8,6 +8,10 @@ export class PlatformContentPolicy {
     private readonly platformAccess: PlatformAccess
   ) { }
 
+  /**
+   * @param actorUserId - The user attempting a platform-level content moderation action.
+   * @throws {InsufficientPermissionsException} Not a platform moderator or admin.
+   */
   async assertIsModerator(actorUserId: string) {
     const ctx = await this.platformAccess.getContext(actorUserId)
 

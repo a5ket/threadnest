@@ -16,6 +16,7 @@ import { UserSuspensionNotFoundException } from 'src/user/suspension/exceptions/
 import { UserNotFoundException } from 'src/user/exceptions/user-not-found.exception'
 import { PlatformUserSuspensionService } from './platform-user-suspension.service'
 
+/** Platform-moderator management of user account suspensions: check, issue, lift. */
 @ApiTags('Platform Suspensions')
 @Controller('platform/suspensions')
 @AuthenticatedAndVerified()

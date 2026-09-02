@@ -26,6 +26,16 @@ export class NestJoinRequestPolicy {
     private readonly inviteRepo: NestInviteRepository
   ) { }
 
+  /**
+   * @param nest - The nest to request to join.
+   * @param actorUserId - The requesting user.
+   * @throws {JoinRequestsNotAcceptedException} This nest's join policy isn't `BY_REQUEST`.
+   * @throws {AlreadyMemberException} Already a member.
+   * @throws {UserIsBannedException} Actively banned from this nest.
+   * @throws {AlreadyHasPendingJoinRequestException} A pending request already exists.
+   * @throws {AlreadyInvitedException} A pending invite already exists (request would create an
+   *   ambiguous double-pending state).
+   */
   async assertCanCreate(nest: NestPolicySubject, actorUserId: string) {
     const ctx = await this.nestAccess.getContext(nest.id, actorUserId)
 
@@ -55,6 +65,10 @@ export class NestJoinRequestPolicy {
     }
   }
 
+  /**
+   * @throws {NestJoinRequestNotFoundException} The request isn't `actorUserId`'s own.
+   * @throws {JoinRequestNotPendingException} Already resolved.
+   */
   async assertCanCancel(request: NestJoinRequestPolicySubject, actorUserId: string) {
     if (request.userId !== actorUserId) {
       throw new NestJoinRequestNotFoundException()
@@ -65,20 +79,29 @@ export class NestJoinRequestPolicy {
     }
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to manage join requests in this nest. */
   async assertCanListAsNest(nest: NestPolicySubject, actorUserId: string) {
     await this.assertCanManageNestJoinRequests(nest.id, actorUserId)
   }
 
+  /** @throws {NestJoinRequestNotFoundException} The request isn't `actorUserId`'s own. */
   async assertCanGetAsUser(request: NestJoinRequestPolicySubject, actorUserId: string) {
     if (request.userId !== actorUserId) {
       throw new NestJoinRequestNotFoundException()
     }
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to manage join requests in this nest. */
   async assertCanGetAsNest(request: NestJoinRequestPolicySubject, actorUserId: string) {
     await this.assertCanManageNestJoinRequests(request.nestId, actorUserId)
   }
 
+  /**
+   * @throws {InsufficientPermissionsException} Not authorized to manage join requests in this nest.
+   * @throws {JoinRequestNotPendingException} Already resolved.
+   * @throws {AlreadyMemberException} Already a member (e.g. joined some other way since requesting).
+   * @throws {UserIsBannedException} Actively banned from this nest.
+   */
   async assertCanApprove(
     request: NestJoinRequestPolicySubject,
     actorUserId: string,
@@ -103,6 +126,10 @@ export class NestJoinRequestPolicy {
     }
   }
 
+  /**
+   * @throws {InsufficientPermissionsException} Not authorized to manage join requests in this nest.
+   * @throws {JoinRequestNotPendingException} Already resolved.
+   */
   async assertCanReject(request: NestJoinRequestPolicySubject, actorUserId: string) {
     await this.assertCanManageNestJoinRequests(request.nestId, actorUserId)
 
@@ -111,6 +138,7 @@ export class NestJoinRequestPolicy {
     }
   }
 
+  /** @throws {InsufficientPermissionsException} Not authorized to manage join requests in this nest. */
   private async assertCanManageNestJoinRequests(nestId: string, actorUserId: string) {
     const ctx = await this.nestAccess.getContext(nestId, actorUserId)
 

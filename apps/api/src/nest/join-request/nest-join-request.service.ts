@@ -12,6 +12,7 @@ import { NestJoinRequestCancelledEvent } from './events/nest-join-request-cancel
 import { NestJoinRequestCreatedEvent } from './events/nest-join-request-created.event'
 import { NestJoinRequestRejectedEvent } from './events/nest-join-request-rejected.event'
 
+/** User-initiated requests to join a nest — the counterpart to nest-initiated {@link NestInviteService} invites. */
 @Injectable()
 export class NestJoinRequestService {
   constructor(
@@ -24,6 +25,10 @@ export class NestJoinRequestService {
     private readonly eventBus: EventBus,
   ) { }
 
+  /**
+   * @param nestSlug - The nest to request to join.
+   * @param actorUserId - The requesting user.
+   */
   async create(nestSlug: string, actorUserId: string) {
     const nest = await this.nestRepo.getBySlug(nestSlug)
 
@@ -40,6 +45,10 @@ export class NestJoinRequestService {
     return this.presenter.toUserView(request)
   }
 
+  /**
+   * @param requestId - The request to cancel.
+   * @param actorUserId - Must be the requester.
+   */
   async cancel(requestId: string, actorUserId: string) {
     const request = await this.requestRepo.get(requestId)
 
@@ -61,6 +70,10 @@ export class NestJoinRequestService {
     }))
   }
 
+  /**
+   * @param nestSlug - The nest whose incoming requests to list.
+   * @param actorUserId - Must be authorized to manage join requests in this nest.
+   */
   async listAsNest(nestSlug: string, actorUserId: string) {
     const nest = await this.nestRepo.getBySlug(nestSlug)
 
@@ -71,12 +84,18 @@ export class NestJoinRequestService {
     return requests.map((request) => this.presenter.toNestView(request))
   }
 
+  /** @param actorUserId - Lists the requests filed by this user. */
   async listAsUser(actorUserId: string) {
     const requests = await this.requestRepo.listAsUser(actorUserId)
 
     return requests.map((request) => this.presenter.toUserView(request))
   }
 
+  /**
+   * @param nestSlug - The nest the request belongs to.
+   * @param requestId - The request to look up.
+   * @param actorUserId - Must be authorized to manage join requests in this nest.
+   */
   async getAsNest(
     nestSlug: string,
     requestId: string,
@@ -87,6 +106,10 @@ export class NestJoinRequestService {
     return this.presenter.toNestView(request)
   }
 
+  /**
+   * @param requestId - The request to look up.
+   * @param actorUserId - Must be the requester.
+   */
   async getAsUser(requestId: string, actorUserId: string) {
     const request = await this.requestRepo.getSummary(requestId)
 
@@ -102,6 +125,13 @@ export class NestJoinRequestService {
     return this.presenter.toUserView(request)
   }
 
+  /**
+   * Approves and creates the resulting membership in one transaction.
+   *
+   * @param nestSlug - The nest the request belongs to.
+   * @param requestId - The request to approve.
+   * @param actorUserId - Must be authorized to manage join requests in this nest.
+   */
   async approve(
     nestSlug: string,
     requestId: string,
@@ -138,6 +168,11 @@ export class NestJoinRequestService {
     }))
   }
 
+  /**
+   * @param nestSlug - The nest the request belongs to.
+   * @param requestId - The request to reject.
+   * @param actorUserId - Must be authorized to manage join requests in this nest.
+   */
   async reject(
     nestSlug: string,
     requestId: string,
@@ -170,6 +205,7 @@ export class NestJoinRequestService {
     }))
   }
 
+  /** @throws {NestJoinRequestNotFoundException} `requestId` doesn't belong to `nestSlug`. */
   private async getRequestAsNest(
     nestSlug: string,
     requestId: string,

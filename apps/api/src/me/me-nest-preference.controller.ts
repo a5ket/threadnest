@@ -13,6 +13,7 @@ import { UserNestPreferenceService } from 'src/nest/preferences/user-nest-prefer
 import { Authenticated } from 'src/security/decorators/authenticated.decorator'
 import { CurrentUser } from 'src/security/decorators/current-user.decorator'
 
+/** The signed-in user's per-nest preferences: whether they've muted it, and who can invite them to it. */
 @ApiTags('Me')
 @Controller('/me/nests/:nestSlug/preferences')
 @Authenticated()

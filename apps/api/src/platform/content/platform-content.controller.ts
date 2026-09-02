@@ -14,6 +14,7 @@ import { ThreadNotFoundException } from 'src/thread/exceptions/thread-not-found.
 import { PlatformContentBulkRemovalResponseDto } from './dto/platform-content-bulk-removal-response.dto'
 import { PlatformContentService } from './platform-content.service'
 
+/** Platform-moderator content removal: single threads/comments, or bulk-purge by author. */
 @ApiTags('Platform Content')
 @Controller('platform/content')
 @AuthenticatedAndVerified()

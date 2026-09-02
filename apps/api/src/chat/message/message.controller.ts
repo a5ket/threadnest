@@ -20,6 +20,7 @@ import { MessageQueryDto } from './dto/message.query.dto'
 import { MessageResponseDto } from './dto/message-response.dto'
 import { MessageService } from './message.service'
 
+/** Messages within a chat: list, send, delete. Chat-level operations live in {@link ChatController}. */
 @ApiTags('Chats')
 @Controller('chats/:chatId/messages')
 @AuthenticatedAndVerified()

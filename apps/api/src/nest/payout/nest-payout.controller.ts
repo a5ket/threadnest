@@ -15,6 +15,7 @@ import { PayoutAccountNotConnectedException } from './exceptions/payout-account-
 import { PayoutsNotEnabledException } from './exceptions/payouts-not-enabled.exception'
 import { NestPayoutService } from './nest-payout.service'
 
+/** Stripe Connect onboarding and balance withdrawal for a nest's paywall earnings. */
 @ApiTags('Nest Payouts')
 @Controller('nests/:nestSlug/payout')
 @UseInterceptors(ResponseInterceptor)

@@ -4,6 +4,7 @@ import { ReportResolvedEvent } from 'src/report/events/report-resolved.event'
 import { NotificationEventSubscriber } from '../notification-event-subscriber'
 import { NotificationService } from '../notification.service'
 
+/** Notifies the reporter when their report is resolved, unless they resolved it themselves. */
 @Injectable()
 export class ReportResolvedNotificationSubscriber extends NotificationEventSubscriber<ReportResolvedEvent> {
   readonly eventClass = ReportResolvedEvent

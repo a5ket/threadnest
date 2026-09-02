@@ -12,6 +12,7 @@ import { ChangeEmailTemplate } from '../templates/change-email.template'
 import { ResetPasswordTemplate } from '../templates/reset-password.template'
 import { VerifyEmailTemplate } from '../templates/verify-email.template'
 
+/** Handles every {@link AuthEmailJob} subtype: renders the matching React Email template and sends it. */
 @Injectable()
 export class SendAuthEmailHandler extends JobHandler<AuthEmailJob> {
   readonly jobClasses = [SendVerificationEmailJob, SendPasswordResetEmailJob, SendEmailChangeEmailJob]
@@ -23,11 +24,18 @@ export class SendAuthEmailHandler extends JobHandler<AuthEmailJob> {
     super()
   }
 
+  /** @param job - The dequeued job to handle; its runtime subtype selects the template. */
   async handle(job: AuthEmailJob) {
     const { subject, html } = await this.renderJob(job)
     await this.mailer.send(job.props.to, subject, html)
   }
 
+  /**
+   * @param job - The job to render.
+   * @returns The subject and rendered HTML body for the matching template.
+   * @throws {Error} `job` isn't one of the registered `jobClasses` — shouldn't happen since the
+   * dispatcher only routes registered types here, but narrows the type for TypeScript otherwise.
+   */
   private async renderJob(job: AuthEmailJob): Promise<{ subject: string; html: string }> {
     if (job instanceof SendVerificationEmailJob) {
       return {

@@ -3,12 +3,22 @@ import { BlockService } from 'src/block/block.service'
 import { ChatAccessContext } from './types/chat.access-context'
 import { ChatPolicySubject } from './types/chat.policy-subject'
 
+/** Computes what a viewer can do with a chat — for a 1:1 chat, whether either side has blocked the other. */
 @Injectable()
 export class ChatAccess {
   constructor(
     private readonly blocks: BlockService
   ) { }
 
+  /**
+   * Group chats skip the block check entirely (blocking is a 1:1 concept here — there's no
+   * per-participant mute in a group). For a 1:1 chat, sending is disabled if either side has
+   * blocked the other, but the chat itself stays viewable either way.
+   *
+   * @param chat - The chat to compute access for.
+   * @param actorUserId - The viewer.
+   * @returns Participation status plus the block relationship, for a 1:1 chat.
+   */
   async getContext(chat: ChatPolicySubject, actorUserId: string): Promise<ChatAccessContext> {
     const participant = chat.participants.find((p) => p.userId === actorUserId)
 
