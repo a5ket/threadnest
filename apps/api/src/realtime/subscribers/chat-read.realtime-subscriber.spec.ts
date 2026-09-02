@@ -3,9 +3,8 @@ import { chatRoom } from '../realtime.gateway'
 import { ChatReadRealtimeSubscriber } from './chat-read.realtime-subscriber'
 
 describe('ChatReadRealtimeSubscriber', () => {
-  const emit = jest.fn()
-  const to = jest.fn(() => ({ emit }))
-  const gateway = { server: { to } }
+  const emitToRoom = jest.fn()
+  const gateway = { emitToRoom }
 
   const subscriber = new ChatReadRealtimeSubscriber(gateway as any)
 
@@ -18,7 +17,6 @@ describe('ChatReadRealtimeSubscriber', () => {
 
     await subscriber.handle(new ChatReadEvent({ chatId: 'chat-1', userId: 'user-1', at }))
 
-    expect(to).toHaveBeenCalledWith(chatRoom('chat-1'))
-    expect(emit).toHaveBeenCalledWith('chat:read', { chatId: 'chat-1', userId: 'user-1', at })
+    expect(emitToRoom).toHaveBeenCalledWith(chatRoom('chat-1'), 'chat:read', { chatId: 'chat-1', userId: 'user-1', at })
   })
 })

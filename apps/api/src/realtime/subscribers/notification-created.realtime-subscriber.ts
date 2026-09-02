@@ -13,6 +13,6 @@ export class NotificationCreatedRealtimeSubscriber extends EventSubscriber<Notif
   async handle(event: NotificationCreatedEvent) {
     const { userId, notification } = event.props
 
-    this.gateway.server.to(userRoom(userId)).emit('notification:created', notification)
+    this.gateway.emitToRoom(userRoom(userId), 'notification:created', notification)
   }
 }

@@ -99,4 +99,10 @@ export class RealtimeGateway implements OnGatewayConnection {
 
     client.to(chatRoom(chatId)).emit(event, { chatId, userId: client.data.userId })
   }
+
+  emitToRoom(room: string, event: string, payload: unknown) {
+    if (!this.server) return
+
+    this.server.to(room).emit(event, payload)
+  }
 }

@@ -13,6 +13,6 @@ export class MessageCreatedRealtimeSubscriber extends EventSubscriber<MessageCre
   async handle(event: MessageCreatedEvent) {
     const { chatId, message } = event.props
 
-    this.gateway.server.to(chatRoom(chatId)).emit('message:created', message)
+    this.gateway.emitToRoom(chatRoom(chatId), 'message:created', message)
   }
 }

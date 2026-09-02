@@ -95,4 +95,22 @@ describe('RealtimeGateway', () => {
       expect(to).not.toHaveBeenCalled()
     })
   })
+
+  describe('emitToRoom', () => {
+    it('emits to the given room when the server is attached', () => {
+      gateway.server = { to } as any
+
+      gateway.emitToRoom(chatRoom('chat-1'), 'chat:read', { chatId: 'chat-1' })
+
+      expect(to).toHaveBeenCalledWith(chatRoom('chat-1'))
+      expect(emit).toHaveBeenCalledWith('chat:read', { chatId: 'chat-1' })
+    })
+
+    it('does nothing when the server has not been attached yet (e.g. running outside the HTTP process)', () => {
+      gateway.server = undefined as any
+
+      expect(() => gateway.emitToRoom(chatRoom('chat-1'), 'chat:read', { chatId: 'chat-1' })).not.toThrow()
+      expect(to).not.toHaveBeenCalled()
+    })
+  })
 })

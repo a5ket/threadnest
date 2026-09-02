@@ -5,9 +5,8 @@ import { userRoom } from '../realtime.gateway'
 import { NotificationCreatedRealtimeSubscriber } from './notification-created.realtime-subscriber'
 
 describe('NotificationCreatedRealtimeSubscriber', () => {
-  const emit = jest.fn()
-  const to = jest.fn(() => ({ emit }))
-  const gateway = { server: { to } }
+  const emitToRoom = jest.fn()
+  const gateway = { emitToRoom }
 
   const subscriber = new NotificationCreatedRealtimeSubscriber(gateway as any)
 
@@ -35,7 +34,6 @@ describe('NotificationCreatedRealtimeSubscriber', () => {
 
     await subscriber.handle(new NotificationCreatedEvent({ userId: 'user-1', notification }))
 
-    expect(to).toHaveBeenCalledWith(userRoom('user-1'))
-    expect(emit).toHaveBeenCalledWith('notification:created', notification)
+    expect(emitToRoom).toHaveBeenCalledWith(userRoom('user-1'), 'notification:created', notification)
   })
 })

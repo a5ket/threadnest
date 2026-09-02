@@ -13,6 +13,6 @@ export class ChatReadRealtimeSubscriber extends EventSubscriber<ChatReadEvent> {
   async handle(event: ChatReadEvent) {
     const { chatId, userId, at } = event.props
 
-    this.gateway.server.to(chatRoom(chatId)).emit('chat:read', { chatId, userId, at })
+    this.gateway.emitToRoom(chatRoom(chatId), 'chat:read', { chatId, userId, at })
   }
 }

@@ -4,9 +4,8 @@ import { chatRoom } from '../realtime.gateway'
 import { MessageCreatedRealtimeSubscriber } from './message-created.realtime-subscriber'
 
 describe('MessageCreatedRealtimeSubscriber', () => {
-  const emit = jest.fn()
-  const to = jest.fn(() => ({ emit }))
-  const gateway = { server: { to } }
+  const emitToRoom = jest.fn()
+  const gateway = { emitToRoom }
 
   const subscriber = new MessageCreatedRealtimeSubscriber(gateway as any)
 
@@ -27,7 +26,6 @@ describe('MessageCreatedRealtimeSubscriber', () => {
 
     await subscriber.handle(new MessageCreatedEvent({ chatId: 'chat-1', message }))
 
-    expect(to).toHaveBeenCalledWith(chatRoom('chat-1'))
-    expect(emit).toHaveBeenCalledWith('message:created', message)
+    expect(emitToRoom).toHaveBeenCalledWith(chatRoom('chat-1'), 'message:created', message)
   })
 })
