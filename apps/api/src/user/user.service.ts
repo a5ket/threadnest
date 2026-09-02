@@ -11,6 +11,7 @@ import { UserNotFoundException } from './exceptions/user-not-found.exception'
 import { UserPreferenceService } from './preferences/user-preference.service'
 import { UserProfileRepository } from './user-profile.repository'
 import { UserRepository } from './user.repository'
+import { generateRandomUsername } from './username-generator'
 
 const AVATAR_SIZE = 512
 
@@ -142,7 +143,7 @@ export class UserService {
 
   private async generateUniqueUsername() {
     for (let attempt = 0; attempt < 5; attempt++) {
-      const username = `u_${randomBytes(5).toString('hex')}`
+      const username = generateRandomUsername()
 
       if (!(await this.profileRepo.isUsernameTaken(username))) {
         return username
