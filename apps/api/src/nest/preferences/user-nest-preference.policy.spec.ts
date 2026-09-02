@@ -4,7 +4,7 @@ import { UserNestPreferencePolicy } from './user-nest-preference.policy'
 
 describe('UserNestPreferencePolicy', () => {
   const membersRepo = createMockNestMemberRepository()
-  const policy = new UserNestPreferencePolicy(membersRepo as any)
+  const policy = new UserNestPreferencePolicy(membersRepo)
 
   const givenMembership = (isMember: boolean) =>
     membersRepo.exists.mockResolvedValue(isMember)

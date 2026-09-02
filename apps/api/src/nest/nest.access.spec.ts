@@ -19,10 +19,10 @@ describe('NestAccess', () => {
   const paywallRepo = { get: jest.fn() }
   const subscriptionsRepo = { existsActiveForUser: jest.fn() }
   const nestAccess = new NestAccess(
-    settingsRepo as any,
+    settingsRepo,
     bansRepo as any,
-    membersRepo as any,
-    nestsRepo as any,
+    membersRepo,
+    nestsRepo,
     paywallRepo as any,
     subscriptionsRepo as any,
   )

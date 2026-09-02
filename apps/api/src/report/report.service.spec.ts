@@ -31,7 +31,7 @@ describe('ReportService', () => {
 
   const service = new ReportService(
     reportsRepo as any,
-    nestsRepo as any,
+    nestsRepo,
     threadsService as any,
     threadAccess as any,
     commentsRepo as any,

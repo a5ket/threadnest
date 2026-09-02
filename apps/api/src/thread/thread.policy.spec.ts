@@ -14,7 +14,7 @@ describe('ThreadPolicy', () => {
   const nestAccess = createMockNestAccess()
   const threadAccess = createMockThreadAccess()
   const memberRepo = createMockNestMemberRepository()
-  const policy = new ThreadPolicy(nestAccess as any, threadAccess as any, memberRepo as any)
+  const policy = new ThreadPolicy(nestAccess as any, threadAccess as any, memberRepo)
 
   const thread = createThreadPolicySubject()
 

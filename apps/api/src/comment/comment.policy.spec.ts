@@ -16,7 +16,7 @@ describe('CommentPolicy', () => {
   const threadsRepo = createMockThreadRepository()
   const nestAccess = createMockNestAccess()
   const memberRepo = createMockNestMemberRepository()
-  const policy = new CommentPolicy(threadAccess as any, threadsRepo as any, nestAccess as any, memberRepo as any)
+  const policy = new CommentPolicy(threadAccess as any, threadsRepo as any, nestAccess as any, memberRepo)
 
   const givenThread = (overrides: Parameters<typeof createThreadPolicySubject>[0]) =>
     threadsRepo.getById.mockResolvedValue(createThreadPolicySubject(overrides))

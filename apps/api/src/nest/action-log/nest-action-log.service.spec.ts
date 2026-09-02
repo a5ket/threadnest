@@ -17,7 +17,7 @@ describe('NestActionLogService', () => {
     actionLogsRepo as any,
     presenter as any,
     policy as any,
-    nestsRepo as any,
+    nestsRepo,
   )
 
   beforeEach(() => {

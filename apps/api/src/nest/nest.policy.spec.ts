@@ -13,7 +13,7 @@ import { NestPolicy } from './nest.policy'
 describe('NestPolicy', () => {
   const nestAccess = createMockNestAccess()
   const memberRepo = createMockNestMemberRepository()
-  const policy = new NestPolicy(nestAccess as any, memberRepo as any)
+  const policy = new NestPolicy(nestAccess as any, memberRepo)
 
   const nest = createNestPolicySubject()
 

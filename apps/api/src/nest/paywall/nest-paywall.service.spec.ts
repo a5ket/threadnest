@@ -31,6 +31,14 @@ describe('NestPaywallService', () => {
 
       expect(result).toEqual({ isPaywalled: true, priceAmountCents: 500 })
     })
+
+    it('propagates the policy failure without reading the paywall config', async () => {
+      paywallPolicy.assertCanManage.mockRejectedValueOnce(new Error('cannot manage'))
+
+      await expect(service.get('nest-slug', 'user-1')).rejects.toThrow('cannot manage')
+
+      expect(paywallRepo.get).not.toHaveBeenCalled()
+    })
   })
 
   describe('setPrice', () => {
@@ -49,6 +57,14 @@ describe('NestPaywallService', () => {
       })
       expect(result).toEqual({ isPaywalled: true, priceAmountCents: 500 })
     })
+
+    it('propagates the policy failure without creating a Stripe price', async () => {
+      paywallPolicy.assertCanManage.mockRejectedValueOnce(new Error('cannot manage'))
+
+      await expect(service.setPrice('nest-slug', 'user-1', { amountCents: 500 })).rejects.toThrow('cannot manage')
+
+      expect(stripe.createPrice).not.toHaveBeenCalled()
+    })
   })
 
   describe('disable', () => {
@@ -61,6 +77,14 @@ describe('NestPaywallService', () => {
       expect(stripe.createPrice).not.toHaveBeenCalled()
       expect(paywallRepo.upsert).toHaveBeenCalledWith('nest-1', { isPaywalled: false })
       expect(result).toEqual({ isPaywalled: false, priceAmountCents: 500 })
+    })
+
+    it('propagates the policy failure without touching the paywall config', async () => {
+      paywallPolicy.assertCanManage.mockRejectedValueOnce(new Error('cannot manage'))
+
+      await expect(service.disable('nest-slug', 'user-1')).rejects.toThrow('cannot manage')
+
+      expect(paywallRepo.upsert).not.toHaveBeenCalled()
     })
   })
 })

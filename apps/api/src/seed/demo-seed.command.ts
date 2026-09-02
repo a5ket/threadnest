@@ -65,10 +65,10 @@ const THREAD_TITLE_TEMPLATES = [
 
 const THREAD_CONTENT_TEMPLATES = [
   'Would love to hear what everyone thinks about this.',
-  "Been at this for a few months now and wanted to share some thoughts.",
+  'Been at this for a few months now and wanted to share some thoughts.',
   'Curious what tools or approaches other people are using.',
   'Long time lurker, first time posting here.',
-  "Not sure if this is the right place to ask, but here goes.",
+  'Not sure if this is the right place to ask, but here goes.',
   'Sharing this in case it helps someone else out.'
 ]
 

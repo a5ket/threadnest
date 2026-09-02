@@ -12,7 +12,12 @@ describe('AuthController cookies', () => {
     login: jest.fn(),
     refresh: jest.fn(),
     logoutCurrentSession: jest.fn(),
-    logoutAllSessions: jest.fn()
+    logoutAllSessions: jest.fn(),
+    requestEmailVerification: jest.fn(),
+    confirmEmailVerification: jest.fn(),
+    requestPasswordReset: jest.fn(),
+    confirmPasswordReset: jest.fn(),
+    confirmEmailChange: jest.fn()
   }
   const authCookieService = {
     setTokens: jest.fn(),
@@ -26,6 +31,15 @@ describe('AuthController cookies', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     authService.refresh.mockResolvedValue(tokens)
+  })
+
+  it('sets cookies after register', async () => {
+    const result = { user: { id: 'user-1' }, ...tokens }
+    authService.register.mockResolvedValue(result)
+
+    await expect(controller.register({ email: 'user@example.com', password: 'password' }, response)).resolves.toBe(result)
+
+    expect(authCookieService.setTokens).toHaveBeenCalledWith(response, tokens.accessToken, tokens.refreshToken)
   })
 
   it('sets cookies after login', async () => {
@@ -79,5 +93,37 @@ describe('AuthController cookies', () => {
 
     expect(authService.logoutAllSessions).toHaveBeenCalledWith('user-1')
     expect(authCookieService.clearTokens).toHaveBeenCalledWith(response)
+  })
+
+  it('requests email verification for the current user', async () => {
+    const user = { id: 'user-1', sid: 'session-1', email: 'user@example.com', emailVerified: false }
+
+    await controller.requestEmailVerification(user)
+
+    expect(authService.requestEmailVerification).toHaveBeenCalledWith('user-1')
+  })
+
+  it('confirms an email verification token', async () => {
+    await controller.confirmEmailVerification({ token: 'raw-token' })
+
+    expect(authService.confirmEmailVerification).toHaveBeenCalledWith('raw-token')
+  })
+
+  it('requests a password reset email', async () => {
+    await controller.requestPasswordReset({ email: 'user@example.com' })
+
+    expect(authService.requestPasswordReset).toHaveBeenCalledWith('user@example.com')
+  })
+
+  it('confirms a password reset token with the new password', async () => {
+    await controller.confirmPasswordReset({ token: 'raw-token', password: 'NewPassword1!' })
+
+    expect(authService.confirmPasswordReset).toHaveBeenCalledWith('raw-token', 'NewPassword1!')
+  })
+
+  it('confirms an email change token', async () => {
+    await controller.confirmEmailChange({ token: 'raw-token' })
+
+    expect(authService.confirmEmailChange).toHaveBeenCalledWith('raw-token')
   })
 })

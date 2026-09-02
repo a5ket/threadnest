@@ -28,7 +28,7 @@ describe('NestInvitePolicy', () => {
 
   const policy = new NestInvitePolicy(
     nestAccess as any,
-    memberRepo as any,
+    memberRepo,
     banRepo as any,
     inviteRepo as any,
     requestRepo as any,

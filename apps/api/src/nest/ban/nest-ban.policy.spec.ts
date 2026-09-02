@@ -16,7 +16,7 @@ describe('NestBanPolicy', () => {
   const membersRepo = createMockNestMemberRepository()
   const bansRepo = createMockNestBanRepository()
   const users = createMockUserService()
-  const policy = new NestBanPolicy(nestAccess as any, membersRepo as any, bansRepo as any, users as any)
+  const policy = new NestBanPolicy(nestAccess as any, membersRepo, bansRepo as any, users as any)
 
   const givenContext = (overrides: Parameters<typeof createNestAccessContext>[0]) =>
     nestAccess.getContext.mockResolvedValue(createNestAccessContext(overrides))

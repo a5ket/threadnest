@@ -8,7 +8,75 @@ describe('ThreadPresenter', () => {
   const storage = createMockStorageService()
   const presenter = new ThreadPresenter(new UserPresenter(storage as any), storage as any)
 
+  describe('toSummaryView', () => {
+    it('resolves attachment URLs through the presigned URL storage call', async () => {
+      const thread = createThreadDetails({
+        attachments: [{ id: 'att-1', key: 'attachments/user-1/a.webp', width: 100, height: 100, order: 0 }],
+      })
+
+      const view = await presenter.toSummaryView(thread)
+
+      expect(view.attachments).toEqual([{ id: 'att-1', key: 'attachments/user-1/a.webp', url: 'https://cdn.test/presigned/attachments/user-1/a.webp', width: 100, height: 100 }])
+    })
+
+    it('includes the author\'s nest role when a membership is present', async () => {
+      const thread = createThreadDetails({
+        author: { id: 'author-1', profile: null, nestMembership: [{ role: 'MODERATOR' }] },
+      })
+
+      const view = await presenter.toSummaryView(thread)
+
+      expect(view.author).toMatchObject({ role: 'MODERATOR' })
+    })
+
+    it('reports a null role when the author has no membership', async () => {
+      const thread = createThreadDetails({ author: { id: 'author-1', profile: null, nestMembership: [] } })
+
+      const view = await presenter.toSummaryView(thread)
+
+      expect(view.author).toMatchObject({ role: null })
+    })
+  })
+
+  describe('toSearchResultView', () => {
+    it('includes the nest reference alongside the summary fields', async () => {
+      const thread = createThreadDetails({ nest: { name: 'My Nest', slug: 'my-nest' } })
+
+      const view = await presenter.toSearchResultView(thread)
+
+      expect(view.nest).toEqual({ name: 'My Nest', slug: 'my-nest' })
+      expect(view).toHaveProperty('id')
+    })
+  })
+
   describe('toDetailView', () => {
+    it('shows content when the viewer context allows reading it', async () => {
+      const thread = createThreadDetails({ content: 'the actual content' })
+      const ctx = createThreadAccessContext({ canReadContent: true })
+
+      const view = await presenter.toDetailView(thread, ctx)
+
+      expect(view.content).toBe('the actual content')
+    })
+
+    it('hides content when the viewer context disallows reading it', async () => {
+      const thread = createThreadDetails({ content: 'the actual content' })
+      const ctx = createThreadAccessContext({ canReadContent: false })
+
+      const view = await presenter.toDetailView(thread, ctx)
+
+      expect(view.content).toBeNull()
+    })
+
+    it('passes the access context through verbatim', async () => {
+      const thread = createThreadDetails()
+      const ctx = createThreadAccessContext({ canVoteThread: false, canSaveThread: false })
+
+      const view = await presenter.toDetailView(thread, ctx)
+
+      expect(view.access).toBe(ctx)
+    })
+
     it('never exposes which platform admin removed the thread, even to nest moderators', async () => {
       const thread = createThreadDetails({
         deletedAt: new Date(),
