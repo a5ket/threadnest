@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+# Runs typecheck + tests, scoped to whichever app(s) have changes in the commits being pushed.
+zero="0000000000000000000000000000000000000000"
+run_api=0
+run_web=0
+new_branch=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_sha" = "$zero" ]; then
+    new_branch=1
+    continue
+  fi
+  files=$(git diff --name-only "$remote_sha" "$local_sha")
+  echo "$files" | grep -q '^apps/api/' && run_api=1
+  echo "$files" | grep -q '^apps/web/' && run_web=1
+done
+
+# New branch with no remote history to diff against — check everything to be safe.
+if [ "$new_branch" = "1" ]; then
+  run_api=1
+  run_web=1
+fi
+
+status=0
+
+if [ "$run_api" = "1" ]; then
+  echo "==> apps/api: typecheck + tests"
+  pnpm --dir apps/api run typecheck && pnpm --dir apps/api test
+  status=$((status + $?))
+fi
+
+if [ "$run_web" = "1" ]; then
+  echo "==> apps/web: typecheck + tests"
+  pnpm --dir apps/web run typecheck && pnpm --dir apps/web test
+  status=$((status + $?))
+fi
+
+exit $status

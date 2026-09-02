@@ -1,0 +1,5 @@
+# root tooling (husky/lint-staged)
+/node_modules
+
+# OS
+.DS_Store
