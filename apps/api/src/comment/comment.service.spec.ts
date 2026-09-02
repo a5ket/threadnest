@@ -144,7 +144,7 @@ describe('CommentService', () => {
     const dto = { content: 'a reply', attachment: undefined }
 
     it('creates the reply and publishes CommentCreatedEvent addressed to the parent author', async () => {
-      const parent = createComment({ id: 'parent-1', threadId: 'thread-1', author: { id: 'parent-author', profile: null } })
+      const parent = createComment({ id: 'parent-1', threadId: 'thread-1', author: { id: 'parent-author', profile: null, nestMembership: [] } })
       const thread = createThreadDetails({ id: 'thread-1', nestId: 'nest-1' })
       const reply = createComment({ id: 'reply-1', parentId: 'parent-1', createdAt: new Date('2024-02-01T00:00:00.000Z') })
 
@@ -238,7 +238,7 @@ describe('CommentService', () => {
 
   describe('removeComment', () => {
     it('soft-deletes as a nest-moderation removal and publishes CommentDeletedEvent', async () => {
-      const comment = createComment({ id: 'comment-1', threadId: 'thread-1', parentId: 'parent-1', author: { id: 'author-1', profile: null } })
+      const comment = createComment({ id: 'comment-1', threadId: 'thread-1', parentId: 'parent-1', author: { id: 'author-1', profile: null, nestMembership: [] } })
       const thread = createThreadDetails({ id: 'thread-1', nestId: 'nest-1' })
 
       repo.getById.mockResolvedValue(comment)
@@ -273,7 +273,7 @@ describe('CommentService', () => {
     })
 
     it('does not log a moderation notice when the author removes their own comment', async () => {
-      const comment = createComment({ id: 'comment-1', threadId: 'thread-1', author: { id: 'author-1', profile: null } })
+      const comment = createComment({ id: 'comment-1', threadId: 'thread-1', author: { id: 'author-1', profile: null, nestMembership: [] } })
       const thread = createThreadDetails({ id: 'thread-1', nestId: 'nest-1' })
 
       repo.getById.mockResolvedValue(comment)

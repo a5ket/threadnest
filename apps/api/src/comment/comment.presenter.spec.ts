@@ -139,7 +139,7 @@ describe('CommentPresenter', () => {
   })
 
   it('resolves an attached image through a presigned URL', async () => {
-    const comment = baseComment({ attachments: [{ id: 'att-1', key: 'attachments/author-1/a.webp', width: 100, height: 100 }] })
+    const comment = baseComment({ attachments: [{ id: 'att-1', key: 'attachments/author-1/a.webp', width: 100, height: 100, order: 0 }] })
 
     const view = await presenter.toView(comment)
 
@@ -154,7 +154,7 @@ describe('CommentPresenter', () => {
 
   it('hides the attachment along with the content when redacted', async () => {
     const comment = baseComment({
-      attachments: [{ id: 'att-1', key: 'attachments/author-1/a.webp', width: 100, height: 100 }],
+      attachments: [{ id: 'att-1', key: 'attachments/author-1/a.webp', width: 100, height: 100, order: 0 }],
       deletedAt: new Date(), deletedById: 'author-1',
     })
 

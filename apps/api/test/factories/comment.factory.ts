@@ -1,8 +1,10 @@
-import { Comment } from 'src/comment/types/comment'
+import { CommentWithRole } from 'src/comment/types/comment'
 
+// Typed as the richer CommentWithRole (viewer-select) shape — a strict superset of the plain
+// Comment (COMMENT_SELECT) shape, so this fixture satisfies call sites expecting either.
 export const createComment = (
-  overrides: Partial<Comment> = {},
-): Comment => ({
+  overrides: Partial<CommentWithRole> = {},
+): CommentWithRole => ({
   id: 'comment-1',
   threadId: 'thread-1',
   authorId: 'author-1',
@@ -18,6 +20,7 @@ export const createComment = (
   deletedById: null,
   deletedByPlatform: false,
   attachments: [],
-  author: { id: 'author-1', profile: null },
+  author: { id: 'author-1', profile: null, nestMembership: [] },
+  viewerVote: null,
   ...overrides,
 })
