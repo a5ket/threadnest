@@ -1,3 +1,4 @@
+import { Badge } from '@/common/components/badge'
 import { NestAvatar } from '@/common/components/nest-avatar'
 import { JoinNestControl } from '@/features/nest/components/join-nest-control'
 import type { NestDiscoveryItem as NestDiscoveryItemType } from '@/features/nest/nest.types'
@@ -9,18 +10,14 @@ interface NestDiscoveryItemProps {
 
 export function NestDiscoveryItem({ nest }: NestDiscoveryItemProps) {
   return (
-    <li className='rounded-md border border-border p-3'>
+    <li className='rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm'>
       <div className='flex items-start justify-between gap-4'>
         <div className='flex items-start gap-3'>
           <NestAvatar name={nest.name} slug={nest.slug} iconUrl={nest.iconUrl} size={32} />
 
           <div>
             <div className='flex items-center gap-2'>
-              {nest.visibility === 'PRIVATE' && (
-                <span className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-                  Private
-                </span>
-              )}
+              {nest.visibility === 'PRIVATE' && <Badge>Private</Badge>}
               <Link href={`/n/${nest.slug}`} className='font-medium hover:underline'>
                 {nest.name}
               </Link>

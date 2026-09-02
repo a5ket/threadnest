@@ -116,7 +116,7 @@ export function MemberItem({ nestSlug, member, canRemoveMembers, canManageMember
   const isPending = removeMember.isPending || changeRole.isPending || transferOwnership.isPending
 
   return (
-    <li className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
+    <li className='flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-3'>
       <div>
         <p className='flex items-center gap-2 text-sm font-medium'>
           <UserLink user={member.user} />

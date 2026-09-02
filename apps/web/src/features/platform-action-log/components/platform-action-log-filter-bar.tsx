@@ -90,7 +90,7 @@ export function PlatformActionLogFilterBar() {
   const hasActiveFilters = searchParams.size > 0
 
   return (
-    <form onSubmit={applyFilters} className='flex flex-col gap-3 rounded-md border border-border p-4'>
+    <form onSubmit={applyFilters} className='flex flex-col gap-3 rounded-lg border border-border bg-card p-4'>
       <div className='flex flex-wrap items-end gap-3'>
         <label className='flex flex-col gap-1 text-xs text-muted-foreground'>
           Type

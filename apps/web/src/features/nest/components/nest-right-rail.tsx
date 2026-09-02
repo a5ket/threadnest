@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/common/components/badge'
 import { NestAvatar } from '@/common/components/nest-avatar'
 import { useSetRightRail } from '@/common/components/right-rail-context'
 import { formatMonthYear } from '@/common/format-date'
@@ -26,11 +27,7 @@ export function NestRightRail({ name, slug, description, iconUrl, visibility, me
           {slug}
         </h2>
 
-        {visibility === NestAccessContextDtoVisibility.PRIVATE && (
-          <span className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-            Private
-          </span>
-        )}
+        {visibility === NestAccessContextDtoVisibility.PRIVATE && <Badge>Private</Badge>}
       </div>
 
       {description && <p className='text-sm text-muted-foreground'>{description}</p>}

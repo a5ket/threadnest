@@ -41,7 +41,7 @@ export function NestManageMenu({ links }: NestManageMenuProps) {
       >
         <ModeratorIcon />
         Manage
-        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
           <path d='M5 8l5 5 5-5' strokeLinecap='round' strokeLinejoin='round' />
         </svg>
       </button>

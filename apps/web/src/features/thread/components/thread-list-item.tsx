@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/common/components/badge'
 import { RoleBadge } from '@/common/components/role-badge'
 import { SaveThreadButton } from '@/common/components/save-thread-button'
 import { UserLink } from '@/common/components/user-link'
@@ -24,8 +25,10 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
   const saveThread = useSaveThread({ onSuccess: setThread })
   const unsaveThread = useUnsaveThread({ onSuccess: setThread })
 
+  const accent = thread.pinnedAt ? 'border-l-4 border-l-primary' : thread.lockedAt ? 'border-l-4 border-l-warning' : ''
+
   return (
-    <li className='rounded-md border border-border p-3'>
+    <li className={`rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm ${accent}`}>
       <div className='flex items-start gap-3'>
         {user && (
           <VoteButtons
@@ -41,16 +44,8 @@ export function ThreadListItem({ nestSlug, thread: initialThread }: ThreadListIt
 
         <div>
           <div className='flex items-center gap-2'>
-            {thread.pinnedAt && (
-              <span className='rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground'>
-                Pinned
-              </span>
-            )}
-            {thread.lockedAt && (
-              <span className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-                Locked
-              </span>
-            )}
+            {thread.pinnedAt && <Badge variant='brand'>Pinned</Badge>}
+            {thread.lockedAt && <Badge variant='warning'>Locked</Badge>}
             <Link href={`/n/${nestSlug}/t/${thread.slug}`} className='font-medium hover:underline'>
               {thread.title}
             </Link>

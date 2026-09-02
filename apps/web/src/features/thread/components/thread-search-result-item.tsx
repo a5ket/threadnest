@@ -20,7 +20,7 @@ export function ThreadSearchResultItem({ thread: initialThread }: ThreadSearchRe
   const unsaveThread = useUnsaveThread({ onSuccess: (updated) => setThread((prev) => ({ ...prev, viewerSaved: updated.viewerSaved })) })
 
   return (
-    <li className='rounded-md border border-border p-3'>
+    <li className='rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm'>
       <div className='flex items-start gap-3'>
         <div className='min-w-0 flex-1'>
           <div className='flex items-center gap-2 text-xs text-muted-foreground'>

@@ -1,8 +1,14 @@
 import type { UserReferenceDtoRole } from '@/generated/api/models'
+import { Badge, type BadgeVariant } from './badge'
 
 const ROLE_LABELS: Partial<Record<NonNullable<UserReferenceDtoRole>, string>> = {
   OWNER: 'Owner',
   MODERATOR: 'Moderator'
+}
+
+const ROLE_VARIANTS: Partial<Record<NonNullable<UserReferenceDtoRole>, BadgeVariant>> = {
+  OWNER: 'owner',
+  MODERATOR: 'moderator'
 }
 
 export function RoleBadge({ role }: { role: UserReferenceDtoRole | undefined }) {
@@ -12,8 +18,8 @@ export function RoleBadge({ role }: { role: UserReferenceDtoRole | undefined }) 
   if (!label) return null
 
   return (
-    <span className='rounded-full bg-accent px-1.5 py-0.5 text-xs font-medium text-accent-foreground'>
+    <Badge variant={ROLE_VARIANTS[role]} size='sm'>
       {label}
-    </span>
+    </Badge>
   )
 }

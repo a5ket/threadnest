@@ -22,13 +22,13 @@ export function MainHeader({ onToggleSidebar }: AppHeaderProps) {
   const logout = useLogout({ onSuccess: handleSignedOut })
 
   return (
-    <header className='flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-3'>
+    <header className='flex h-14 shrink-0 items-center gap-3 border-b border-border bg-canvas px-3'>
       <button
         onClick={onToggleSidebar}
         aria-label='Toggle sidebar'
         className='rounded-md p-2 hover:bg-muted xl:hidden'
       >
-        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-5 w-5'>
+        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-5 w-5'>
           <path d='M3 5h14M3 10h14M3 15h14' strokeLinecap='round' />
         </svg>
       </button>

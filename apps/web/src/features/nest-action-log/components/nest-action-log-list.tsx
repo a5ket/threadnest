@@ -15,7 +15,7 @@ export function NestActionLogList({ nestSlug, initialPage }: NestActionLogListPr
   const logs = data.pages.flatMap((page) => page.items)
 
   return (
-    <ul className='flex flex-col divide-y divide-border rounded-md border border-border'>
+    <ul className='flex flex-col divide-y divide-divider rounded-lg border border-border bg-card'>
       {logs.map((log) => (
         <NestActionLogItem key={log.id} log={log} nestSlug={nestSlug} />
       ))}

@@ -20,7 +20,7 @@ export function SidebarDrawer({
     <div className='absolute inset-0 z-50 xl:hidden'>
       <div className='absolute inset-0 bg-black/50' onClick={onClose} />
 
-      <aside className='relative h-full w-64 border-r bg-background shadow-xl'>
+      <aside className='relative h-full w-64 border-r border-border bg-canvas shadow-xl'>
         {children}
       </aside>
     </div>

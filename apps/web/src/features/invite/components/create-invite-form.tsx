@@ -82,7 +82,7 @@ export function CreateInviteForm({ nestSlug, onCreated }: CreateInviteFormProps)
                   aria-label='Clear selection'
                   className='text-muted-foreground hover:text-foreground'
                 >
-                  <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+                  <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
                     <path d='M5 5l10 10M15 5l-10 10' strokeLinecap='round' />
                   </svg>
                 </button>

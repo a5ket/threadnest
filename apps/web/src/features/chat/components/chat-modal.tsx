@@ -31,7 +31,7 @@ export function ChatModal({ onClose }: ChatModalProps) {
             </Link>
 
             <button type='button' onClick={onClose} aria-label='Close' className='rounded-md p-1 hover:bg-muted'>
-              <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+              <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
                 <path d='M5 5l10 10M15 5L5 15' strokeLinecap='round' />
               </svg>
             </button>

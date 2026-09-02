@@ -36,7 +36,7 @@ export function MainAppShell({ children, popularNests }: MainAppShellProps) {
         <div className='relative min-h-0 flex-1 overflow-hidden'>
           <AppShell
             sidebar={(
-              <aside className='hidden w-64 shrink-0 overflow-y-auto border-r xl:block'>
+              <aside className='hidden w-64 shrink-0 overflow-y-auto border-r border-border bg-canvas xl:block'>
                 {sidebar}
               </aside>
             )}

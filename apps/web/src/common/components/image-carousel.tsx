@@ -46,7 +46,7 @@ export function ImageCarousel({ images }: ImageCarouselProps) {
               aria-label='Previous image'
               className='absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70'
             >
-              <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+              <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
                 <path d='M12 15l-5-5 5-5' strokeLinecap='round' strokeLinejoin='round' />
               </svg>
             </button>
@@ -57,7 +57,7 @@ export function ImageCarousel({ images }: ImageCarouselProps) {
               aria-label='Next image'
               className='absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70'
             >
-              <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+              <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
                 <path d='M8 5l5 5-5 5' strokeLinecap='round' strokeLinejoin='round' />
               </svg>
             </button>

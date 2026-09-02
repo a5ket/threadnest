@@ -92,7 +92,7 @@ export function SearchBar() {
         aria-label='Search'
         className='rounded-md p-2 hover:bg-muted md:hidden'
       >
-        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-5 w-5'>
+        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-5 w-5'>
           <circle cx='9' cy='9' r='6' />
           <path d='M17 17l-4-4' strokeLinecap='round' />
         </svg>

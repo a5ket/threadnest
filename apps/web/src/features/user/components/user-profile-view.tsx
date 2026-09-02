@@ -65,7 +65,7 @@ export function UserProfileView({ profile, initialActivity }: UserProfileViewPro
         : <p className='text-sm text-muted-foreground'>This user has chosen to keep their activity private.</p>}
 
       {!isOwnProfile && currentUser?.platformAccess.isModerator && (
-        <div className='flex flex-col gap-4 rounded-md border border-border p-4'>
+        <div className='flex flex-col gap-4 rounded-lg border border-border bg-card p-4'>
           <h2 className='text-sm font-semibold'>Platform moderation</h2>
 
           <SuspendUserControl userId={profile.userId} />

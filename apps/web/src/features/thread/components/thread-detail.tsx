@@ -1,6 +1,7 @@
 'use client'
 
 import { ModeratorIcon } from '@/common/components/authority-icons'
+import { Badge } from '@/common/components/badge'
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { ImageCarousel } from '@/common/components/image-carousel'
 import { RoleBadge } from '@/common/components/role-badge'
@@ -74,16 +75,8 @@ export function ThreadDetail({ nestSlug }: ThreadDetailProps) {
 
       <div className='flex flex-col gap-2'>
         <div className='flex items-center gap-2'>
-          {thread.pinnedAt && (
-            <span className='rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground'>
-              Pinned
-            </span>
-          )}
-          {thread.lockedAt && (
-            <span className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-              Locked
-            </span>
-          )}
+          {thread.pinnedAt && <Badge variant='brand'>Pinned</Badge>}
+          {thread.lockedAt && <Badge variant='warning'>Locked</Badge>}
           <h1 className='text-lg font-semibold'>{thread.title}</h1>
         </div>
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { BADGE_ACCENT_BORDER, Badge, type BadgeVariant } from '@/common/components/badge'
 import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
 import { useApproveJoinRequest, useRejectJoinRequest } from '@/features/join-request/join-request.hooks'
@@ -19,6 +20,14 @@ const STATUS_LABELS: Record<JoinRequest['status'], string> = {
   EXPIRED: 'Expired'
 }
 
+const STATUS_VARIANTS: Record<JoinRequest['status'], BadgeVariant> = {
+  PENDING: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'destructive',
+  CANCELED: 'neutral',
+  EXPIRED: 'neutral'
+}
+
 export function JoinRequestItem({ nestSlug, request }: JoinRequestItemProps) {
   const router = useRouter()
 
@@ -33,12 +42,11 @@ export function JoinRequestItem({ nestSlug, request }: JoinRequestItemProps) {
   const isPending = approve.isPending || reject.isPending
 
   return (
-    <li className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
+    <li className={`flex items-center justify-between gap-4 rounded-lg border border-border border-l-4 bg-card p-3 ${BADGE_ACCENT_BORDER[STATUS_VARIANTS[request.status]]}`}>
       <div>
         <p className='text-sm font-medium'><UserLink user={request.user} /></p>
-        <p className='text-xs text-muted-foreground'>
-          {STATUS_LABELS[request.status]}
-          {' · '}
+        <p className='mt-1 flex items-center gap-1.5 text-xs text-muted-foreground'>
+          <Badge variant={STATUS_VARIANTS[request.status]} size='sm'>{STATUS_LABELS[request.status]}</Badge>
           {formatDateTime(request.createdAt)}
         </p>
       </div>

@@ -32,7 +32,7 @@ export function NotificationItem({ notification, onNavigate }: NotificationItemP
       <Link
         href={href}
         onClick={handleClick}
-        className={`flex items-start gap-2 px-3 py-2 text-sm hover:bg-muted ${isUnread ? 'bg-primary/5' : ''}`}
+        className={`flex items-start gap-2 border-l-2 px-3 py-2 text-sm hover:bg-muted ${isUnread ? 'border-l-primary bg-primary/5' : 'border-l-transparent'}`}
       >
         <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${isUnread ? 'bg-primary' : 'bg-transparent'}`} aria-hidden='true' />
 

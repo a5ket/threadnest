@@ -40,7 +40,7 @@ export function ChatPanel({ chatId, initialMessages, onBack }: ChatPanelProps) {
       <div className='flex shrink-0 items-center gap-3 border-b border-border p-3'>
         {onBack && (
           <button type='button' onClick={onBack} aria-label='Back' className='rounded-md p-1 hover:bg-muted'>
-            <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+            <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
               <path d='M12 15l-5-5 5-5' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>

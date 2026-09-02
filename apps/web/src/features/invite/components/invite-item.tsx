@@ -1,5 +1,6 @@
 'use client'
 
+import { BADGE_ACCENT_BORDER, Badge, type BadgeVariant } from '@/common/components/badge'
 import { DeleteConfirmButton } from '@/common/components/delete-confirm-button'
 import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
@@ -21,6 +22,14 @@ const STATUS_LABELS: Record<Invite['status'], string> = {
   EXPIRED: 'Expired'
 }
 
+const STATUS_VARIANTS: Record<Invite['status'], BadgeVariant> = {
+  PENDING: 'warning',
+  ACCEPTED: 'success',
+  DECLINED: 'destructive',
+  REVOKED: 'neutral',
+  EXPIRED: 'neutral'
+}
+
 export function InviteItem({ nestSlug, invite }: InviteItemProps) {
   const router = useRouter()
 
@@ -29,15 +38,17 @@ export function InviteItem({ nestSlug, invite }: InviteItemProps) {
   })
 
   return (
-    <li className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
+    <li className={`flex items-center justify-between gap-4 rounded-lg border border-border border-l-4 bg-card p-3 ${BADGE_ACCENT_BORDER[STATUS_VARIANTS[invite.status]]}`}>
       <div>
         <p className='text-sm font-medium'><UserLink user={invite.user} /></p>
-        <p className='text-xs text-muted-foreground'>
-          {STATUS_LABELS[invite.status]}
-          {' · invited by '}
-          <UserLink user={invite.invitedBy} />
-          {' · '}
-          {formatDateTime(invite.createdAt)}
+        <p className='mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground'>
+          <Badge variant={STATUS_VARIANTS[invite.status]} size='sm'>{STATUS_LABELS[invite.status]}</Badge>
+          <span>
+            {'invited by '}
+            <UserLink user={invite.invitedBy} />
+            {' · '}
+            {formatDateTime(invite.createdAt)}
+          </span>
         </p>
       </div>
 

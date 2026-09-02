@@ -1,5 +1,6 @@
 'use client'
 
+import { BADGE_ACCENT_BORDER, Badge, type BadgeVariant } from '@/common/components/badge'
 import { UserLink } from '@/common/components/user-link'
 import { formatDateTime } from '@/common/format-date'
 import { UserSummaryResponseDto } from '@/generated/api/models'
@@ -34,6 +35,12 @@ const STATUS_LABELS: Record<PlatformReport['status'], string> = {
   PENDING: 'Pending',
   RESOLVED: 'Resolved',
   DISMISSED: 'Dismissed'
+}
+
+const STATUS_VARIANTS: Record<PlatformReport['status'], BadgeVariant> = {
+  PENDING: 'warning',
+  RESOLVED: 'success',
+  DISMISSED: 'neutral'
 }
 
 function TargetLink({ report }: { report: PlatformReport }) {
@@ -87,10 +94,10 @@ export function PlatformReportQueueItem({ report }: PlatformReportQueueItemProps
   const isPending = resolve.isPending || dismiss.isPending
 
   return (
-    <li className='flex flex-col gap-2 rounded-md border border-border p-3'>
+    <li className={`flex flex-col gap-2 rounded-lg border border-border border-l-4 bg-card p-3 ${BADGE_ACCENT_BORDER[STATUS_VARIANTS[report.status]]}`}>
       <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-        <span className='rounded-full bg-muted px-2 py-0.5 font-medium'>{REASON_LABELS[report.reason]}</span>
-        <span>{STATUS_LABELS[report.status]}</span>
+        <Badge>{REASON_LABELS[report.reason]}</Badge>
+        <Badge variant={STATUS_VARIANTS[report.status]}>{STATUS_LABELS[report.status]}</Badge>
         <span>
           {'· Reported by '}
           <UserLink user={toUserReference(report.reporter)} />

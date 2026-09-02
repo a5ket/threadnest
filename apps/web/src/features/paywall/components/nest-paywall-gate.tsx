@@ -1,3 +1,4 @@
+import { Badge } from '@/common/components/badge'
 import { NestAvatar } from '@/common/components/nest-avatar'
 import Link from 'next/link'
 
@@ -26,9 +27,7 @@ export function NestPaywallGate({
 
       <div className='flex items-center gap-2'>
         <h1 className='text-lg font-semibold'>{nestName}</h1>
-        <span className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-          Paywalled
-        </span>
+        <Badge variant='warning'>Paywalled</Badge>
       </div>
 
       {description && (

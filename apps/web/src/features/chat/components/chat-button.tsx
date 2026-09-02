@@ -18,7 +18,7 @@ export function ChatButton() {
         aria-label='Chats'
         className='relative rounded-md p-2 hover:bg-muted'
       >
-        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-5 w-5'>
+        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-5 w-5'>
           <path d='M3 5.5A1.5 1.5 0 0 1 4.5 4h11A1.5 1.5 0 0 1 17 5.5v6A1.5 1.5 0 0 1 15.5 13H9l-4 3v-3H4.5A1.5 1.5 0 0 1 3 11.5v-6Z' strokeLinejoin='round' />
         </svg>
 

@@ -40,7 +40,7 @@ export function BanItem({ nestSlug, ban }: BanItemProps) {
   })
 
   return (
-    <li className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
+    <li className='flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-3'>
       <div>
         <p className='text-sm font-medium'>
           {ban.user.displayName ?? ban.user.username ?? 'Deleted user'}

@@ -47,7 +47,7 @@ export function Select<T extends string | number>({ value, onChange, options, di
         className='flex w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-left text-sm disabled:opacity-50'
       >
         <span>{selected?.label ?? ''}</span>
-        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4 shrink-0 text-muted-foreground'>
+        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4 shrink-0 text-muted-foreground'>
           <path d='M5 8l5 5 5-5' strokeLinecap='round' strokeLinejoin='round' />
         </svg>
       </button>

@@ -57,7 +57,7 @@ export function Lightbox({ images, index, onIndexChange, onClose }: LightboxProp
           aria-label='Close'
           className='absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20'
         >
-          <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+          <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
             <path d='M5 5l10 10M15 5L5 15' strokeLinecap='round' />
           </svg>
         </button>
@@ -80,7 +80,7 @@ export function Lightbox({ images, index, onIndexChange, onClose }: LightboxProp
             aria-label='Previous image'
             className='absolute left-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 sm:left-4'
           >
-            <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-5 w-5'>
+            <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-5 w-5'>
               <path d='M12 15l-5-5 5-5' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>
@@ -104,7 +104,7 @@ export function Lightbox({ images, index, onIndexChange, onClose }: LightboxProp
             aria-label='Next image'
             className='absolute right-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 sm:right-4'
           >
-            <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-5 w-5'>
+            <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-5 w-5'>
               <path d='M8 5l5 5-5 5' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>

@@ -18,7 +18,7 @@ export function PreferenceSettingsPanel({ initialPreference }: PreferenceSetting
 
   return (
     <div className='flex flex-col gap-4'>
-      <div className='flex items-start justify-between gap-4 rounded-md border border-border p-4'>
+      <div className='flex items-start justify-between gap-4 rounded-lg border border-border bg-card p-4'>
         <div>
           <p className='text-sm font-medium'>Show activity on profile</p>
           <p className='text-sm text-muted-foreground'>Let other people see the threads and comments you&apos;ve posted, on your profile.</p>

@@ -28,7 +28,7 @@ export function NotificationList({ unreadOnly, initialPage }: NotificationListPr
   }, [])
 
   return (
-    <ul className='flex flex-col divide-y divide-border rounded-md border border-border'>
+    <ul className='flex flex-col divide-y divide-divider rounded-lg border border-border bg-card'>
       {notifications.map((notification) => (
         <NotificationItem key={notification.id} notification={notification} />
       ))}

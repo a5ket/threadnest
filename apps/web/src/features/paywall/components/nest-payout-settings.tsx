@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/common/components/badge'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -34,22 +35,22 @@ export function NestPayoutSettings({ nestSlug }: NestPayoutSettingsProps) {
   if (isLoading || !account) return null
 
   return (
-    <div className='flex flex-col gap-3 rounded-md border border-border p-4'>
+    <div className='flex flex-col gap-3 rounded-lg border border-border bg-card p-4'>
       <div>
         <h2 className='text-sm font-semibold'>Payouts</h2>
         <p className='text-xs text-muted-foreground'>Connect a Stripe account to withdraw this nest&apos;s subscription earnings.</p>
       </div>
 
-      <div className='flex items-center justify-between rounded-md border border-border p-3 text-sm'>
+      <div className='flex items-center justify-between rounded-md bg-background p-3 text-sm'>
         <span>
           Balance: $
           {(account.balanceCents / 100).toFixed(2)}
         </span>
 
         {account.isConnected && (
-          <span className={account.payoutsEnabled ? 'text-sm text-muted-foreground' : 'text-sm text-destructive'}>
+          <Badge variant={account.payoutsEnabled ? 'success' : 'warning'}>
             {account.payoutsEnabled ? 'Payouts enabled' : 'Setup incomplete'}
-          </span>
+          </Badge>
         )}
       </div>
 

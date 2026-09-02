@@ -30,7 +30,7 @@ export function NestPaywallSettings({ nestSlug }: NestPaywallSettingsProps) {
   }
 
   return (
-    <div className='flex flex-col gap-3 rounded-md border border-border p-4'>
+    <div className='flex flex-col gap-3 rounded-lg border border-border bg-card p-4'>
       <div>
         <h2 className='text-sm font-semibold'>Subscription price</h2>
         <p className='text-xs text-muted-foreground'>Charge members a monthly subscription to view this nest.</p>
@@ -38,7 +38,7 @@ export function NestPaywallSettings({ nestSlug }: NestPaywallSettingsProps) {
 
       {paywall.isPaywalled
         ? (
-            <div className='flex items-center justify-between gap-4 rounded-md border border-border p-3 text-sm'>
+            <div className='flex items-center justify-between gap-4 rounded-md bg-background p-3 text-sm'>
               <span>
                 Paywalled at $
                 {((paywall.priceAmountCents ?? 0) / 100).toFixed(2)}

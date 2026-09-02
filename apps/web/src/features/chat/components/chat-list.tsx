@@ -40,7 +40,7 @@ export function ChatList({ initialPage, onSelectChat }: ChatListProps) {
         </button>
       </div>
 
-      <ul className='flex flex-col divide-y divide-border'>
+      <ul className='flex flex-col divide-y divide-divider'>
         {chats.map((chat) => (
           <ChatListItem key={chat.id} chat={chat} onSelect={onSelectChat} isTyping={typingByChat.has(chat.id)} />
         ))}

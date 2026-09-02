@@ -11,7 +11,7 @@ export function UserSearchResultItem({ user }: UserSearchResultItemProps) {
 
   if (!user.username) {
     return (
-      <li className='flex items-center gap-3 rounded-md border border-border p-3'>
+      <li className='flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm'>
         <Avatar avatarUrl={user.avatarUrl} label={label} size={32} />
         <span className='text-sm text-muted-foreground'>{label}</span>
       </li>
@@ -19,7 +19,7 @@ export function UserSearchResultItem({ user }: UserSearchResultItemProps) {
   }
 
   return (
-    <li className='flex items-center gap-3 rounded-md border border-border p-3'>
+    <li className='flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-shadow hover:shadow-sm'>
       <Avatar avatarUrl={user.avatarUrl} label={label} size={32} />
 
       <Link href={`/users/${user.username}`} className='hover:underline'>

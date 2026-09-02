@@ -53,7 +53,7 @@ export function NotificationBell() {
         aria-label='Notifications'
         className='relative rounded-md p-2 hover:bg-muted'
       >
-        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-5 w-5'>
+        <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-5 w-5'>
           <path d='M4 8a6 6 0 0 1 12 0c0 4 1.5 5 1.5 5h-15S4 12 4 8Z' strokeLinejoin='round' />
           <path d='M8 16a2 2 0 0 0 4 0' strokeLinecap='round' />
         </svg>
@@ -90,7 +90,7 @@ export function NotificationBell() {
             )}
 
             {!isLoading && notifications && notifications.length > 0 && (
-              <ul className='flex flex-col divide-y divide-border'>
+              <ul className='flex flex-col divide-y divide-divider'>
                 {notifications.map((notification) => (
                   <NotificationItem key={notification.id} notification={notification} onNavigate={() => setOpen(false)} />
                 ))}

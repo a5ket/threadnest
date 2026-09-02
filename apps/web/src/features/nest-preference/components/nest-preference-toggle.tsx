@@ -9,7 +9,7 @@ interface NestPreferenceToggleProps {
 
 function BellIcon({ muted }: { muted: boolean }) {
   return (
-    <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+    <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
       <path d='M4 8a6 6 0 0 1 12 0c0 4 1.5 5 1.5 5h-15S4 12 4 8Z' strokeLinejoin='round' />
       <path d='M8 16a2 2 0 0 0 4 0' strokeLinecap='round' />
       {muted && <path d='M3 3l14 14' strokeLinecap='round' />}
@@ -19,7 +19,7 @@ function BellIcon({ muted }: { muted: boolean }) {
 
 function InviteIcon() {
   return (
-    <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='2' className='h-4 w-4'>
+    <svg viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.5' className='h-4 w-4'>
       <rect x='3' y='5' width='14' height='10' rx='2' />
       <path d='M3 6l7 5 7-5' strokeLinecap='round' strokeLinejoin='round' />
     </svg>

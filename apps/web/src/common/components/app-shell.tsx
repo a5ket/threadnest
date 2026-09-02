@@ -14,7 +14,7 @@ export function AppShell({ header, sidebar, rightRail, children }: AppShellProps
       <div className='flex min-h-0 flex-1'>
         {sidebar}
 
-        <main className='min-w-0 flex-1 overflow-y-auto'>
+        <main className='min-w-0 flex-1 overflow-y-auto bg-background'>
           {children}
         </main>
 

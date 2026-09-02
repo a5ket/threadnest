@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/common/components/badge'
 import { useCreateJoinRequest } from '@/features/join-request/join-request.hooks'
 import { useIsSignedIn } from '@/features/me/me.hooks'
 import { NestAccessContextDtoJoinPolicy } from '@/generated/api/models'
@@ -53,9 +54,7 @@ export function PrivateNestScreen({ nestSlug, name, joinPolicy }: PrivateNestScr
     <div className='flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center'>
       <div className='flex items-center gap-2'>
         <h1 className='text-lg font-semibold'>{name}</h1>
-        <span className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-          Private
-        </span>
+        <Badge>Private</Badge>
       </div>
 
       <p className='max-w-sm text-sm text-muted-foreground'>

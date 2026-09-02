@@ -19,7 +19,7 @@ export default function BlockedUsersPage() {
 
       <ul className='flex flex-col gap-3'>
         {blockedUsers?.map((block) => (
-          <li key={block.user.id} className='flex items-center justify-between gap-4 rounded-md border border-border p-3'>
+          <li key={block.user.id} className='flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-3'>
             <div>
               <p className='text-sm font-medium'>{block.user.displayName ?? block.user.username ?? 'Deleted user'}</p>
               <p className='text-xs text-muted-foreground'>

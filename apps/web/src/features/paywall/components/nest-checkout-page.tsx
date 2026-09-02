@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge, type BadgeVariant } from '@/common/components/badge'
 import { NestAvatar } from '@/common/components/nest-avatar'
 import { DemoBanner } from '@/common/components/demo-banner'
 import { formatDate } from '@/common/format-date'
@@ -15,6 +16,14 @@ interface NestCheckoutPageProps {
   nestName: string
   nestIconUrl: string | null
   priceAmountCents: number | null
+}
+
+const STATUS_VARIANTS: Record<string, BadgeVariant> = {
+  ACTIVE: 'success',
+  TRIALING: 'success',
+  PAST_DUE: 'warning',
+  CANCELED: 'neutral',
+  UNPAID: 'destructive'
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -101,10 +110,12 @@ function ExistingSubscription({ nestSlug, subscription }: ExistingSubscriptionPr
   })
 
   return (
-    <div className='flex flex-col gap-3 rounded-lg border border-border p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-lg border border-border bg-card p-4 text-sm'>
       <div className='flex items-center justify-between'>
         <span className='font-medium'>Status</span>
-        <span>{STATUS_LABELS[subscription.status] ?? subscription.status}</span>
+        <Badge variant={STATUS_VARIANTS[subscription.status] ?? 'neutral'}>
+          {STATUS_LABELS[subscription.status] ?? subscription.status}
+        </Badge>
       </div>
 
       {subscription.priceAmountCents !== null && (
